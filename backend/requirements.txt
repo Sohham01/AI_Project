@@ -1,0 +1,50 @@
+# IIM Sambalpur Community Intelligence — Backend Dependencies (base profile)
+#
+# This is the "base" profile: everything needed to run the FastAPI app, the
+# ingestion layer, the classical (TF-IDF) NLP models and the test suite.
+# The optional PyTorch/MuRIL transformer stack lives in requirements-ml.txt.
+#
+# Versions below match the interpreter used for verification
+# (backend/.venv, Python 3.14).  See docs/IMPLEMENTATION_STATUS_REPORT.md.
+
+# --- Web framework / ASGI server ------------------------------------------
+fastapi==0.141.1
+uvicorn==0.53.0
+
+# --- ORM + migrations ------------------------------------------------------
+sqlalchemy==2.0.54
+alembic==1.20.0
+
+# --- Validation / configuration -------------------------------------------
+pydantic==2.13.5
+pydantic-core==2.46.5
+python-dotenv==1.2.3
+
+# --- HTTP (synchronous, used by ingestion providers) ----------------------
+requests==2.34.2
+
+# --- Language detection (baseline language/script detection) --------------
+langdetect==1.0.9
+
+# --- Classical ML / NLP stack ---------------------------------------------
+# joblib is required directly by ml/training/trainer.py and the model adapters.
+numpy==2.5.3
+scipy==1.18.1
+scikit-learn==1.9.1
+joblib==1.6.0
+
+# --- Database driver — PostgreSQL (psycopg 3) -----------------------------
+# The application uses psycopg v3 (SQLAlchemy dialect "postgresql+psycopg").
+# The binary extra avoids a local libpq development toolchain.
+psycopg[binary]==3.3.5
+
+# --- Test runner -----------------------------------------------------------
+pytest==9.1.1
+
+# --------------------------------------------------------------------------
+# Optional / not part of the default verification run
+# --------------------------------------------------------------------------
+# httpx          — only needed for fastapi.testclient (no tests require it yet)
+# torch          — MuRIL transformer baseline (see requirements-ml.txt)
+# transformers   — MuRIL transformer baseline (see requirements-ml.txt)
+# psycopg2-binary — only if an older psycopg2 dialect must be supported

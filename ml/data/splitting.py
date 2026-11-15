@@ -119,6 +119,7 @@ def split_records(
     records: Sequence,
     labels: Sequence[str],
     spec: Optional[SplitSpec] = None,
+    groups: Optional[Sequence[str]] = None,
 ) -> SplitResult:
     """Split *records* into train/validation/test index lists.
 
@@ -129,6 +130,10 @@ def split_records(
             it to decide whether stratification is safe.
         spec: split configuration.  Defaults to a 70/15/15 split with
             random_state=42 and stratification enabled.
+        groups: optional group key per record (e.g. ``post_id``).  When given,
+            every record sharing a group key is placed in the *same* split, so
+            comments from one thread cannot straddle train/test (a realistic
+            leakage source for response/solution models).
 
     Returns:
         SplitResult with index lists and metadata about stratification.
@@ -161,6 +166,9 @@ def split_records(
                 f"all records go to training"
             ],
         )
+
+    if groups is not None:
+        return _split_by_groups(records, spec, list(groups))
 
     # ---- leakage guard: duplicate document identities ----
     warnings: List[str] = []
@@ -282,6 +290,163 @@ def apply_split(
     validation = [records[i] for i in split.validation]
     test = [records[i] for i in split.test]
     return train, validation, test
+
+
+def extract_groups(records: Sequence, attribute: str) -> List[str]:
+    """Return a group key per record, read from *attribute*.
+
+    Missing/empty values fall back to the record's document identity so a
+    record without the grouping attribute does not get lumped together with
+    every other ungrouped record.
+    """
+    keys: List[str] = []
+    for record in records:
+        value = None
+        if hasattr(record, attribute):
+            value = getattr(record, attribute)
+        elif isinstance(record, dict):
+            value = record.get(attribute)
+        if not value:
+            value = _extract_ids([record])[0]
+        keys.append(str(value))
+    return keys
+
+
+def _split_by_groups(
+    records: Sequence,
+    spec: SplitSpec,
+    groups: Sequence[str],
+) -> SplitResult:
+    """Group-aware split: whole groups go to one split (see ``split_records``)."""
+    n = len(records)
+    if len(groups) != n:
+        raise ValueError(
+            f"groups length {len(groups)} does not match records length {n}"
+        )
+
+    warnings: List[str] = []
+    if spec.stratify:
+        warnings.append(
+            "stratification disabled: group-aware split keeps whole groups "
+            "together"
+        )
+
+    from collections import defaultdict
+    import random
+
+    members: dict[str, list[int]] = defaultdict(list)
+    for idx, key in enumerate(groups):
+        members[str(key)].append(idx)
+    unique_groups = list(members.keys())
+
+    required_splits = 1 + int(spec.has_validation) + int(spec.has_test)
+    if len(unique_groups) < required_splits:
+        raise ValueError(
+            f"cannot create {required_splits} non-empty group-aware splits "
+            f"from {len(unique_groups)} group(s); provide more independent "
+            "groups or disable validation/test"
+        )
+
+    rng = random.Random(spec.random_state)
+    rng.shuffle(unique_groups)
+
+    n_val_target = (
+        _compute_size(n, spec.validation_size) if spec.has_validation else 0
+    )
+    n_test_target = (
+        _compute_size(n, spec.test_size) if spec.has_test else 0
+    )
+
+    train_idx: list[int] = []
+    val_idx: list[int] = []
+    test_idx: list[int] = []
+    for key in unique_groups:
+        group = members[key]
+        # Fill test, then validation, then training; never overshoot a target.
+        if spec.has_test and len(test_idx) + len(group) <= n_test_target:
+            test_idx.extend(group)
+        elif spec.has_validation and len(val_idx) + len(group) <= n_val_target:
+            val_idx.extend(group)
+        else:
+            train_idx.extend(group)
+
+    def move_one_group(source: list[int], destination: list[int], name: str) -> bool:
+        """Move the smallest whole group while preserving training minimums."""
+        candidates = []
+        for key, member_indices in members.items():
+            member_set = set(member_indices)
+            if not member_set.issubset(source):
+                continue
+            if source is train_idx and len(source) - len(member_indices) < spec.min_train_examples:
+                continue
+            candidates.append((len(member_indices), key, member_indices))
+        if not candidates:
+            return False
+        _, key, member_indices = min(candidates, key=lambda item: (item[0], item[1]))
+        member_set = set(member_indices)
+        source[:] = [idx for idx in source if idx not in member_set]
+        destination.extend(member_indices)
+        warnings.append(
+            f"group-aware split moved group {key!r} to populate {name}; "
+            "requested proportions could not fit whole groups"
+        )
+        return True
+
+    # Whole groups can be larger than the requested validation/test targets.  The
+    # old greedy pass then placed every group in training, making an apparently
+    # valid three-way split unusable for held-out evaluation.  Repair empty
+    # requested folds by moving complete groups, or fail before training when the
+    # configured minimums cannot be satisfied.
+    if spec.has_test and not test_idx and not move_one_group(train_idx, test_idx, "test"):
+        raise ValueError(
+            "cannot populate the requested test split without violating the "
+            "training minimum or splitting a group"
+        )
+    if spec.has_validation and not val_idx and not move_one_group(train_idx, val_idx, "validation"):
+        raise ValueError(
+            "cannot populate the requested validation split without violating "
+            "the training minimum or splitting a group"
+        )
+
+    if not train_idx:
+        smallest = min(unique_groups, key=lambda k: len(members[k]))
+        moved = set(members[smallest])
+        val_idx = [i for i in val_idx if i not in moved]
+        test_idx = [i for i in test_idx if i not in moved]
+        train_idx.extend(members[smallest])
+        warnings.append(
+            "group-aware split moved a group into training to keep it "
+            "non-empty"
+        )
+
+    if spec.has_validation and len(val_idx) < spec.min_validation_examples:
+        raise ValueError(
+            f"group-aware validation split has {len(val_idx)} examples, below "
+            f"min_validation_examples={spec.min_validation_examples}"
+        )
+    if spec.has_test and len(test_idx) < spec.min_test_examples:
+        raise ValueError(
+            f"group-aware test split has {len(test_idx)} examples, below "
+            f"min_test_examples={spec.min_test_examples}"
+        )
+
+    result = SplitResult(
+        train=sorted(train_idx),
+        validation=sorted(val_idx),
+        test=sorted(test_idx),
+        random_state=spec.random_state,
+        stratify_used=False,
+        stratify_available=False,
+        warnings=warnings,
+    )
+
+    ok, overlap_warnings = result.verify_no_overlap()
+    if not ok:
+        raise RuntimeError(
+            "group split produced overlapping indices: "
+            + "; ".join(overlap_warnings)
+        )
+    return result
 
 
 # ---------------------------------------------------------------------------

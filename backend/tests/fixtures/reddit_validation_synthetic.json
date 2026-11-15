@@ -1,0 +1,81 @@
+{
+  "dataset_name": "iim_sambalpur_reddit_validation_synthetic",
+  "synthetic": true,
+  "notice": "Entirely fabricated validation fixture. These are not Reddit posts, comments, users, URLs, or observed activity. Do not use for research findings or training.",
+  "subreddits": [
+    {"name": "IIMSambalpur", "mode": "direct"},
+    {"name": "IIMSambalpurUG", "mode": "direct"},
+    {"name": "MBAIndia", "mode": "context"},
+    {"name": "CATPrep", "mode": "context"},
+    {"name": "CATpreparation", "mode": "context"}
+  ],
+  "posts": [
+    {
+      "reddit_id": "synthetic-post-iimsambalpur-001",
+      "title": "[SYNTHETIC] What should a first-year student prepare before orientation?",
+      "body": "A fictional prompt about getting ready for the IIM Sambalpur campus and orientation.",
+      "subreddit": "IIMSambalpur",
+      "created_at": "2026-01-15T12:00:00Z",
+      "score": 0,
+      "num_comments": 2,
+      "url": null,
+      "comments": [
+        {"reddit_id": "synthetic-comment-iimsambalpur-001", "body": "[SYNTHETIC] Check the official orientation information when it is published.", "created_at": "2026-01-15T12:10:00Z", "score": 0, "parent_reddit_id": null},
+        {"reddit_id": "synthetic-comment-iimsambalpur-002", "body": "[SYNTHETIC] This fictional reply asks about course materials.", "created_at": "2026-01-15T12:20:00Z", "score": 0, "parent_reddit_id": "synthetic-comment-iimsambalpur-001"}
+      ]
+    },
+    {
+      "reddit_id": "synthetic-post-iimsambalpurug-001",
+      "title": "[SYNTHETIC] Anyone joining the IIM Sambalpur UG programme?",
+      "body": "A fictional student asks how to connect with other incoming IIM Sambalpur UG students.",
+      "subreddit": "IIMSambalpurUG",
+      "created_at": "2026-01-16T09:30:00Z",
+      "score": 0,
+      "num_comments": 1,
+      "url": null,
+      "comments": [
+        {"reddit_id": "synthetic-comment-iimsambalpurug-001", "body": "[SYNTHETIC] A fictional reply suggests checking the institute's official channels.", "created_at": "2026-01-16T10:00:00Z", "score": 0, "parent_reddit_id": null}
+      ]
+    },
+    {
+      "reddit_id": "synthetic-post-mbaindia-001",
+      "title": "[SYNTHETIC] Questions about IIM Sambalpur programmes",
+      "body": "A fictional MBAIndia discussion asks how to compare publicly announced IIM Sambalpur programme details.",
+      "subreddit": "MBAIndia",
+      "created_at": "2026-01-17T14:00:00Z",
+      "score": 0,
+      "num_comments": 1,
+      "url": null,
+      "comments": [
+        {"reddit_id": "synthetic-comment-mbaindia-001", "body": "[SYNTHETIC] A fictional commenter recommends comparing official programme pages.", "created_at": "2026-01-17T14:15:00Z", "score": 0, "parent_reddit_id": null}
+      ]
+    },
+    {
+      "reddit_id": "synthetic-post-catprep-001",
+      "title": "[SYNTHETIC] IIM Sambalpur application timeline question",
+      "body": "A fictional CATPrep post asks where to verify an IIM Sambalpur application deadline.",
+      "subreddit": "CATPrep",
+      "created_at": "2026-01-18T08:00:00Z",
+      "score": 0,
+      "num_comments": 1,
+      "url": null,
+      "comments": [
+        {"reddit_id": "synthetic-comment-catprep-001", "body": "[SYNTHETIC] A fictional response points to the official admissions notice.", "created_at": "2026-01-18T08:30:00Z", "score": 0, "parent_reddit_id": null}
+      ]
+    },
+    {
+      "reddit_id": "synthetic-post-catpreparation-001",
+      "title": "[SYNTHETIC] Is IIM Sambalpur relevant for my preference list?",
+      "body": "A fictional CATpreparation user asks how to assess IIM Sambalpur using verified programme and placement information.",
+      "subreddit": "CATpreparation",
+      "created_at": "2026-01-19T16:45:00Z",
+      "score": 0,
+      "num_comments": 2,
+      "url": null,
+      "comments": [
+        {"reddit_id": "synthetic-comment-catpreparation-001", "body": "[SYNTHETIC] A fictional reply says to compare current official reports and personal priorities.", "created_at": "2026-01-19T17:00:00Z", "score": 0, "parent_reddit_id": null},
+        {"reddit_id": "synthetic-comment-catpreparation-002", "body": "[SYNTHETIC] A fictional nested reply asks for the programme year.", "created_at": "2026-01-19T17:10:00Z", "score": 0, "parent_reddit_id": "synthetic-comment-catpreparation-001"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Optional transformer / deep-learning extras
+#
+# Only needed for the MuRIL response-classification baseline in
+# ml/models/transformer/response_transformer.py.  These are intentionally kept
+# out of the base profile because they are large and platform-specific
+# (the versions below are the CUDA build used during verification).
+#
+#   python -m pip install -r requirements.txt -r requirements-ml.txt
+#
+# The ANN (NumPy MLP) and CNN baselines need only numpy/scipy/scikit-learn from
+# the base profile.
+
+torch==2.14.1
+transformers==5.19.0
+tokenizers==0.23.3

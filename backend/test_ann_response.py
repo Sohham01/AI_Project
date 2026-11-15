@@ -1189,6 +1189,7 @@ class TestTrainerANNIntegration(unittest.TestCase):
             random_state=42,
             minimum_training_examples=12,
             artifact_directory=tempfile.mkdtemp(),
+            registry_path=os.path.join(tempfile.mkdtemp(), "registry.json"),
         )
         trainer = Trainer(cfg)
         model = ResponseMLPClassifier(

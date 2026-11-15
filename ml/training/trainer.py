@@ -15,6 +15,7 @@ trainer.
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import os
 from dataclasses import dataclass, field
@@ -37,6 +38,7 @@ from ml.data.splitting import (
     SplitSpec,
     apply_split,
     check_leakage,
+    extract_groups,
     split_records,
 )
 from ml.evaluation.reports import (
@@ -157,43 +159,102 @@ class TrainableModel(Protocol):
 # ---------------------------------------------------------------------------
 
 
-def build_model(task: TaskType, config: Optional[Any] = None) -> TrainableModel:
-    """Instantiate the default classical baseline for *task*.
+#: Model selection is explicit: every trainable model is named here and mapped
+#: to ``"module.path:ClassName"``.  There is no hidden fallback across tasks —
+#: asking for a model that does not belong to the task raises a clear error.
+DEFAULT_MODEL_NAME = "tfidf_logistic"
 
-    Returns an untrained model instance.  The caller is responsible for calling
-    ``train()`` before ``predict()`` or ``evaluate()``.
+MODEL_FACTORIES: Dict[TaskType, Dict[str, Tuple[str, str]]] = {
+    TaskType.SENTIMENT: {
+        "tfidf_logistic": (
+            "app.services.nlp.sentiment_emotion.tfidf_logistic_sentiment",
+            "TfidfLogisticSentimentClassifier",
+        ),
+    },
+    TaskType.EMOTION: {
+        "tfidf_logistic": (
+            "app.services.nlp.sentiment_emotion.tfidf_logistic_emotion",
+            "TfidfLogisticEmotionClassifier",
+        ),
+    },
+    TaskType.ISSUE: {
+        "tfidf_logistic": (
+            "app.services.nlp.issue_identification.tfidf_logistic_classifier",
+            "TfidfLogisticIssueClassifier",
+        ),
+    },
+    TaskType.RESPONSE: {
+        "tfidf_logistic": (
+            "app.services.nlp.response_classification.tfidf_logistic_multiclass",
+            "TfidfLogisticResponseClassifier",
+        ),
+        "response_mlp": (
+            "ml.models.ann.response_mlp",
+            "ResponseMLPClassifier",
+        ),
+        "text_cnn": (
+            "ml.models.cnn.response_cnn",
+            "TextCNNResponseClassifier",
+        ),
+        "muril": (
+            "ml.models.transformer.response_transformer",
+            "MuRILResponseClassifier",
+        ),
+    },
+    TaskType.SOLUTION: {
+        "tfidf_logistic": (
+            "app.services.nlp.solution_detection.tfidf_logistic_binary",
+            "TfidfLogisticSolutionClassifier",
+        ),
+    },
+}
+
+
+def available_models(task: TaskType) -> List[str]:
+    """Return the sorted model names selectable for *task*."""
+    return sorted(MODEL_FACTORIES.get(task, {}))
+
+
+def build_model(
+    task: TaskType,
+    config: Optional[Any] = None,
+    model_name: Optional[str] = None,
+) -> TrainableModel:
+    """Instantiate a baseline for *task*.
+
+    Args:
+        task: the task the model must serve.
+        config: optional model configuration.  Only forwarded to the default
+            classical baseline (the ANN/CNN/transformer baselines build their
+            own default config).
+        model_name: explicit model to build.  Defaults to the classical
+            ``tfidf_logistic`` baseline.  Unknown names for the task raise
+            ``ValueError`` rather than silently falling back.
+
+    Returns:
+        An untrained model instance.  The caller must ``train()`` before
+        ``predict()``/``evaluate()``.
     """
-    if task == TaskType.SENTIMENT:
-        from app.services.nlp.sentiment_emotion.tfidf_logistic_sentiment import (
-            TfidfLogisticSentimentClassifier,
-        )
-        return TfidfLogisticSentimentClassifier(config=config)
+    factories = MODEL_FACTORIES.get(task)
+    if not factories:
+        raise ValueError(f"No models registered for task {task.value!r}")
 
-    if task == TaskType.EMOTION:
-        from app.services.nlp.sentiment_emotion.tfidf_logistic_emotion import (
-            TfidfLogisticEmotionClassifier,
+    name = model_name or DEFAULT_MODEL_NAME
+    if name not in factories:
+        raise ValueError(
+            f"Unknown model_name {name!r} for task {task.value!r}. "
+            f"Available: {', '.join(sorted(factories))}"
         )
-        return TfidfLogisticEmotionClassifier(config=config)
 
-    if task == TaskType.ISSUE:
-        from app.services.nlp.issue_identification.tfidf_logistic_classifier import (
-            TfidfLogisticIssueClassifier,
-        )
-        return TfidfLogisticIssueClassifier(config=config)
+    module_name, class_name = factories[name]
+    module = importlib.import_module(module_name)
+    cls = getattr(module, class_name)
 
-    if task == TaskType.RESPONSE:
-        from app.services.nlp.response_classification.tfidf_logistic_multiclass import (
-            TfidfLogisticResponseClassifier,
-        )
-        return TfidfLogisticResponseClassifier(config=config)
-
-    if task == TaskType.SOLUTION:
-        from app.services.nlp.solution_detection.tfidf_logistic_binary import (
-            TfidfLogisticSolutionClassifier,
-        )
-        return TfidfLogisticSolutionClassifier(config=config)
-
-    raise ValueError(f"No default model for task {task.value!r}")
+    if name == DEFAULT_MODEL_NAME:
+        return cls(config=config)
+    # Non-default baselines own their configuration; a TaskConfig would be a
+    # type mismatch here.
+    return cls()
 
 
 # ---------------------------------------------------------------------------
@@ -455,10 +516,17 @@ class Trainer:
             min_test_examples=1,
         )
 
+        groups = (
+            extract_groups(ds.records, self.config.group_split_by)
+            if self.config.group_split_by
+            else None
+        )
+
         split = split_records(
             records=ds.records,
             labels=[r.label for r in ds.records],
             spec=spec,
+            groups=groups,
         )
         self.state.split = split
         return split
@@ -485,6 +553,8 @@ class Trainer:
 
         if self._model is None:
             raise RuntimeError("no model available for training")
+
+        self._validate_model_task(self._model)
 
         # Convert training records to the model's annotation type.
         train_indices = self.state.split.train
@@ -521,26 +591,35 @@ class Trainer:
         return self._evaluate_split("test")
 
     def save_artifact(self, model: Optional[Any] = None) -> str:
-        """Save the trained model + metadata to a joblib artifact.
-
-        Args:
-            model: model to save.  Defaults to the trained model.
-
-        Returns:
-            Path to the saved artifact.
-        """
+        """Save native directory artifacts or the usual joblib artifact."""
         model = model or self.state.trained_model
         if model is None:
             raise RuntimeError("no trained model to save")
 
         os.makedirs(self.config.artifact_directory, exist_ok=True)
-
-        # Deterministic artifact name.
         name = self._artifact_name(model)
+
+        # Only models explicitly exposing this hook use directory artifacts.
+        # Existing models continue through the unchanged joblib path below.
+        directory_saver = getattr(model, "save_artifact_directory", None)
+        if callable(directory_saver):
+            path = os.path.join(self.config.artifact_directory, name)
+            saved_path = directory_saver(path)
+
+            # Set the path before building metadata so that the metadata
+            # contains the real artifact location.
+            self.state.artifact_path = saved_path
+            metadata = self._build_artifact_metadata(model)
+
+            metadata_path = os.path.join(saved_path, "trainer_metadata.json")
+            with open(metadata_path, "w", encoding="utf-8") as handle:
+                json.dump(metadata, handle, ensure_ascii=False, indent=2)
+
+            return saved_path
+
+        # Backward-compatible behavior for all existing joblib models.
         path = os.path.join(self.config.artifact_directory, name + ".joblib")
-
         metadata = self._build_artifact_metadata(model)
-
         joblib.dump({"model": model, "metadata": metadata}, path)
 
         self.state.artifact_path = path
@@ -622,7 +701,21 @@ class Trainer:
     def _resolve_model(self) -> TrainableModel:
         if self.config.model is not None:
             return self.config.model
-        return build_model(self.task)
+        return build_model(
+            self.task,
+            model_name=self.config.model_name or None,
+        )
+
+    def _validate_model_task(self, model: Any) -> None:
+        """Reject a model that declares a different task than the trainer's."""
+        model_task = getattr(model, "task", None)
+        if model_task is None:
+            return
+        if str(model_task).strip().lower() != self.task.value:
+            raise ValueError(
+                f"Model {type(model).__name__} serves task {model_task!r} but "
+                f"the trainer is configured for {self.task.value!r}"
+            )
 
     def _evaluate_split(self, which: str) -> EvaluationReport:
         if self.state.trained_model is None:
@@ -700,7 +793,11 @@ class Trainer:
         return meta
 
     def _register(self) -> None:
-        registry = ModelRegistry()
+        # Honour an explicit per-run registry so tests/demos never touch the
+        # canonical registry; fall back to the framework default otherwise.
+        registry = ModelRegistry(
+            registry_path=self.config.registry_path or None
+        )
         entry = {
             "task": self.task.value,
             "model_name": self.state.trained_model.name,

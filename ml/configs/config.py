@@ -10,9 +10,39 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
+
+# ---------------------------------------------------------------------------
+# Path resolution
+# ---------------------------------------------------------------------------
+
+
+def project_root() -> str:
+    """Absolute path to the repository root.
+
+    ``ml/configs/config.py`` lives two directories below the project root, so
+    resolving relative to this file keeps dataset and artifact locations stable
+    regardless of the current working directory.  Running the framework from
+    ``backend/`` (as the test suite does) previously wrote a duplicate
+    ``backend/ml/artifacts`` tree; anchoring every default here prevents that.
+    """
+    return os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+
+
+def default_artifact_directory() -> str:
+    """Absolute path to the canonical model-artifact directory."""
+    return os.path.join(project_root(), "ml", "artifacts")
+
+
+def default_registry_path() -> str:
+    """Absolute path to the single canonical model registry JSON file."""
+    return os.path.join(default_artifact_directory(), "registry.json")
 
 
 # ---------------------------------------------------------------------------
@@ -72,12 +102,32 @@ class TaskConfig:
     #: Minimum number of training examples required before training is attempted.
     minimum_training_examples: int = 10
 
-    #: Where to write model artifacts for this task.
-    artifact_directory: str = "ml/artifacts"
+    #: Where to write model artifacts for this task.  Defaults to the canonical
+    #: absolute ``<project_root>/ml/artifacts`` so runs are independent of the
+    #: process working directory.
+    artifact_directory: str = field(default_factory=default_artifact_directory)
+
+    #: Optional override for the model registry JSON file.  Empty means use the
+    #: canonical registry.  Deliberately excluded from ``to_dict()`` so it does
+    #: not change registry entry IDs.  Tests set this to a temporary file so
+    #: they never touch the real registry.
+    registry_path: str = ""
+
+    #: Optional grouping attribute (e.g. ``"post_id"``) for group-aware
+    #: splitting.  When set, all records sharing the same value go to the same
+    #: split, preventing comments from one thread straddling train/test.
+    #: Empty disables grouping (record-level split).  Excluded from
+    #: ``to_dict()`` to keep registry entry IDs stable.
+    group_split_by: str = ""
 
     #: Optional model instance.  When None the caller must supply one before
     #: calling ``Trainer.run()``.
     model: Optional[Any] = None
+
+    #: Explicit model name to build when no ``model`` instance is supplied.
+    #: Empty means the task's default classical baseline.  Excluded from
+    #: ``to_dict()`` to keep registry entry IDs stable.
+    model_name: str = ""
 
     #: Opt-in timestamp.  Off by default so runs are deterministic and not
     #: identified by wall-clock time.
@@ -159,8 +209,8 @@ class ModelRegistry:
     existing entries are never overwritten.
     """
 
-    def __init__(self, registry_path: str = "ml/artifacts/registry.json") -> None:
-        self._path = registry_path
+    def __init__(self, registry_path: Optional[str] = None) -> None:
+        self._path = registry_path or default_registry_path()
         self._ensure_file()
 
     def _ensure_file(self) -> None:
@@ -176,8 +226,18 @@ class ModelRegistry:
             return json.load(f)
 
     def _write(self, entries: List[Dict[str, Any]]) -> None:
-        with open(self._path, "w", encoding="utf-8") as f:
-            json.dump(entries, f, indent=2)
+        # Write atomically: dump to a sibling temp file then replace, so a crash
+        # mid-write cannot leave a truncated registry behind.
+        directory = os.path.dirname(self._path) or "."
+        fd, tmp_path = tempfile.mkstemp(dir=directory, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(entries, f, indent=2)
+            os.replace(tmp_path, self._path)
+        except BaseException:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+            raise
 
     def register(self, entry: Dict[str, Any]) -> str:
         """Add a model entry and return its generated ID.
@@ -292,8 +352,13 @@ TASK_METADATA = {
     TaskType.RESPONSE: {
         "name": "Response",
         "description": "Single-label response role classification (six V1 types).\n"
-        "Classical baseline: TF-IDF → TfidfLogisticResponseClassifier.\n"
-        "ANN baseline: TF-IDF → ResponseMLPClassifier (NumpyMLP, ml/models/ann).",
+        "Selectable models (explicit, via Trainer model_name / build_model):\n"
+        "  tfidf_logistic (default) -> TfidfLogisticResponseClassifier\n"
+        "  response_mlp             -> ResponseMLPClassifier (NumPy MLP)\n"
+        "  text_cnn                 -> TextCNNResponseClassifier\n"
+        "  muril                    -> MuRILResponseClassifier (needs requirements-ml.txt)\n"
+        "The default_model below is the classical baseline; the others are "
+        "opt-in and are never selected implicitly.",
         "multilabel": False,
         "default_model": "TfidfLogisticResponseClassifier",
         "module": "app.services.nlp.response_classification.tfidf_logistic_multiclass",

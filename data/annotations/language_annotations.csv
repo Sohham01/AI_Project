@@ -1,0 +1,16 @@
+text,manual_language,manual_script,manual_is_code_mixed,notes
+"Is IIM Sambalpur worth it?",en,latin,false,Pure English
+"IIM Sambalpur jaana worth it hai kya?","hi+en",latin,true,Romanized Hindi-English code-mix
+"क्या IIM Sambalpur अच्छा है?","hi+en","devanagari+latin",true,Hindi Devanagari mixed with Latin acronym
+"আইআইএম সম্বলপুর কেমন?",bn,bengali,false,Pure Bengali
+"ଆଇଆଇଏମ ସମ୍ବଲପୁର ଭଲ କି?",or,odia,false,Pure Odia
+"broooo 😭 IIM ka placement kya scene hai??","hi+en",latin,true,Slang + emoji + Romanized Hindi-English
+"The hostel food is terrible honestly",en,latin,false,Pure English with opinion
+"Bhai placement bahut accha hai IIM Sambalpur ka","hi+en",latin,true,Romanized Hindi dominant with English words
+"আমি IIM Sambalpur তে পড়ি","bn+en","bengali+latin",true,Bengali + English mixed script
+"ମୁଁ IIM Sambalpur ରେ ପଢ଼ୁଛି","or+en","odia+latin",true,Odia + English mixed script
+"lol same","en",latin,false,Very short English slang
+"😂😂😂",unknown,unknown,false,Emoji only - no language content
+"!!!???",unknown,unknown,false,Punctuation only
+"Fees kitna hai IIM Sambalpur ka?","hi+en",latin,true,Romanized Hindi-English about fees
+"The placement rate is around 95%",en,latin,false,English with numbers

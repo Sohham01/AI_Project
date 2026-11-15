@@ -51,45 +51,48 @@ class PersistenceService:
             post.body = post_data.body
             self.db.flush()
 
-        # Deduplicate comments and handle hierarchy
-        # Using a map to track DB IDs for already processed comments in this batch
-        # or already in DB
-        
-        # To handle parent-child, we might need a two-pass approach or a robust dictionary
-        # First, ensure all comments exist in DB.
-        # Since we need parent_comment_id (int), we need the ID of the parent comment record.
-        
-        processed_comments = {} # reddit_id -> RedditComment object
+        # Comment hierarchy is resolved in two passes so the result does not
+        # depend on the order comments appear in ``post_data.comments`` (a reply
+        # may arrive before its parent, or the parent may already be in the DB).
 
-        # Sort comments: root comments first, then replies.
-        # However, a reply's parent might not be in the batch if it's already in DB.
-        
+        # Pass 1: ensure every comment row exists and refresh mutable fields.
+        by_reddit_id: dict[str, RedditComment] = {}
         for comment_data in post_data.comments:
-            stmt = select(RedditComment).where(RedditComment.reddit_id == comment_data.reddit_id)
+            stmt = select(RedditComment).where(
+                RedditComment.reddit_id == comment_data.reddit_id
+            )
             comment = self.db.execute(stmt).scalar_one_or_none()
-            
-            parent_comment_id = None
-            if comment_data.parent_reddit_id:
-                # Find parent comment DB ID
-                parent_stmt = select(RedditComment.id).where(RedditComment.reddit_id == comment_data.parent_reddit_id)
-                parent_comment_id = self.db.execute(parent_stmt).scalar_one_or_none()
-            
+
             if not comment:
                 comment = RedditComment(
                     reddit_id=comment_data.reddit_id,
                     post_id=post.id,
-                    parent_comment_id=parent_comment_id,
                     body=comment_data.body,
                     created_at=comment_data.created_at,
-                    score=comment_data.score
+                    score=comment_data.score,
                 )
                 self.db.add(comment)
-                self.db.flush()
             else:
-                # Update mutable metadata
-                comment.score = comment_data.score
+                comment.post_id = post.id
                 comment.body = comment_data.body
-                comment.parent_comment_id = parent_comment_id # Ensure it's correct
-                self.db.flush()
-        
+                comment.score = comment_data.score
+
+            self.db.flush()  # assigns integer ids for new rows
+            by_reddit_id[comment_data.reddit_id] = comment
+
+        # Pass 2: resolve parent links now that every comment has a DB id.
+        for comment_data in post_data.comments:
+            parent_id = None
+            if comment_data.parent_reddit_id:
+                parent = by_reddit_id.get(comment_data.parent_reddit_id)
+                if parent is not None:
+                    parent_id = parent.id
+                else:
+                    parent_stmt = select(RedditComment.id).where(
+                        RedditComment.reddit_id == comment_data.parent_reddit_id
+                    )
+                    parent_id = self.db.execute(parent_stmt).scalar_one_or_none()
+
+            by_reddit_id[comment_data.reddit_id].parent_comment_id = parent_id
+
         self.db.commit()
