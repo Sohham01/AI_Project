@@ -216,9 +216,3 @@ data/exports/
 *.bak
 *.orig
 *.rej
-
-
-
-
-.hallmark
-.gitignore
