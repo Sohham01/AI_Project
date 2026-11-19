@@ -1,12 +1,15 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.core.database import Base, ConfigurationError, get_engine
+from app.api.demo import router as demo_router
 
 # Importing every model module registers its table with ``Base.metadata`` so
 # that migrations/autogenerate and (opt-in) schema creation see the full schema.
@@ -44,10 +47,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="IIM Sambalpur Community Intelligence",
+    title="Reddit Community Intelligence",
     version="1.0.0",
     lifespan=lifespan,
 )
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+app.include_router(demo_router, prefix="/api/demo")
+app.mount("/assets", StaticFiles(directory=STATIC_DIR), name="demo-assets")
 
 
 @app.get("/")
@@ -55,6 +62,12 @@ def root():
     return {
         "message": "IIM Sambalpur Community Intelligence API is running"
     }
+
+
+@app.get("/app", include_in_schema=False)
+@app.get("/app/", include_in_schema=False)
+def demo_app():
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/health")

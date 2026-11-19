@@ -131,6 +131,23 @@ def build_evaluation_report(
     )
 
 
+def _get_field(obj: Any, name: str, default: Any = None) -> Any:
+    """Read an attribute or dictionary key from *obj* without coercing None."""
+    if obj is None:
+        return default
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
+def _has_field(obj: Any, name: str) -> bool:
+    if obj is None:
+        return False
+    if isinstance(obj, dict):
+        return name in obj
+    return hasattr(obj, name)
+
+
 def _extract_metrics(
     raw_report: Any,
     labels: List[str],
@@ -140,7 +157,7 @@ def _extract_metrics(
 
     The framework knows the major evaluation report types from the existing NLP
     modules.  When the type is unknown it falls back to an empty metric set
-    with a warning.
+    with a warning.  Missing metrics remain ``None`` and are never coerced to 0.
     """
     metrics = ClassificationMetricSet(labels=labels, multilabel=is_multilabel)
 
@@ -148,56 +165,156 @@ def _extract_metrics(
         metrics.reason_empty = "raw_report is None"
         return metrics
 
-    # ---- Known report types from the existing NLP modules ----
+    # Propagate explicit non-meaningful reason from task evaluators.
+    raw_meaningful = _get_field(raw_report, "is_meaningful")
+    raw_reason = _get_field(raw_report, "reason")
+    if raw_meaningful is False:
+        reason_text = str(raw_reason or "raw evaluation report marked is_meaningful=False")
+        if any(tok in reason_text.lower() for tok in ("class", "target", "label", "example of")):
+            metrics.reason_insufficient_classes = reason_text
+        else:
+            metrics.reason_empty = reason_text
 
-    # Single-label: sentiment, response.
-    # These have a ``metrics`` dict or similar attributes.
-    if hasattr(raw_report, "accuracy"):
-        metrics.accuracy = float(raw_report.accuracy) if raw_report.accuracy is not None else None
-    if hasattr(raw_report, "macro_f1"):
-        metrics.macro_f1 = float(raw_report.macro_f1) if raw_report.macro_f1 is not None else None
-    if hasattr(raw_report, "micro_f1"):
-        metrics.micro_f1 = float(raw_report.micro_f1) if raw_report.micro_f1 is not None else None
-    if hasattr(raw_report, "weighted_f1"):
-        metrics.weighted_f1 = float(raw_report.weighted_f1) if raw_report.weighted_f1 is not None else None
-    if hasattr(raw_report, "precision"):
-        metrics.precision = float(raw_report.precision) if raw_report.precision is not None else None
-    if hasattr(raw_report, "recall"):
-        metrics.recall = float(raw_report.recall) if raw_report.recall is not None else None
-    if hasattr(raw_report, "n_samples") or hasattr(raw_report, "n_documents"):
-        n = getattr(raw_report, "n_samples", getattr(raw_report, "n_documents", None))
-        if n is not None:
-            metrics.n_samples = int(n)
+    # Sample count.
+    n = _get_field(raw_report, "n_samples")
+    if n is None:
+        n = _get_field(raw_report, "n_documents")
+    if n is not None:
+        metrics.n_samples = int(n)
 
-    # Multi-label: emotion, issue.
+    threshold = _get_field(raw_report, "threshold")
+    if threshold is not None:
+        metrics.threshold = float(threshold)
+
     if is_multilabel:
-        if hasattr(raw_report, "per_label") and isinstance(getattr(raw_report, "per_label"), dict):
-            for label, vals in raw_report.per_label.items():
-                if label not in metrics.per_label:
-                    metrics.per_label[label] = {}
-                if isinstance(vals, dict):
-                    for k, v in vals.items():
-                        if v is not None:
-                            metrics.per_label[label][k] = float(v)
-        if hasattr(raw_report, "macro_f1"):
-            metrics.macro_f1 = float(raw_report.macro_f1) if raw_report.macro_f1 is not None else None
-        if hasattr(raw_report, "micro_f1"):
-            metrics.micro_f1 = float(raw_report.micro_f1) if raw_report.micro_f1 is not None else None
+        # Multi-label tasks (emotion, issue):
+        # Do NOT populate single-label accuracy, weighted_f1, per_class, or confusion_matrix.
+        macro_f1 = _get_field(raw_report, "macro_f1")
+        micro_f1 = _get_field(raw_report, "micro_f1")
+        subset_acc = _get_field(raw_report, "subset_accuracy")
+        h_loss = _get_field(raw_report, "hamming_loss")
+        h_acc = _get_field(raw_report, "hamming_accuracy")
+        prec = _get_field(raw_report, "precision")
+        if prec is None:
+            prec = _get_field(raw_report, "macro_precision")
+        rec = _get_field(raw_report, "recall")
+        if rec is None:
+            rec = _get_field(raw_report, "macro_recall")
 
-    # Binary: solution detection.
-    if not is_multilabel and len(labels) == 2:
-        if hasattr(raw_report, "f1_score"):
-            metrics.macro_f1 = float(raw_report.f1_score) if raw_report.f1_score is not None else None
-        if hasattr(raw_report, "precision"):
-            metrics.precision = float(raw_report.precision) if raw_report.precision is not None else None
-        if hasattr(raw_report, "recall"):
-            metrics.recall = float(raw_report.recall) if raw_report.recall is not None else None
+        metrics.macro_f1 = float(macro_f1) if macro_f1 is not None else None
+        metrics.micro_f1 = float(micro_f1) if micro_f1 is not None else None
+        metrics.subset_accuracy = float(subset_acc) if subset_acc is not None else None
+        metrics.hamming_loss = float(h_loss) if h_loss is not None else None
+        metrics.hamming_accuracy = float(h_acc) if h_acc is not None else None
+        metrics.precision = float(prec) if prec is not None else None
+        metrics.recall = float(rec) if rec is not None else None
 
-    # Collect any reason fields.
+        raw_per_label = _get_field(raw_report, "per_label")
+        if isinstance(raw_per_label, dict) and raw_per_label:
+            for label, vals in raw_per_label.items():
+                if not isinstance(vals, dict):
+                    continue
+                metrics.per_label[label] = {
+                    k: (int(v) if k == "support" and v is not None else float(v) if isinstance(v, (int, float)) else v)
+                    for k, v in vals.items()
+                }
+        else:
+            pl_f1 = _get_field(raw_report, "per_label_f1") or {}
+            pl_prec = _get_field(raw_report, "per_label_precision") or {}
+            pl_rec = _get_field(raw_report, "per_label_recall") or {}
+            pl_sup = _get_field(raw_report, "per_label_support") or {}
+            if isinstance(pl_f1, dict) or isinstance(pl_sup, dict):
+                ordered_labels = list(labels) + [
+                    k for k in (list(pl_sup.keys()) + list(pl_f1.keys()))
+                    if k not in labels
+                ]
+                seen = set()
+                for lbl in ordered_labels:
+                    if lbl in seen:
+                        continue
+                    seen.add(lbl)
+                    if lbl in pl_f1 or lbl in pl_sup or lbl in pl_prec or lbl in pl_rec:
+                        sup_val = pl_sup.get(lbl)
+                        metrics.per_label[lbl] = {
+                            "precision": float(pl_prec[lbl]) if pl_prec.get(lbl) is not None else None,
+                            "recall": float(pl_rec[lbl]) if pl_rec.get(lbl) is not None else None,
+                            "f1": float(pl_f1[lbl]) if pl_f1.get(lbl) is not None else None,
+                            "support": int(sup_val) if sup_val is not None else 0,
+                        }
+    else:
+        # Single-label & binary tasks (sentiment, response, solution):
+        # Do NOT populate multi-label subset_accuracy, hamming_loss, hamming_accuracy, or per_label.
+        acc = _get_field(raw_report, "accuracy")
+        macro_f1 = _get_field(raw_report, "macro_f1")
+        if macro_f1 is None:
+            macro_f1 = _get_field(raw_report, "f1_score")
+        if macro_f1 is None and len(labels) == 2:
+            macro_f1 = _get_field(raw_report, "f1")
+        micro_f1 = _get_field(raw_report, "micro_f1")
+        weighted_f1 = _get_field(raw_report, "weighted_f1")
+        prec = _get_field(raw_report, "precision")
+        if prec is None:
+            prec = _get_field(raw_report, "macro_precision")
+        rec = _get_field(raw_report, "recall")
+        if rec is None:
+            rec = _get_field(raw_report, "macro_recall")
+
+        metrics.accuracy = float(acc) if acc is not None else None
+        metrics.macro_f1 = float(macro_f1) if macro_f1 is not None else None
+        metrics.micro_f1 = float(micro_f1) if micro_f1 is not None else None
+        metrics.weighted_f1 = float(weighted_f1) if weighted_f1 is not None else None
+        metrics.precision = float(prec) if prec is not None else None
+        metrics.recall = float(rec) if rec is not None else None
+
+        raw_per_class = _get_field(raw_report, "per_class")
+        if isinstance(raw_per_class, dict) and raw_per_class:
+            for cls_name, vals in raw_per_class.items():
+                if not isinstance(vals, dict):
+                    continue
+                metrics.per_class[cls_name] = {
+                    k: (int(v) if k == "support" and v is not None else float(v) if isinstance(v, (int, float)) else v)
+                    for k, v in vals.items()
+                }
+        else:
+            pc_f1 = _get_field(raw_report, "per_class_f1") or {}
+            pc_prec = _get_field(raw_report, "per_class_precision") or {}
+            pc_rec = _get_field(raw_report, "per_class_recall") or {}
+            pc_sup = _get_field(raw_report, "per_class_support") or {}
+            if isinstance(pc_f1, dict) or isinstance(pc_sup, dict):
+                class_order = _get_field(raw_report, "class_order") or list(labels)
+                ordered_classes = list(class_order) + [
+                    k for k in (list(pc_sup.keys()) + list(pc_f1.keys()))
+                    if k not in class_order
+                ]
+                seen = set()
+                for cls_name in ordered_classes:
+                    if cls_name in seen:
+                        continue
+                    seen.add(cls_name)
+                    if cls_name in pc_f1 or cls_name in pc_sup or cls_name in pc_prec or cls_name in pc_rec:
+                        sup_val = pc_sup.get(cls_name)
+                        metrics.per_class[cls_name] = {
+                            "precision": float(pc_prec[cls_name]) if pc_prec.get(cls_name) is not None else None,
+                            "recall": float(pc_rec[cls_name]) if pc_rec.get(cls_name) is not None else None,
+                            "f1": float(pc_f1[cls_name]) if pc_f1.get(cls_name) is not None else None,
+                            "support": int(sup_val) if sup_val is not None else 0,
+                        }
+
+        cm = _get_field(raw_report, "confusion_matrix")
+        if cm is not None:
+            metrics.confusion_matrix = [list(map(int, row)) for row in cm]
+            cm_labels = (
+                _get_field(raw_report, "confusion_matrix_labels")
+                or _get_field(raw_report, "class_order")
+                or list(labels)
+            )
+            metrics.confusion_matrix_labels = [str(l) for l in cm_labels]
+
+    # Collect any explicit reason fields.
     for attr in ("reason_empty", "reason_insufficient_classes",
                  "reason_invalid_shape", "reason_label_mismatch"):
-        if hasattr(raw_report, attr):
-            val = getattr(raw_report, attr)
+        if _has_field(raw_report, attr):
+            val = _get_field(raw_report, attr)
             if val:
                 setattr(metrics, attr, str(val))
 
@@ -206,13 +323,15 @@ def _extract_metrics(
 
 def _collect_warnings(report: Any, out: List[str]) -> None:
     """Pull warning strings from a task-specific report into the unified list."""
-    if hasattr(report, "warnings") and isinstance(report.warnings, list):
-        for w in report.warnings:
+    warnings_list = _get_field(report, "warnings")
+    if isinstance(warnings_list, list):
+        for w in warnings_list:
             if w and w not in out:
                 out.append(str(w))
-    if hasattr(report, "warning") and isinstance(report.warning, str):
-        if report.warning and report.warning not in out:
-            out.append(report.warning)
+    single_warning = _get_field(report, "warning")
+    if isinstance(single_warning, str):
+        if single_warning and single_warning not in out:
+            out.append(single_warning)
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,240 @@
+:root {
+  color-scheme: dark;
+  /* Spacing scale (strict 4px base grid) */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 144px;
+
+  /* Type scale (1.2 minor third for refined product UI) */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.125rem;
+  --text-display-s: 1.375rem;
+  --text-display: 1.75rem;
+  --text-section: 1.15rem;
+  --text-title: 0.975rem;
+  --text-lead: 0.95rem;
+
+  /* Motion tokens (custom ease-out curves, zero bounce overshoot, GPU-composited) */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 130ms;
+  --dur-short: 240ms;
+  --dur-med: 380ms;
+  --dur-long: 620ms;
+
+  /* Layout & layers */
+  --container: 1480px;
+  --gutter: 32px;
+  --gap-columns: 24px;
+  --section-gap-s: 48px;
+  --section-gap: 64px;
+  --section-gap-l: 96px;
+  --rail-w: 204px;
+  --topbar-h: 64px;
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+  --z-modal: 450;
+  --z-toast: 520;
+  --z-tooltip: 600;
+
+  /* Hallmark Dusk core surfaces (midnight indigo-graphite, subtle elevation steps) */
+  --color-paper: oklch(15.5% 0.015 268);
+  --color-paper-2: oklch(19.5% 0.017 268);
+  --color-paper-3: oklch(24% 0.019 268);
+  --color-inset: oklch(13% 0.014 268);
+  --color-surface: oklch(20.5% 0.017 268 / 0.82);
+  --color-surface-solid: oklch(20% 0.017 268);
+  --color-surface-hover: oklch(24.5% 0.019 268);
+
+  /* Dusk ink hierarchy (4 verified WCAG AA/AAA tiers) */
+  --color-ink: oklch(96.5% 0.006 75);
+  --color-ink-2: oklch(84% 0.012 262);
+  --color-muted: oklch(71% 0.018 262);
+  --color-subtle: oklch(62% 0.018 262);
+
+  /* Dusk edges & glass highlights */
+  --color-rule: oklch(29% 0.018 266);
+  --color-rule-2: oklch(38% 0.022 266);
+  --color-light: oklch(100% 0 0);
+  --color-shade: oklch(8% 0.022 268);
+  --glass: oklch(20% 0.018 268 / 0.72);
+  --glass-strong: oklch(18% 0.018 268 / 0.88);
+  --glass-blur: 20px;
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.11), inset 0 0 0 1px oklch(100% 0 0 / 0.06);
+  --shadow-card: inset 0 1px 0 oklch(100% 0 0 / 0.09), 0 0 0 1px oklch(100% 0 0 / 0.06), 0 22px 44px -24px oklch(6% 0.025 268 / 0.78);
+  --shadow-float: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 0 0 1px oklch(100% 0 0 / 0.10), 0 28px 64px -18px oklch(4% 0.025 268 / 0.88);
+  --backdrop-scrim: oklch(8% 0.020 268 / 0.68);
+
+  /* Dusk primary & secondary signals (periwinkle + warm apricot) */
+  --color-accent: oklch(76% 0.115 274);
+  --color-accent-ink: oklch(16% 0.032 274);
+  --color-accent-hi: oklch(83% 0.095 274);
+  --color-accent-deep: oklch(54% 0.145 274);
+  --color-accent-soft: oklch(76% 0.115 274 / 0.15);
+  --color-accent-border: oklch(76% 0.115 274 / 0.36);
+  --color-focus: oklch(82% 0.11 274);
+  --color-accent-2: oklch(83% 0.105 64);
+  --color-accent-2-soft: oklch(83% 0.105 64 / 0.15);
+  --color-accent-2-border: oklch(83% 0.105 64 / 0.38);
+  --color-dusk: oklch(74% 0.12 332);
+
+  /* Harmonized dark-mode semantic tokens (all >= 4.5:1 text contrast on dark cards) */
+  --color-success: oklch(76% 0.125 162);
+  --color-positive: oklch(76% 0.125 162);
+  --color-positive-soft: oklch(76% 0.125 162 / 0.15);
+  --color-positive-border: oklch(76% 0.125 162 / 0.35);
+  --color-error: oklch(73% 0.145 22);
+  --color-negative: oklch(73% 0.145 22);
+  --color-negative-soft: oklch(73% 0.145 22 / 0.16);
+  --color-negative-border: oklch(73% 0.145 22 / 0.36);
+  --color-warning: oklch(83% 0.105 64);
+  --color-warning-soft: oklch(83% 0.105 64 / 0.15);
+  --color-warning-border: oklch(83% 0.105 64 / 0.36);
+  --color-info: oklch(77% 0.105 232);
+  --color-info-soft: oklch(77% 0.105 232 / 0.15);
+  --color-info-border: oklch(77% 0.105 232 / 0.35);
+  --color-neutral-bar: oklch(68% 0.020 262);
+  --color-track: oklch(28% 0.018 268);
+  --color-series-val: oklch(58% 0.032 264);
+
+  /* Canonical 6-class community response palette (exact fixed order) */
+  --color-role-agreement: oklch(76% 0.115 274);
+  --color-role-experience: oklch(75% 0.110 302);
+  --color-role-opinion: oklch(70% 0.028 258);
+  --color-role-advice: oklch(76% 0.105 204);
+  --color-role-solution: oklch(76% 0.125 162);
+  --color-role-counterargument: oklch(74% 0.135 18);
+
+  /* Multi-label emotion series */
+  --color-em-gratitude: oklch(76% 0.125 162);
+  --color-em-hope: oklch(76% 0.115 274);
+  --color-em-confidence: oklch(76% 0.105 204);
+  --color-em-curiosity: oklch(75% 0.095 232);
+  --color-em-stress: oklch(83% 0.105 64);
+  --color-em-frustration: oklch(74% 0.135 18);
+
+  /* Confusion matrix cell intensity tokens */
+  --color-cm-diag-1: oklch(76% 0.125 162 / 0.16);
+  --color-cm-diag-2: oklch(76% 0.125 162 / 0.28);
+  --color-cm-diag-3: oklch(76% 0.125 162 / 0.42);
+  --color-cm-err-1: oklch(73% 0.145 22 / 0.18);
+  --color-cm-err-2: oklch(73% 0.145 22 / 0.34);
+
+  /* Dusk Bone well tokens (kept for light-theme reference) */
+  --color-day-ink: oklch(21% 0.020 268);
+  --color-day-muted: oklch(42% 0.020 266);
+  --color-fog: oklch(94% 0.012 70);
+  --color-well: oklch(95.5% 0.008 75);
+  --color-well-2: oklch(92% 0.010 75);
+  --color-well-ink: oklch(21% 0.016 268);
+  --color-well-muted: oklch(44% 0.018 265);
+  --color-well-rule: oklch(87.5% 0.009 75);
+  --color-card: oklch(99.5% 0.003 75);
+
+  /* Offline-safe modern geometric/grotesk sans + crisp tabular mono */
+  --font-display: "Wix Madefor Display", "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Wix Madefor Text", "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-outlier: "Cascadia Code", "Consolas", "SFMono-Regular", ui-monospace, monospace;
+
+  /* Concentric rounded geometry (Dusk modern studio) */
+  --radius-card: 16px;
+  --radius-inner: 10px;
+  --radius-sm: 8px;
+  --radius-bar: 4px;
+  --radius-circle: 50%;
+  --radius-pill: 999px;
+  --rule-hair: 1px;
+  --tracking-display: -0.022em;
+  --display-weight: 500;
+}
+
+/* Daylight Bone Mode (Dusk's native warm alabaster + pure white layered studio) */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-paper: oklch(96% 0.006 80);
+  --color-paper-2: oklch(92.5% 0.008 80);
+  --color-paper-3: oklch(88.5% 0.010 80);
+  --color-inset: oklch(93.5% 0.007 80);
+  --color-surface: oklch(99.5% 0.002 80 / 0.92);
+  --color-surface-solid: oklch(99.5% 0.002 80);
+  --color-surface-hover: oklch(95% 0.008 268);
+
+  --color-ink: oklch(19% 0.022 268);
+  --color-ink-2: oklch(34% 0.020 266);
+  --color-muted: oklch(45% 0.018 264);
+  --color-subtle: oklch(53% 0.016 264);
+
+  --color-rule: oklch(87% 0.010 260);
+  --color-rule-2: oklch(76% 0.014 260);
+  --glass: oklch(99.5% 0.002 80 / 0.84);
+  --glass-strong: oklch(99.5% 0.002 80 / 0.96);
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.9), 0 0 0 1px oklch(18% 0.02 268 / 0.07);
+  --shadow-card: 0 0 0 1px oklch(18% 0.02 268 / 0.06), 0 2px 6px -1px oklch(18% 0.02 268 / 0.05), 0 12px 28px -12px oklch(18% 0.02 268 / 0.08);
+  --shadow-float: 0 0 0 1px oklch(18% 0.02 268 / 0.08), 0 24px 56px -12px oklch(18% 0.02 268 / 0.18);
+  --backdrop-scrim: oklch(16% 0.020 268 / 0.38);
+
+  --color-accent: oklch(48% 0.155 274);
+  --color-accent-ink: oklch(98% 0.004 274);
+  --color-accent-hi: oklch(42% 0.165 274);
+  --color-accent-deep: oklch(38% 0.155 274);
+  --color-accent-soft: oklch(48% 0.155 274 / 0.10);
+  --color-accent-border: oklch(48% 0.155 274 / 0.28);
+  --color-focus: oklch(48% 0.165 274);
+  --color-accent-2: oklch(52% 0.135 58);
+  --color-accent-2-soft: oklch(58% 0.135 64 / 0.12);
+  --color-accent-2-border: oklch(52% 0.135 58 / 0.32);
+
+  --color-success: oklch(42% 0.115 162);
+  --color-positive: oklch(42% 0.115 162);
+  --color-positive-soft: oklch(42% 0.115 162 / 0.11);
+  --color-positive-border: oklch(42% 0.115 162 / 0.30);
+  --color-error: oklch(47% 0.155 22);
+  --color-negative: oklch(47% 0.155 22);
+  --color-negative-soft: oklch(47% 0.155 22 / 0.10);
+  --color-negative-border: oklch(47% 0.155 22 / 0.28);
+  --color-warning: oklch(48% 0.125 60);
+  --color-warning-soft: oklch(68% 0.125 68 / 0.14);
+  --color-warning-border: oklch(48% 0.125 60 / 0.30);
+  --color-info: oklch(44% 0.125 238);
+  --color-info-soft: oklch(44% 0.125 238 / 0.10);
+  --color-info-border: oklch(44% 0.125 238 / 0.28);
+  --color-neutral-bar: oklch(54% 0.024 260);
+  --color-track: oklch(90% 0.008 260);
+  --color-series-val: oklch(62% 0.026 262);
+
+  --color-role-agreement: oklch(48% 0.145 274);
+  --color-role-experience: oklch(47% 0.125 302);
+  --color-role-opinion: oklch(48% 0.028 258);
+  --color-role-advice: oklch(43% 0.115 204);
+  --color-role-solution: oklch(42% 0.115 162);
+  --color-role-counterargument: oklch(48% 0.145 18);
+
+  --color-em-gratitude: oklch(42% 0.115 162);
+  --color-em-hope: oklch(48% 0.145 274);
+  --color-em-confidence: oklch(43% 0.115 204);
+  --color-em-curiosity: oklch(46% 0.115 236);
+  --color-em-stress: oklch(50% 0.130 60);
+  --color-em-frustration: oklch(48% 0.145 18);
+
+  --color-cm-diag-1: oklch(42% 0.115 162 / 0.12);
+  --color-cm-diag-2: oklch(42% 0.115 162 / 0.22);
+  --color-cm-diag-3: oklch(42% 0.115 162 / 0.34);
+  --color-cm-err-1: oklch(47% 0.155 22 / 0.12);
+  --color-cm-err-2: oklch(47% 0.155 22 / 0.24);
+}

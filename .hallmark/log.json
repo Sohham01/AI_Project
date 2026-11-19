@@ -1,0 +1,44 @@
+[
+ {
+  "theme": "dusk",
+  "prompt": "accessible-visual-community-intelligence",
+  "genre": "modern-minimal",
+  "scope": "app",
+  "dealt": "3/3",
+  "seed": "accessible-visual-community-intelligence-980b·a2543c58·2026-11-19·r0",
+  "axes": {
+   "value": "dark",
+   "type": "grotesk-sans",
+   "temp": "cool"
+  },
+  "finishReview": {
+   "reviewer": "subagent",
+   "findings": 8,
+   "resolved": 8,
+   "gap": "none"
+  },
+  "date": "2026-11-19",
+  "mode": "build"
+ },
+ {
+  "date": "2026-11-19",
+  "prompt": "Reddit Community Intelligence (RCI) multilingual community research workbench full Hallmark redesign",
+  "mode": "redesign",
+  "depth": "full",
+  "scope": "app",
+  "genre": "editorial",
+  "theme": "Almanac",
+  "slug": "almanac",
+  "dealt": "3/3",
+  "seed": "multilingual-community-research-workbench-4a22·a2543c58·2026-11-19·r0",
+  "axes": "mid/grotesk-sans/chromatic-magenta",
+  "display_face": "Hanken Grotesk",
+  "accent_hue": 350,
+  "shape": "app screen",
+  "signature": "five-stage issue-to-evidence register + split discussion preview",
+  "fingerprint": "sidebar-rail/sheet-ledger/split-workbench/two-rule/tabular-mono/dark-ink-provenance",
+  "before": "56 FAIL, 172 REFLEX, 8 WARN",
+  "after": "0 FAIL, 0 REFLEX, 0 WARN",
+  "finish_review": "subagent · 8 findings · 8 resolved"
+ }
+]

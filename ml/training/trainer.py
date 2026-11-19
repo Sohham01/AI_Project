@@ -358,11 +358,23 @@ def records_to_annotations(
         from app.services.nlp.solution_detection.models.annotation import (
             SolutionAnnotation,
         )
+        from app.services.nlp.solution_detection.models.labels import (
+            label_to_bool,
+            parse_bool_cell,
+        )
+
+        def _parse_solution_target(raw_label: Any, doc_id: Optional[str]) -> bool:
+            if isinstance(raw_label, str):
+                as_canonical = label_to_bool(raw_label)
+                if as_canonical is not None:
+                    return as_canonical
+            return parse_bool_cell(raw_label, doc_id)
+
         return [
             SolutionAnnotation(
                 document_id=r.document_id,
                 text=r.text,
-                is_solution=(r.label.strip().lower() in {"true", "1", "yes"}),
+                is_solution=_parse_solution_target(r.label, r.document_id),
                 solution_type=r.metadata.get("solution_type"),
                 post_id=r.post_id,
                 comment_id=r.comment_id,
@@ -871,6 +883,6 @@ def _default_label_options(task: TaskType) -> List[str]:
             "solution",
             "counterargument",
         ],
-        TaskType.SOLUTION: ["true", "false"],
+        TaskType.SOLUTION: ["not_solution", "solution"],
     }
     return mapping.get(task, ["label_a", "label_b", "label_c"])

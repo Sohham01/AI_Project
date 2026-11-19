@@ -69,15 +69,33 @@ def _compute_singlelabel_metrics(
 ) -> ClassificationMetricSet:
     """Metrics for mutually exclusive single-label classification."""
     # Flatten to 1-D string arrays, handling None/missing.
-    true_series = _flatten_single(y_true, labels)
-    pred_series = _flatten_single(y_pred, labels)
+    raw_true = _flatten_single(y_true, labels)
+    raw_pred = _flatten_single(y_pred, labels)
 
-    if len(true_series) == 0:
+    if len(raw_true) != len(raw_pred):
+        result.reason_invalid_shape = (
+            f"y_true length ({len(raw_true)}) != y_pred length ({len(raw_pred)})"
+        )
+        return result
+
+    # Keep only rows with a non-null gold label; abstained (None) predictions on
+    # valid gold rows are retained as misses via a sentinel outside `labels`.
+    valid_pairs = [
+        (t, "__abstained__" if p is None else p)
+        for t, p in zip(raw_true, raw_pred)
+        if t is not None and str(t).strip() != ""
+    ]
+
+    if len(valid_pairs) == 0:
         result.reason_empty = "no valid labels after flattening"
         return result
 
-    present_labels = sorted(set(true_series) | set(pred_series))
-    if len(present_labels) < 2:
+    true_series = [t for t, _ in valid_pairs]
+    pred_series = [p for _, p in valid_pairs]
+
+    present_true = sorted(set(true_series))
+    present_labels = sorted(set(true_series) | {p for p in pred_series if p != "__abstained__"})
+    if len(present_true) < 2 and len(present_labels) < 2:
         result.reason_insufficient_classes = (
             f"only {len(present_labels)} class(es) present in evaluation data; "
             f"metrics requiring class diversity are not meaningful"
@@ -92,27 +110,31 @@ def _compute_singlelabel_metrics(
     # Accuracy.
     result.accuracy = float(accuracy_score(true_series, pred_series, normalize=True))
 
+    # Active labels for macro/micro/weighted averaging: never let an empty class
+    # (0 gold, 0 predicted) silently inflate macro averages.
+    active_labels = [l for l in labels if l in present_labels] or present_labels
+
     # F1 variants.
     result.macro_f1 = float(
-        f1_score(true_series, pred_series, labels=labels, average="macro", zero_division=0)
+        f1_score(true_series, pred_series, labels=active_labels, average="macro", zero_division=0)
     )
     result.micro_f1 = float(
-        f1_score(true_series, pred_series, labels=labels, average="micro", zero_division=0)
+        f1_score(true_series, pred_series, labels=active_labels, average="micro", zero_division=0)
     )
     result.weighted_f1 = float(
         f1_score(
-            true_series, pred_series, labels=labels, average="weighted", zero_division=0
+            true_series, pred_series, labels=active_labels, average="weighted", zero_division=0
         )
     )
 
     # Precision/recall (macro).
     result.precision = float(
         precision_score(
-            true_series, pred_series, labels=labels, average="macro", zero_division=0
+            true_series, pred_series, labels=active_labels, average="macro", zero_division=0
         )
     )
     result.recall = float(
-        recall_score(true_series, pred_series, labels=labels, average="macro", zero_division=0)
+        recall_score(true_series, pred_series, labels=active_labels, average="macro", zero_division=0)
     )
 
     # Per-class.
@@ -120,34 +142,41 @@ def _compute_singlelabel_metrics(
     for label in labels:
         yt = [1 if t == label else 0 for t in true_series]
         yp = [1 if p == label else 0 for p in pred_series]
+        support = sum(1 for t in yt if t == 1)
+        predicted_pos = sum(1 for p in yp if p == 1)
+        if support == 0 and predicted_pos == 0:
+            per_class[label] = {
+                "precision": None,
+                "recall": None,
+                "f1": None,
+                "support": 0,
+            }
+            continue
         tp = sum(1 for t, p in zip(yt, yp) if t == 1 and p == 1)
         fp = sum(1 for t, p in zip(yt, yp) if t == 0 and p == 1)
         fn = sum(1 for t, p in zip(yt, yp) if t == 1 and p == 0)
-        tn = sum(1 for t, p in zip(yt, yp) if t == 0 and p == 0)
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-        recall_l = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        precision = round(tp / (tp + fp), 6) if (tp + fp) > 0 else (0.0 if support > 0 else None)
+        recall_l = round(tp / (tp + fn), 6) if (tp + fn) > 0 else (0.0 if predicted_pos == 0 and support > 0 else None)
         f1_l = (
-            2 * precision * recall_l / (precision + recall_l)
-            if (precision + recall_l) > 0
-            else 0.0
+            round(2 * precision * recall_l / (precision + recall_l), 6)
+            if (precision is not None and recall_l is not None and (precision + recall_l) > 0)
+            else (0.0 if support > 0 or predicted_pos > 0 else None)
         )
-        support = sum(1 for t in yt if t == 1)
         per_class[label] = {
-            "precision": round(precision, 6),
-            "recall": round(recall_l, 6),
-            "f1": round(f1_l, 6),
+            "precision": precision,
+            "recall": recall_l,
+            "f1": f1_l,
             "support": support,
         }
     result.per_class = per_class
 
-    # Confusion matrix (only for labels present in data).
+    # Confusion matrix across the ordered label vocabulary present in gold or predictions.
+    cm_labels = [l for l in labels if l in present_labels] or list(labels)
     cm = confusion_matrix(
-        true_series, pred_series, labels=[l for l in labels if l in set(true_series)]
+        true_series, pred_series, labels=cm_labels
     )
     result.confusion_matrix = cm.tolist()
-    result.confusion_matrix_labels = [
-        l for l in labels if l in set(true_series)
-    ]
+    result.confusion_matrix_labels = cm_labels
 
     return result
 
@@ -165,6 +194,17 @@ def _compute_multilabel_metrics(
             f"expected 2-D arrays for multi-label, got y_true.shape={y_true.shape}, "
             f"y_pred.shape={y_pred.shape}"
         )
+        return result
+
+    if y_true.shape[0] != y_pred.shape[0]:
+        result.reason_invalid_shape = (
+            f"sample count mismatch: y_true has {y_true.shape[0]} rows, "
+            f"y_pred has {y_pred.shape[0]} rows"
+        )
+        return result
+
+    if y_true.shape[1] == 0 or len(labels) == 0:
+        result.reason_empty = "no labels provided for multi-label evaluation"
         return result
 
     if y_true.shape[1] != len(labels):
@@ -361,12 +401,12 @@ class ClassificationMetricSet:
             out["hamming_accuracy"] = round(self.hamming_accuracy, 6)
         if self.per_class:
             out["per_class"] = {
-                k: {kk: vv for kk, vv in v.items() if vv is not None}
+                k: dict(v)
                 for k, v in self.per_class.items()
             }
         if self.per_label:
             out["per_label"] = {
-                k: {kk: vv for kk, vv in v.items() if vv is not None}
+                k: dict(v)
                 for k, v in self.per_label.items()
             }
         if self.confusion_matrix is not None:

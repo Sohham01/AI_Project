@@ -373,10 +373,12 @@ def _response_to_record(a) -> TrainingRecord:
 
 
 def _solution_to_record(a) -> TrainingRecord:
+    from app.services.nlp.solution_detection.models.labels import target_label
+
     return TrainingRecord(
         document_id=a.document_id,
         text=a.text,
-        label=str(a.is_solution),
+        label=target_label(bool(a.is_solution)),
         post_id=a.post_id,
         comment_id=a.comment_id,
         language=a.language,
