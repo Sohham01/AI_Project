@@ -222,3 +222,6 @@ data/exports/
 *.bak
 *.orig
 *.rej
+
+# Design / tooling metadata
+.hallmark/
