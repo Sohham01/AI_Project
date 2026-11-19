@@ -11,39 +11,5 @@
       "destination": "/app/",
       "permanent": false
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/app",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/app/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/health",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/health/db",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/docs",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/openapi.json",
-      "destination": "/api/index.py"
-    }
   ]
 }
