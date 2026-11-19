@@ -1,0 +1,1008 @@
+{
+  "synthetic_only": true,
+  "dataset_version": "1.0.0",
+  "tasks": {
+    "sentiment": {
+      "synthetic_only": true,
+      "model_name": "tfidf_logistic",
+      "model_version": "v1",
+      "labels": [
+        "negative",
+        "neutral",
+        "positive"
+      ],
+      "dataset_records": 1280,
+      "label_counts": {
+        "negative": 339,
+        "neutral": 298,
+        "positive": 643
+      },
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 896,
+        "validation": 192,
+        "test": 192,
+        "stratify_used": false
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 896,
+        "validation_n": 192,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "sentiment",
+        "model_name": "tfidf_logistic",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "negative",
+          "neutral",
+          "positive"
+        ],
+        "metrics": {
+          "labels": [
+            "negative",
+            "neutral",
+            "positive"
+          ],
+          "multilabel": false,
+          "n_samples": 192,
+          "n_labels": 3,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "micro_f1": 1.0,
+          "weighted_f1": null,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {},
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "test": {
+        "task_name": "sentiment",
+        "model_name": "tfidf_logistic",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "negative",
+          "neutral",
+          "positive"
+        ],
+        "metrics": {
+          "labels": [
+            "negative",
+            "neutral",
+            "positive"
+          ],
+          "multilabel": false,
+          "n_samples": 192,
+          "n_labels": 3,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "micro_f1": 1.0,
+          "weighted_f1": null,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {
+            "negative": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            },
+            "neutral": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 46
+            },
+            "positive": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 95
+            }
+          },
+          "per_label": {},
+          "confusion_matrix": [
+            [
+              51,
+              0,
+              0
+            ],
+            [
+              0,
+              46,
+              0
+            ],
+            [
+              0,
+              0,
+              95
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "negative",
+            "neutral",
+            "positive"
+          ],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "artifact_path": "ml/artifacts/demo_synthetic/sentiment__tfidf_logistic__v1.joblib",
+      "registry_id": "c6836421c6c6866e",
+      "warnings": [
+        "stratification disabled: group-aware split keeps whole groups together"
+      ],
+      "inference_scope": "in-sample predictions for synthetic demo display; evaluation reports use held-out, thread-grouped splits"
+    },
+    "emotion": {
+      "synthetic_only": true,
+      "model_name": "tfidf_logistic_multilabel",
+      "model_version": "v1",
+      "labels": [
+        "confidence",
+        "curiosity",
+        "frustration",
+        "gratitude",
+        "hope",
+        "stress"
+      ],
+      "dataset_records": 1280,
+      "label_counts": {
+        "confidence": 112,
+        "curiosity": 298,
+        "frustration": 339,
+        "gratitude": 643,
+        "hope": 531,
+        "stress": 339
+      },
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 896,
+        "validation": 192,
+        "test": 192,
+        "stratify_used": false
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 896,
+        "validation_n": 192,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "emotion",
+        "model_name": "tfidf_logistic_multilabel",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "confidence",
+          "curiosity",
+          "frustration",
+          "gratitude",
+          "hope",
+          "stress"
+        ],
+        "metrics": {
+          "labels": [
+            "confidence",
+            "curiosity",
+            "frustration",
+            "gratitude",
+            "hope",
+            "stress"
+          ],
+          "multilabel": true,
+          "n_samples": 192,
+          "n_labels": 6,
+          "accuracy": null,
+          "macro_f1": 0.995726,
+          "micro_f1": 0.998536,
+          "weighted_f1": null,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {},
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [
+          "no document in the evaluation set is annotated with zero emotions; the model's ability to correctly emit an empty emotion set is therefore untested, and hamming accuracy is optimistic"
+        ],
+        "timestamp": null
+      },
+      "test": {
+        "task_name": "emotion",
+        "model_name": "tfidf_logistic_multilabel",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "confidence",
+          "curiosity",
+          "frustration",
+          "gratitude",
+          "hope",
+          "stress"
+        ],
+        "metrics": {
+          "labels": [
+            "confidence",
+            "curiosity",
+            "frustration",
+            "gratitude",
+            "hope",
+            "stress"
+          ],
+          "multilabel": true,
+          "n_samples": 192,
+          "n_labels": 6,
+          "accuracy": null,
+          "macro_f1": 0.985714,
+          "micro_f1": 0.995582,
+          "weighted_f1": null,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {
+            "confidence": {
+              "precision": 0.842105,
+              "recall": 1.0,
+              "f1": 0.914286,
+              "support": 16
+            },
+            "curiosity": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 46
+            },
+            "frustration": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            },
+            "gratitude": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 95
+            },
+            "hope": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 79
+            },
+            "stress": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            }
+          },
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [
+          "no document in the evaluation set is annotated with zero emotions; the model's ability to correctly emit an empty emotion set is therefore untested, and hamming accuracy is optimistic"
+        ],
+        "timestamp": null
+      },
+      "artifact_path": "ml/artifacts/demo_synthetic/emotion__tfidf_logistic_multilabel__v1.joblib",
+      "registry_id": "6c05ea9be2ffd277",
+      "warnings": [
+        "stratification disabled: group-aware split keeps whole groups together"
+      ],
+      "inference_scope": "in-sample predictions for synthetic demo display; evaluation reports use held-out, thread-grouped splits"
+    },
+    "issue": {
+      "synthetic_only": true,
+      "model_name": "tfidf_logistic_multilabel",
+      "model_version": "v1",
+      "labels": [
+        "academic_workload",
+        "administrative_communication",
+        "campus_infrastructure",
+        "curriculum_teaching",
+        "extracurriculars",
+        "financial_concerns",
+        "hostel_facilities",
+        "placements"
+      ],
+      "dataset_records": 1280,
+      "label_counts": {
+        "academic_workload": 160,
+        "administrative_communication": 160,
+        "campus_infrastructure": 160,
+        "curriculum_teaching": 160,
+        "extracurriculars": 160,
+        "financial_concerns": 160,
+        "hostel_facilities": 160,
+        "placements": 160
+      },
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 896,
+        "validation": 192,
+        "test": 192,
+        "stratify_used": false
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 896,
+        "validation_n": 192,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "issue",
+        "model_name": "tfidf_logistic_multilabel",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "academic_workload",
+          "administrative_communication",
+          "campus_infrastructure",
+          "curriculum_teaching",
+          "extracurriculars",
+          "financial_concerns",
+          "hostel_facilities",
+          "placements"
+        ],
+        "metrics": {
+          "labels": [
+            "academic_workload",
+            "administrative_communication",
+            "campus_infrastructure",
+            "curriculum_teaching",
+            "extracurriculars",
+            "financial_concerns",
+            "hostel_facilities",
+            "placements"
+          ],
+          "multilabel": true,
+          "n_samples": 192,
+          "n_labels": 8,
+          "accuracy": null,
+          "macro_f1": 0.534049,
+          "micro_f1": 0.561798,
+          "weighted_f1": null,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {},
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "test": {
+        "task_name": "issue",
+        "model_name": "tfidf_logistic_multilabel",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "academic_workload",
+          "administrative_communication",
+          "campus_infrastructure",
+          "curriculum_teaching",
+          "extracurriculars",
+          "financial_concerns",
+          "hostel_facilities",
+          "placements"
+        ],
+        "metrics": {
+          "labels": [
+            "academic_workload",
+            "administrative_communication",
+            "campus_infrastructure",
+            "curriculum_teaching",
+            "extracurriculars",
+            "financial_concerns",
+            "hostel_facilities",
+            "placements"
+          ],
+          "multilabel": true,
+          "n_samples": 192,
+          "n_labels": 8,
+          "accuracy": null,
+          "macro_f1": 0.585376,
+          "micro_f1": 0.577778,
+          "weighted_f1": null,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {
+            "academic_workload": {
+              "precision": 1.0,
+              "recall": 0.025,
+              "f1": 0.04878,
+              "support": 40
+            },
+            "administrative_communication": {
+              "precision": 1.0,
+              "recall": 0.45,
+              "f1": 0.62069,
+              "support": 40
+            },
+            "campus_infrastructure": {
+              "precision": 1.0,
+              "recall": 0.75,
+              "f1": 0.857143,
+              "support": 16
+            },
+            "curriculum_teaching": {
+              "precision": 1.0,
+              "recall": 0.375,
+              "f1": 0.545455,
+              "support": 16
+            },
+            "extracurriculars": {
+              "precision": 1.0,
+              "recall": 0.4375,
+              "f1": 0.608696,
+              "support": 32
+            },
+            "financial_concerns": {
+              "precision": 1.0,
+              "recall": 0.75,
+              "f1": 0.857143,
+              "support": 8
+            },
+            "hostel_facilities": {
+              "precision": 1.0,
+              "recall": 0.25,
+              "f1": 0.4,
+              "support": 8
+            },
+            "placements": {
+              "precision": 1.0,
+              "recall": 0.59375,
+              "f1": 0.745098,
+              "support": 32
+            }
+          },
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "artifact_path": "ml/artifacts/demo_synthetic/issue__tfidf_logistic_multilabel__v1.joblib",
+      "registry_id": "36cdf9aeb61cbdbd",
+      "warnings": [
+        "stratification disabled: group-aware split keeps whole groups together"
+      ],
+      "inference_scope": "in-sample predictions for synthetic demo display; evaluation reports use held-out, thread-grouped splits"
+    },
+    "response": {
+      "synthetic_only": true,
+      "model_name": "tfidf_logistic_multiclass",
+      "model_version": "v1",
+      "labels": [
+        "agreement",
+        "personal_experience",
+        "opinion",
+        "advice",
+        "solution",
+        "counterargument"
+      ],
+      "dataset_records": 1280,
+      "label_counts": {
+        "advice": 221,
+        "agreement": 213,
+        "counterargument": 218,
+        "opinion": 213,
+        "personal_experience": 210,
+        "solution": 205
+      },
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 896,
+        "validation": 192,
+        "test": 192,
+        "stratify_used": false
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 896,
+        "validation_n": 192,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "response",
+        "model_name": "tfidf_logistic_multiclass",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "agreement",
+          "personal_experience",
+          "opinion",
+          "advice",
+          "solution",
+          "counterargument"
+        ],
+        "metrics": {
+          "labels": [
+            "agreement",
+            "personal_experience",
+            "opinion",
+            "advice",
+            "solution",
+            "counterargument"
+          ],
+          "multilabel": false,
+          "n_samples": 192,
+          "n_labels": 6,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "micro_f1": 1.0,
+          "weighted_f1": 1.0,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {},
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "test": {
+        "task_name": "response",
+        "model_name": "tfidf_logistic_multiclass",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "agreement",
+          "personal_experience",
+          "opinion",
+          "advice",
+          "solution",
+          "counterargument"
+        ],
+        "metrics": {
+          "labels": [
+            "agreement",
+            "personal_experience",
+            "opinion",
+            "advice",
+            "solution",
+            "counterargument"
+          ],
+          "multilabel": false,
+          "n_samples": 192,
+          "n_labels": 6,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "micro_f1": 1.0,
+          "weighted_f1": 1.0,
+          "precision": null,
+          "recall": null,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {
+            "agreement": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 31
+            },
+            "personal_experience": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 33
+            },
+            "opinion": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 32
+            },
+            "advice": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 36
+            },
+            "solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 29
+            },
+            "counterargument": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 31
+            }
+          },
+          "per_label": {},
+          "confusion_matrix": [
+            [
+              31,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              33,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              32,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              36,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              29,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              31
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "agreement",
+            "personal_experience",
+            "opinion",
+            "advice",
+            "solution",
+            "counterargument"
+          ],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "artifact_path": "ml/artifacts/demo_synthetic/response__tfidf_logistic_multiclass__v1.joblib",
+      "registry_id": "a63d8d9c19f8cd50",
+      "warnings": [
+        "stratification disabled: group-aware split keeps whole groups together"
+      ],
+      "inference_scope": "in-sample predictions for synthetic demo display; evaluation reports use held-out, thread-grouped splits"
+    },
+    "solution": {
+      "synthetic_only": true,
+      "model_name": "tfidf_logistic_binary",
+      "model_version": "v1",
+      "labels": [
+        "not_solution",
+        "solution"
+      ],
+      "dataset_records": 1280,
+      "label_counts": {
+        "False": 854,
+        "True": 426
+      },
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 896,
+        "validation": 192,
+        "test": 192,
+        "stratify_used": false
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 896,
+        "validation_n": 192,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "solution",
+        "model_name": "tfidf_logistic_binary",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "not_solution",
+          "solution"
+        ],
+        "metrics": {
+          "labels": [
+            "not_solution",
+            "solution"
+          ],
+          "multilabel": false,
+          "n_samples": 192,
+          "n_labels": 2,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "micro_f1": null,
+          "weighted_f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {},
+          "per_label": {},
+          "confusion_matrix": null,
+          "confusion_matrix_labels": [],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "test": {
+        "task_name": "solution",
+        "model_name": "tfidf_logistic_binary",
+        "model_version": "v1",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "not_solution",
+          "solution"
+        ],
+        "metrics": {
+          "labels": [
+            "not_solution",
+            "solution"
+          ],
+          "multilabel": false,
+          "n_samples": 192,
+          "n_labels": 2,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "micro_f1": null,
+          "weighted_f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "threshold": null,
+          "subset_accuracy": null,
+          "hamming_loss": null,
+          "hamming_accuracy": null,
+          "per_class": {
+            "not_solution": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0
+            },
+            "solution": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0
+            }
+          },
+          "per_label": {},
+          "confusion_matrix": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "not_solution",
+            "solution"
+          ],
+          "reason_empty": null,
+          "reason_insufficient_classes": null,
+          "reason_invalid_shape": null,
+          "reason_label_mismatch": null
+        },
+        "is_meaningful": true,
+        "data_split_metadata": {
+          "n_train": 896,
+          "n_validation": 192,
+          "n_test": 192,
+          "leakage_detected": false
+        },
+        "warnings": [],
+        "timestamp": null
+      },
+      "artifact_path": "ml/artifacts/demo_synthetic/solution__tfidf_logistic_binary__v1.joblib",
+      "registry_id": "2dfec73f132b8359",
+      "warnings": [
+        "stratification disabled: group-aware split keeps whole groups together"
+      ],
+      "inference_scope": "in-sample predictions for synthetic demo display; evaluation reports use held-out, thread-grouped splits"
+    }
+  }
+}
