@@ -15,7 +15,17 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from app.services.nlp.response_classification.models.labels import RESPONSE_TYPES
+try:
+    from app.services.nlp.response_classification.models.labels import RESPONSE_TYPES
+except ModuleNotFoundError:
+    RESPONSE_TYPES: tuple[str, ...] = (
+        "agreement",
+        "personal_experience",
+        "opinion",
+        "advice",
+        "solution",
+        "counterargument",
+    )
 
 ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = ROOT / "data" / "demo_synthetic"
