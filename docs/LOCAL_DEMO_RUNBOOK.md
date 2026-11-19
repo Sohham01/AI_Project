@@ -2,7 +2,7 @@
 
 ## Scope and provenance
 
-**Reddit Community Intelligence** is served locally by the existing FastAPI application. Its demo endpoints read only generated files from `data/demo_synthetic/` and `ml/artifacts/demo_synthetic/`; they do not use PostgreSQL, contact Reddit, or call external APIs.
+**Reddit Community Intelligence** is served locally by the existing FastAPI application. Its demo endpoints read only generated files from `data/demo_synthetic/` and `ml/artifacts/demo_synthetic_v2/` (with the original pre-audit artifacts preserved untouched in `ml/artifacts/demo_synthetic/`); they do not use PostgreSQL, contact Reddit, or call external APIs.
 
 Persistent banner: **SYNTHETIC DEMO DATA — NOT REAL REDDIT DATA**. Every post, comment, identifier, scenario and label is fabricated. The corpus is not evidence about IIM Sambalpur or any real student community.
 
@@ -99,3 +99,34 @@ The PostgreSQL migration test is excluded because this prototype must not touch 
 - Existing NMF topic terms are bag-of-words output and can be noisy, especially across code-mixed and Devanagari text.
 - No authorized real-data ingestion or real-world model evaluation is included. Any future collection requires appropriate authorization and ethics review.
 - The frontend is not React because dependencies were absent and external package retrieval was not used.
+
+## Deployment (Docker & Vercel)
+
+The repository includes configuration for both **Docker** (full backend + classical ML stack + PostgreSQL) and **Vercel** (zero-config serverless hosting of the Interactive Research Studio and `/api/demo/*` API).
+
+### 1. Docker & Docker Compose (Full Stack)
+
+Run the full FastAPI + scikit-learn + PostgreSQL stack using [Dockerfile](file:///D:/AI_Project/Dockerfile) and [docker-compose.yml](file:///D:/AI_Project/docker-compose.yml):
+
+```powershell
+Set-Location D:\AI_Project
+docker compose up --build
+```
+
+Or build and run the standalone web container without PostgreSQL (the synthetic demo routes do not require a database):
+
+```powershell
+Set-Location D:\AI_Project
+docker build -t rci-app .
+docker run --rm -p 8000:8000 rci-app
+```
+
+Then open <http://127.0.0.1:8000/app/>.
+
+### 2. Vercel (Serverless Web & Demo API)
+
+The repository root includes [vercel.json](file:///D:/AI_Project/vercel.json), [api/index.py](file:///D:/AI_Project/api/index.py), and a slim root [requirements.txt](file:///D:/AI_Project/requirements.txt) (`fastapi` + `pydantic`) tailored for Vercel's Python serverless runtime and 250 MB bundle limit:
+
+1. Import the GitHub repository (`Sohham01/AI_Project`) at <https://vercel.com/new>, or run `vercel --prod` from `D:\AI_Project`.
+2. Keep the Root Directory set to `./` (repository root). No build command or environment variables are required for the synthetic demo.
+3. Visiting `/` automatically redirects to `/app/`, serving the Hallmark Dusk Interactive Research Studio backed by `/api/demo/*` and the bundled `data/demo_synthetic/` and `ml/artifacts/demo_synthetic_v2/` artifacts.

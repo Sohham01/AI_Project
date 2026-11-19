@@ -1,0 +1,27 @@
+# Version control & IDE metadata
+.git
+.gitignore
+.idea
+.vscode
+.hallmark
+
+# Python virtual environments & caches
+.venv
+venv
+backend/.venv
+backend/venv
+**/__pycache__
+**/*.py[cod]
+**/$py.class
+.pytest_cache
+**/.pytest_cache
+
+# Secrets & local environment files
+.env
+.env.*
+backend/.env
+backend/.env.*
+
+# Documentation screenshots & scratch files
+docs/demo_screenshots
+*.log

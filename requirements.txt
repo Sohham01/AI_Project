@@ -1,0 +1,4 @@
+# Slim root dependencies for Vercel serverless deployment (/app/ + /api/demo/*).
+# For the full local/Docker ML + PostgreSQL stack, see backend/requirements.txt.
+fastapi>=0.115.0,<1.0.0
+pydantic>=2.9.0,<3.0.0
