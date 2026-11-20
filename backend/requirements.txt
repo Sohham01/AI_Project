@@ -8,7 +8,7 @@
 # (backend/.venv, Python 3.14).  See docs/IMPLEMENTATION_STATUS_REPORT.md.
 
 # --- Web framework / ASGI server ------------------------------------------
-fastapi==0.141.1
+fastapi==0.163.2
 uvicorn==0.53.0
 
 # --- ORM + migrations ------------------------------------------------------
