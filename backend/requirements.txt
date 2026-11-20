@@ -18,7 +18,7 @@ alembic==1.20.0
 # --- Validation / configuration -------------------------------------------
 pydantic==2.13.5
 pydantic-core==2.46.5
-python-dotenv==1.2.3
+python-dotenv==1.2.4
 
 # --- HTTP (synchronous, used by ingestion providers) ----------------------
 requests==2.34.2
