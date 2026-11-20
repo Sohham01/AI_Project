@@ -35,12 +35,13 @@ jobs:
         run: |
           pytest backend/ --ignore=backend/test_migrations_postgres.py -q
 
-      - name: Verify Vercel serverless entrypoint (api/index.py) & zero-PII guard
+      - name: Verify Vercel serverless entrypoint (api/index.py), security headers & zero-PII/secret guard
         env:
           PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
         run: |
           python - <<'PY'
           import re
+          import subprocess
           from pathlib import Path
           from fastapi.testclient import TestClient
           from api.index import app
@@ -71,12 +72,40 @@ jobs:
           ):
               res = client.get(route)
               assert res.status_code == 200, f"{route} returned {res.status_code}"
+              assert res.headers.get("x-content-type-options") == "nosniff"
+              assert res.headers.get("x-frame-options") == "DENY"
+              assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
+              assert "frame-ancestors 'none'" in res.headers.get("content-security-policy", "")
 
           raw = Path("data/live_corpus/corpus.json").read_text(encoding="utf-8")
           assert not re.search(r"(?<![A-Za-z0-9_])/?u/[A-Za-z0-9_-]{3,24}\b", raw)
           assert not re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", raw)
+
+          # Reject orphaned gitlinks (160000 mode without .gitmodules)
+          tree = subprocess.check_output(["git", "ls-tree", "HEAD"], text=True)
+          gitlinks = [line for line in tree.splitlines() if line.startswith("160000 ")]
+          if gitlinks and not Path(".gitmodules").exists():
+              raise AssertionError(f"Orphaned gitlink(s) without .gitmodules: {gitlinks}")
+
+          # Lightweight secret/private-key guard across tracked text files
+          secret_re = re.compile(
+              r"(ghp_|gho_|github_pat_)[A-Za-z0-9_]{16,}"
+              r"|AKIA[0-9A-Z]{16}"
+              r"|-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----"
+          )
+          tracked = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
+          for rel in tracked:
+              p = Path(rel)
+              if not p.is_file() or p.suffix.lower() in {".png", ".jpg", ".webp", ".joblib", ".pdf"}:
+                  continue
+              if p.name == ".env" or p.name.endswith(".pem") or p.name.endswith(".key"):
+                  raise AssertionError(f"Sensitive file tracked in Git: {rel}")
+              text = p.read_text(encoding="utf-8", errors="ignore")
+              if secret_re.search(text):
+                  raise AssertionError(f"Potential secret token matched in {rel}")
+
           print(
-              f"Verified all 13 Vercel routes + zero-PII guard OK: "
+              f"Verified all 13 Vercel routes + security headers + zero-PII/secret/gitlink guards OK: "
               f"v{data['dataset_version']} ({data['posts']} threads, {data['comments']} comments)."
           )
           PY

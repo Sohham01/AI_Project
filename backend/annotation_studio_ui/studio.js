@@ -393,14 +393,20 @@ function renderQueueList(list) {
     const snippet = (r.original_text || "").replace(/\s+/g, " ").trim().slice(0, 68);
     const noiseSuffix = r.is_automod ? " (bot)" : r.is_gif_only ? " (GIF)" : "";
     const statusLabel = STATUS_LABELS[r.review_status] || r.review_status;
-    btn.innerHTML = `
-      <div class="queue-item-top">
-        <span>r/${r.subreddit}${noiseSuffix}</span>
-        <span class="queue-item-status" data-status="${r.review_status}">${statusLabel}</span>
-      </div>
-      <div class="queue-item-snippet"></div>
-    `;
-    btn.querySelector(".queue-item-snippet").textContent = snippet || "(empty comment)";
+    const topDiv = document.createElement("div");
+    topDiv.className = "queue-item-top";
+    const subSpan = document.createElement("span");
+    subSpan.textContent = `r/${r.subreddit || ""}${noiseSuffix}`;
+    const statusSpan = document.createElement("span");
+    statusSpan.className = "queue-item-status";
+    statusSpan.dataset.status = r.review_status || "";
+    statusSpan.textContent = statusLabel || "";
+    topDiv.append(subSpan, statusSpan);
+
+    const snippetDiv = document.createElement("div");
+    snippetDiv.className = "queue-item-snippet";
+    snippetDiv.textContent = snippet || "(empty comment)";
+    btn.append(topDiv, snippetDiv);
     btn.addEventListener("click", () => {
       state.activeDocId = r.document_id;
       renderActiveView();

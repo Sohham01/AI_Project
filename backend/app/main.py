@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.core.database import Base, ConfigurationError, get_engine
+from app.core.security import SecurityHeadersMiddleware
 from app.api.demo import router as demo_router
 
 # Importing every model module registers its table with ``Base.metadata`` so
@@ -51,6 +52,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+app.add_middleware(SecurityHeadersMiddleware)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.include_router(demo_router, prefix="/api/demo")

@@ -18,11 +18,13 @@ for candidate in (str(BACKEND_DIR), str(REPO_ROOT)):
         sys.path.insert(0, candidate)
 
 from app.api.demo import router as demo_router  # noqa: E402
+from app.core.security import SecurityHeadersMiddleware  # noqa: E402
 
 app = FastAPI(
     title="Reddit Community Intelligence",
     version="1.0.0",
 )
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(demo_router, prefix="/api/demo")
 app.mount("/assets", StaticFiles(directory=STATIC_DIR), name="demo-assets")

@@ -132,6 +132,22 @@ class TestLazyDatabase(unittest.TestCase):
                 self.assertIs(database_mod.engine(), fake_engine)
 
 
+class TestSecurityHeaders(unittest.TestCase):
+    def test_app_emits_defensive_security_headers(self):
+        from fastapi.testclient import TestClient
+        from app.core.security import BASE_SECURITY_HEADERS
+
+        client = TestClient(main.app)
+        for path in ("/health", "/app/", "/api/demo/summary"):
+            res = client.get(path)
+            self.assertEqual(res.status_code, 200, path)
+            for key, expected in BASE_SECURITY_HEADERS.items():
+                self.assertEqual(res.headers.get(key.lower()), expected, f"{path}: {key}")
+            csp = res.headers.get("content-security-policy", "")
+            self.assertIn("default-src 'self'", csp)
+            self.assertIn("frame-ancestors 'none'", csp)
+
+
 class TestMigrationGraph(unittest.TestCase):
     """The Alembic history must stay a single, linear, connected chain."""
 

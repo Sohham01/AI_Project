@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain-adaptive MuRIL v3 and calibrated hybrid NLP pipeline</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #f5f4f0;
+      --color-ink: #1e2235;
+      --color-muted: #4a526e;
+      --color-accent: #4338ca;
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 960px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">ML Pipeline · MuRIL-DAPT v3 Hybrid</p>
+    <h1>Domain-adaptive MuRIL v3 and calibrated hybrid NLP pipeline</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 960 492" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="rci-ml-pipeline-title rci-ml-pipeline-desc">
+        <title id="rci-ml-pipeline-title">Domain-adaptive MuRIL v3 and calibrated hybrid NLP pipeline</title>
+        <desc id="rci-ml-pipeline-desc">Machine learning pipeline combining unsupervised MuRIL-DAPT masked language modeling, attention-pooled MuRIL v3 classifiers, Word+Char TF-IDF ensembles, validation-only hybrid calibration, and 10-cluster NMF topic discovery.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4a526e"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4338ca"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1d6f8a"/></marker>
+        </defs>
+        <rect width="100%" height="100%" fill="#f5f4f0"/>
+        <rect x="256" y="44" width="448" height="240" rx="8" fill="rgba(30,34,53,0.02)" stroke="rgba(30,34,53,0.14)" stroke-width="0.8"/>
+        <rect x="268" y="48" width="176" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="356" y="57" fill="#57607d" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">SUPERVISED &amp; HYBRID CALIBRATION</text>
+        <path d="M 116,196 V 124 Q 116,116 124,116 H 272" fill="none" stroke="#4a526e" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="196" y1="232" x2="272" y2="232" stroke="#4a526e" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <path d="M 116,264 V 340 Q 116,348 124,348 H 516" fill="none" stroke="#4a526e" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <line x1="436" y1="116" x2="516" y2="116" stroke="#4a526e" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="604" y1="152" x2="604" y2="196" stroke="#4338ca" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <line x1="436" y1="232" x2="516" y2="232" stroke="#4a526e" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="688" y1="232" x2="764" y2="232" stroke="#1d6f8a" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <path d="M 688,348 H 836 Q 844,348 844,340 V 264" fill="none" stroke="#4a526e" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <rect x="144" y="96" width="68" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="178" y="105" fill="#57607d" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">UNLABELED</text>
+        <rect x="200" y="212" width="64" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="232" y="221" fill="#57607d" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">POST SPLIT</text>
+        <rect x="272" y="328" width="72" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="308" y="337" fill="#57607d" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">DIRECT FIT</text>
+        <rect x="444" y="96" width="64" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="476" y="105" fill="#57607d" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">DAPT WTS</text>
+        <rect x="616" y="168" width="56" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="644" y="177" fill="#4338ca" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">PROBS P1</text>
+        <rect x="448" y="212" width="56" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="476" y="221" fill="#57607d" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">PROBS P2</text>
+        <rect x="696" y="212" width="60" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="726" y="221" fill="#1d6f8a" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">CALIBRATED</text>
+        <rect x="736" y="328" width="52" height="12" rx="2" fill="#f5f4f0"/>
+        <text x="762" y="337" fill="#57607d" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">TOPICS</text>
+        <rect x="40" y="196" width="156" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="40" y="196" width="156" height="68" rx="6" fill="rgba(74,82,110,0.10)" stroke="#57607d" stroke-width="1"/>
+        <rect x="48" y="204" width="32" height="12" rx="2" fill="none" stroke="rgba(87,96,125,0.45)" stroke-width="0.8"/>
+        <text x="64" y="213" fill="#57607d" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">DATA</text>
+        <text x="118" y="234" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Sanitized Corpus</text>
+        <text x="118" y="250" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">205 threads · 2,003</text>
+        <rect x="272" y="84" width="164" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="272" y="84" width="164" height="68" rx="6" fill="#ffffff" stroke="#1e2235" stroke-width="1"/>
+        <rect x="280" y="92" width="28" height="12" rx="2" fill="none" stroke="rgba(30,34,53,0.36)" stroke-width="0.8"/>
+        <text x="294" y="101" fill="#1e2235" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">MLM</text>
+        <text x="354" y="122" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">MuRIL-DAPT MLM</text>
+        <text x="354" y="138" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">1,872 texts · PPL 14.5</text>
+        <rect x="272" y="196" width="164" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="272" y="196" width="164" height="68" rx="6" fill="#ffffff" stroke="#1e2235" stroke-width="1"/>
+        <rect x="280" y="204" width="28" height="12" rx="2" fill="none" stroke="rgba(30,34,53,0.36)" stroke-width="0.8"/>
+        <text x="294" y="213" fill="#1e2235" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">BOW</text>
+        <text x="354" y="234" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Word+Char TF-IDF</text>
+        <text x="354" y="250" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">1-2 word · 3-5 char</text>
+        <rect x="516" y="84" width="172" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="516" y="84" width="172" height="68" rx="6" fill="#ffffff" stroke="#1e2235" stroke-width="1"/>
+        <rect x="524" y="92" width="28" height="12" rx="2" fill="none" stroke="rgba(30,34,53,0.36)" stroke-width="0.8"/>
+        <text x="538" y="101" fill="#1e2235" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GPU</text>
+        <text x="602" y="122" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">MuRIL v3 Pooled</text>
+        <text x="602" y="138" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">CLS+Mean+Max · LLRD</text>
+        <rect x="516" y="196" width="172" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="516" y="196" width="172" height="68" rx="6" fill="rgba(67,56,202,0.08)" stroke="#4338ca" stroke-width="1"/>
+        <rect x="524" y="204" width="28" height="12" rx="2" fill="none" stroke="rgba(67,56,202,0.45)" stroke-width="0.8"/>
+        <text x="538" y="213" fill="#4338ca" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">ENS</text>
+        <text x="602" y="234" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Hybrid Calibrator</text>
+        <text x="602" y="250" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">val-only alpha · temp</text>
+        <rect x="516" y="316" width="172" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="516" y="316" width="172" height="68" rx="6" fill="#e8e6df" stroke="#4a526e" stroke-width="1"/>
+        <rect x="524" y="324" width="28" height="12" rx="2" fill="none" stroke="rgba(74,82,110,0.45)" stroke-width="0.8"/>
+        <text x="538" y="333" fill="#4a526e" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">NMF</text>
+        <text x="602" y="354" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">NMF Topic Model</text>
+        <text x="602" y="370" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">10 clusters · 3,272</text>
+        <rect x="764" y="196" width="156" height="68" rx="6" fill="#f5f4f0"/>
+        <rect x="764" y="196" width="156" height="68" rx="6" fill="#e8e6df" stroke="#4a526e" stroke-width="1"/>
+        <rect x="772" y="204" width="28" height="12" rx="2" fill="none" stroke="rgba(74,82,110,0.45)" stroke-width="0.8"/>
+        <text x="786" y="213" fill="#4a526e" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">OUT</text>
+        <text x="842" y="234" fill="#1e2235" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Studio Artifacts</text>
+        <text x="842" y="250" fill="#4a526e" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">5 tasks + 10 topics</text>
+        <line x1="40" y1="412" x2="920" y2="412" stroke="rgba(30,34,53,0.12)" stroke-width="0.8"/>
+        <text x="40" y="432" fill="#4a526e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.16em">LEGEND</text>
+        <rect x="40" y="448" width="14" height="10" rx="2" fill="rgba(67,56,202,0.08)" stroke="#4338ca" stroke-width="1"/>
+        <text x="60" y="456" fill="#4a526e" font-size="9" font-family="'Geist', system-ui, sans-serif">Validation-only calibrator</text>
+        <rect x="216" y="448" width="14" height="10" rx="2" fill="#ffffff" stroke="#1e2235" stroke-width="1"/>
+        <text x="236" y="456" fill="#4a526e" font-size="9" font-family="'Geist', system-ui, sans-serif">Trained model stage</text>
+        <rect x="372" y="448" width="14" height="10" rx="2" fill="#e8e6df" stroke="#4a526e" stroke-width="1"/>
+        <text x="392" y="456" fill="#4a526e" font-size="9" font-family="'Geist', system-ui, sans-serif">Unsupervised / output</text>
+        <line x1="536" y1="452" x2="564" y2="452" stroke="#4338ca" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <text x="572" y="456" fill="#4a526e" font-size="9" font-family="'Geist', system-ui, sans-serif">Primary transformer path</text>
+        <line x1="728" y1="452" x2="756" y2="452" stroke="#4a526e" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <text x="764" y="456" fill="#4a526e" font-size="9" font-family="'Geist', system-ui, sans-serif">Unsupervised branch</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
