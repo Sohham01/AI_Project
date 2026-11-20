@@ -56,6 +56,18 @@ def get_sessionmaker() -> sessionmaker:
     return _session_factory
 
 
+_INTROSPECTION_ATTRS = frozenset({
+    "_is_coroutine_marker",
+    "_is_coroutine",
+    "_mock_methods",
+    "_mock_unsafe",
+})
+
+
+def _is_introspection_attr(name: str) -> bool:
+    return (name.startswith("__") and name.endswith("__")) or name in _INTROSPECTION_ATTRS
+
+
 class _LazyEngine:
     """Backward-compatible proxy that resolves the engine on first use.
 
@@ -64,6 +76,8 @@ class _LazyEngine:
     """
 
     def __getattr__(self, name: str):
+        if _is_introspection_attr(name):
+            raise AttributeError(name)
         return getattr(get_engine(), name)
 
     def __repr__(self) -> str:  # pragma: no cover - debugging helper
@@ -77,6 +91,8 @@ class _LazySessionLocal:
         return get_sessionmaker()(*args, **kwargs)
 
     def __getattr__(self, name: str):
+        if _is_introspection_attr(name):
+            raise AttributeError(name)
         return getattr(get_sessionmaker(), name)
 
 

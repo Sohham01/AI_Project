@@ -113,6 +113,24 @@ class TestLazyDatabase(unittest.TestCase):
             with self.assertRaises(ConfigurationError):
                 get_database_url()
 
+    def test_lazy_proxies_allow_mock_patch_without_database_url(self):
+        import app.core.database as database_mod
+
+        fake_session = MagicMock()
+        fake_engine = MagicMock()
+        with (
+            patch.dict(os.environ, {}, clear=False),
+            patch.object(database_mod, "_engine", None),
+            patch.object(database_mod, "_session_factory", None),
+        ):
+            os.environ.pop("DATABASE_URL", None)
+            with (
+                patch("app.core.database.SessionLocal", return_value=fake_session),
+                patch("app.core.database.engine", return_value=fake_engine),
+            ):
+                self.assertIs(database_mod.SessionLocal(), fake_session)
+                self.assertIs(database_mod.engine(), fake_engine)
+
 
 class TestMigrationGraph(unittest.TestCase):
     """The Alembic history must stay a single, linear, connected chain."""
