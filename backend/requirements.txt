@@ -28,7 +28,7 @@ langdetect==1.0.9
 
 # --- Classical ML / NLP stack ---------------------------------------------
 # joblib is required directly by ml/training/trainer.py and the model adapters.
-numpy==2.5.3
+numpy==2.5.5
 scipy==1.18.1
 scikit-learn==1.9.1
 joblib==1.6.0
