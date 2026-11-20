@@ -1,9 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Float, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class NLPPostAnalysis(Base):
@@ -23,7 +27,7 @@ class NLPPostAnalysis(Base):
     detector_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     detector_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     analyzed_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
 
     # Preprocessing fields
@@ -48,7 +52,7 @@ class NLPCommentAnalysis(Base):
     detector_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     detector_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     analyzed_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
 
     # Preprocessing fields

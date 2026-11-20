@@ -278,6 +278,8 @@ def _summary_data() -> dict[str, Any]:
                 "source_mode",
                 "synthetic",
                 "authorization_status",
+                "filtering_summary",
+                "dapt_summary",
                 "notice",
             )
         },

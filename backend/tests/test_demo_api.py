@@ -32,6 +32,8 @@ def test_demo_endpoint_payloads_validate_and_mark_provenance() -> None:
     assert summary["synthetic_only"] is False
     assert summary["provenance"]["authorization_status"] == "public_anonymized_reddit"
     assert summary["provenance"]["source_provider"] == "arctic_shift"
+    assert summary["provenance"]["dapt_summary"] is not None
+    assert summary["provenance"]["filtering_summary"] is not None
     assert summary["posts"] >= 70
     assert summary["comments"] >= 700
     assert summary["topic_count"] == 10

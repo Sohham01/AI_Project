@@ -1,2 +1,19 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Normalize line endings to LF across source, config, and documentation files
+* text=auto eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.jsonl text eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+*.png binary
+*.jpg binary
+*.joblib binary

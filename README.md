@@ -5,6 +5,8 @@ Interactive multilingual research studio analyzing anonymized public Reddit disc
 - **Live Web Studio (Vercel):** https://rci-ten.vercel.app/app/
 - **Corpus Version:** `v3.0.0` (`iim-sambalpur-arctic-shift-v3`) — **205 anonymized threads**, **2,003 human comments** across **8 active subreddits** (`r/IIMSambalpurUG`, `r/MBAIndia`, `r/IIMCATPreparation`, `r/CATPrep`, `r/iim_CAT`, `r/CATStudyRoom`, `r/CATpreparation`, `r/Indian_Academia`).
 
+![Reddit Community Intelligence Studio v3.0.0 Overview](docs/demo_screenshots/overview-v3-desktop.png)
+
 ---
 
 ## Key Capabilities
@@ -57,7 +59,7 @@ Open **http://localhost:8000/app/** (API docs at `http://localhost:8000/docs`, h
 ```bash
 python -m venv backend/.venv
 # Windows: .\backend\.venv\Scripts\activate  |  macOS/Linux: source backend/.venv/bin/activate
-pip install -r backend/requirements.txt httpx
+pip install -r backend/requirements.txt
 
 cd backend
 uvicorn app.main:app --host 127.0.0.1 --port 8000

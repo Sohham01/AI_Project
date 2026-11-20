@@ -8,7 +8,7 @@ services:
       - "8000:8000"
     environment:
       AUTO_CREATE_SCHEMA: "false"
-      DATABASE_URL: "postgresql+psycopg://rci:rci@db:5432/rci_db"
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-rci}:${POSTGRES_PASSWORD:-rci}@db:5432/${POSTGRES_DB:-rci_db}"
     depends_on:
       db:
         condition: service_healthy
@@ -18,15 +18,15 @@ services:
     image: postgres:16-alpine
     container_name: rci-postgres
     environment:
-      POSTGRES_USER: rci
-      POSTGRES_PASSWORD: rci
-      POSTGRES_DB: rci_db
+      POSTGRES_USER: ${POSTGRES_USER:-rci}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rci}
+      POSTGRES_DB: ${POSTGRES_DB:-rci_db}
     ports:
       - "5432:5432"
     volumes:
       - rci_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rci -d rci_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rci} -d ${POSTGRES_DB:-rci_db}"]
       interval: 10s
       timeout: 5s
       retries: 5

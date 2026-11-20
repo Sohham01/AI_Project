@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    name: Backend pytest & API smoke check
+    name: Backend pytest, PII audit & Vercel API smoke check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -27,7 +27,7 @@ jobs:
       - name: Install backend & test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt httpx
+          pip install -r backend/requirements.txt
 
       - name: Run full offline backend test suite
         env:
@@ -35,11 +35,13 @@ jobs:
         run: |
           pytest backend/ --ignore=backend/test_migrations_postgres.py -q
 
-      - name: Verify Vercel serverless entrypoint (api/index.py)
+      - name: Verify Vercel serverless entrypoint (api/index.py) & zero-PII guard
         env:
           PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
         run: |
           python - <<'PY'
+          import re
+          from pathlib import Path
           from fastapi.testclient import TestClient
           from api.index import app
 
@@ -50,6 +52,7 @@ jobs:
           assert data["synthetic_only"] is False
           assert data["posts"] >= 70
           assert data["comments"] >= 700
+          assert data["provenance"].get("dapt_summary") is not None
           first_id = data["recent_discussions"][0]["id"]
           for route in (
               "/",
@@ -68,5 +71,12 @@ jobs:
           ):
               res = client.get(route)
               assert res.status_code == 200, f"{route} returned {res.status_code}"
-          print(f"Verified all 13 Vercel routes OK: {data['posts']} threads, {data['comments']} comments.")
+
+          raw = Path("data/live_corpus/corpus.json").read_text(encoding="utf-8")
+          assert not re.search(r"(?<![A-Za-z0-9_])/?u/[A-Za-z0-9_-]{3,24}\b", raw)
+          assert not re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", raw)
+          print(
+              f"Verified all 13 Vercel routes + zero-PII guard OK: "
+              f"v{data['dataset_version']} ({data['posts']} threads, {data['comments']} comments)."
+          )
           PY

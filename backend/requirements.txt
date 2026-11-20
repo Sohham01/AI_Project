@@ -38,13 +38,13 @@ joblib==1.6.0
 # The binary extra avoids a local libpq development toolchain.
 psycopg[binary]==3.3.5
 
-# --- Test runner -----------------------------------------------------------
+# --- Test runner & ASGI test client ---------------------------------------
 pytest==9.1.1
+httpx2==2.13.1
 
 # --------------------------------------------------------------------------
 # Optional / not part of the default verification run
 # --------------------------------------------------------------------------
-# httpx          — only needed for fastapi.testclient (no tests require it yet)
-# torch          — MuRIL transformer baseline (see requirements-ml.txt)
-# transformers   — MuRIL transformer baseline (see requirements-ml.txt)
+# torch          — MuRIL transformer & DAPT MLM (see requirements-ml.txt)
+# transformers   — MuRIL transformer & DAPT MLM (see requirements-ml.txt)
 # psycopg2-binary — only if an older psycopg2 dialect must be supported
