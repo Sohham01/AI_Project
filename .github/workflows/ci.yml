@@ -1,0 +1,72 @@
+name: CI — Backend Tests & Vercel Entrypoint Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Backend pytest & API smoke check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend & test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt httpx
+
+      - name: Run full offline backend test suite
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
+        run: |
+          pytest backend/ --ignore=backend/test_migrations_postgres.py -q
+
+      - name: Verify Vercel serverless entrypoint (api/index.py)
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
+        run: |
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from api.index import app
+
+          client = TestClient(app)
+          summary = client.get("/api/demo/summary")
+          assert summary.status_code == 200, summary.text
+          data = summary.json()
+          assert data["synthetic_only"] is False
+          assert data["posts"] >= 70
+          assert data["comments"] >= 700
+          first_id = data["recent_discussions"][0]["id"]
+          for route in (
+              "/",
+              "/health",
+              "/app/",
+              "/api/demo/health",
+              "/api/demo/summary",
+              "/api/demo/discussions",
+              f"/api/demo/discussions/{first_id}",
+              "/api/demo/issues",
+              "/api/demo/topics",
+              "/api/demo/sentiment",
+              "/api/demo/responses",
+              "/api/demo/resolution",
+              "/api/demo/models",
+          ):
+              res = client.get(route)
+              assert res.status_code == 200, f"{route} returned {res.status_code}"
+          print(f"Verified all 13 Vercel routes OK: {data['posts']} threads, {data['comments']} comments.")
+          PY

@@ -1,12 +1,44 @@
 {
   "synthetic_only": false,
-  "dataset_version": "2.0.0",
-  "evaluation_scope": "Real anonymized Reddit discussions (72 threads, 785 human comments) analyzed with unsupervised NMF v2 plus upgraded multi-register GPU MuRIL & Word+Char TF-IDF classifiers; held-out & 54-probe metrics reflect model benchmark generalization while human gold annotation proceeds.",
+  "dataset_version": "3.0.0",
+  "dapt_summary": {
+    "base_model_id": "google/muril-base-cased",
+    "output_dir": "D:\\AI_Project_Transformer_Temp\\muril_dapt_reddit",
+    "unlabeled_documents": 1872,
+    "epochs": 4,
+    "device": "cuda",
+    "elapsed_seconds": 1650.35,
+    "initial_perplexity": 31.973,
+    "final_perplexity": 14.503,
+    "history": [
+      {
+        "epoch": 1,
+        "mlm_loss": 3.46489,
+        "perplexity": 31.973
+      },
+      {
+        "epoch": 2,
+        "mlm_loss": 3.15322,
+        "perplexity": 23.411
+      },
+      {
+        "epoch": 3,
+        "mlm_loss": 2.85755,
+        "perplexity": 17.419
+      },
+      {
+        "epoch": 4,
+        "mlm_loss": 2.67438,
+        "perplexity": 14.503
+      }
+    ]
+  },
+  "evaluation_scope": "Real anonymized Reddit discussions (205 threads, 2003 human comments across 8 subreddits) analyzed with unsupervised NMF v3, unsupervised MuRIL-DAPT MLM adaptation, and validation-calibrated MuRIL-DAPT v3 + Word+Char TF-IDF hybrid ensembles; held-out & 54-probe metrics reflect benchmark generalization while human gold annotation proceeds.",
   "tasks": {
     "issue": {
       "synthetic_only": false,
-      "model_name": "muril_base_cased_plus_title",
-      "model_version": "v2_gpu",
+      "model_name": "muril_dapt_v3_plus_title_hybrid",
+      "model_version": "v3_dapt_gpu",
       "labels": [
         "academic_workload",
         "administrative_communication",
@@ -17,21 +49,42 @@
         "hostel_facilities",
         "placements"
       ],
-      "dataset_records": 4462,
-      "train_seconds": 197.15,
-      "best_epoch": 1,
+      "dataset_records": 5425,
+      "train_seconds": 126.84,
+      "best_epoch": 2,
+      "temperature": 1.0,
+      "hybrid_blend": {
+        "alpha_muril": 0.75,
+        "alpha_tfidf": 0.25,
+        "binary_threshold": null,
+        "per_label_thresholds": {
+          "academic_workload": 0.5,
+          "administrative_communication": 0.425,
+          "campus_infrastructure": 0.725,
+          "curriculum_teaching": 0.9,
+          "extracurriculars": 0.5,
+          "financial_concerns": 0.8,
+          "hostel_facilities": 0.45,
+          "placements": 0.75
+        },
+        "individual_54_probe_macro_f1": {
+          "tfidf_word_char_v2": 0.826427,
+          "muril_dapt_v3": 0.893895,
+          "hybrid_selected": 0.910241
+        }
+      },
       "split": {
         "seed": 20261116,
         "group_by": "post_id",
-        "train": 3600,
-        "validation": 670,
+        "train": 4418,
+        "validation": 815,
         "test": 192,
         "stratify_used": true
       },
       "leakage_report": {
         "leakage_detected": false,
-        "train_n": 3600,
-        "validation_n": 670,
+        "train_n": 4418,
+        "validation_n": 815,
         "test_n": 192,
         "cross_split_id_collisions": [],
         "cross_split_text_collisions": [],
@@ -39,10 +92,10 @@
       },
       "validation": {
         "task_name": "issue",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_plus_title_hybrid",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "academic_workload",
@@ -55,60 +108,60 @@
           "placements"
         ],
         "metrics": {
-          "n_samples": 670,
+          "n_samples": 815,
           "multilabel": true,
-          "macro_f1": 0.916831,
-          "micro_f1": 0.919255,
-          "subset_accuracy": 0.862687,
-          "hamming_loss": 0.019403,
+          "macro_f1": 0.961226,
+          "micro_f1": 0.964721,
+          "subset_accuracy": 0.936196,
+          "hamming_loss": 0.008436,
           "per_label": {
             "academic_workload": {
-              "precision": 0.9,
-              "recall": 0.9,
-              "f1": 0.9,
-              "support": 70
+              "precision": 0.931507,
+              "recall": 0.860759,
+              "f1": 0.894737,
+              "support": 79
             },
             "administrative_communication": {
-              "precision": 0.884211,
-              "recall": 0.988235,
-              "f1": 0.933333,
-              "support": 85
+              "precision": 0.952381,
+              "recall": 0.952381,
+              "f1": 0.952381,
+              "support": 105
             },
             "campus_infrastructure": {
-              "precision": 0.873786,
-              "recall": 0.927835,
-              "f1": 0.9,
-              "support": 97
+              "precision": 0.991525,
+              "recall": 0.991525,
+              "f1": 0.991525,
+              "support": 118
             },
             "curriculum_teaching": {
-              "precision": 0.788462,
-              "recall": 1.0,
-              "f1": 0.88172,
-              "support": 41
+              "precision": 0.960784,
+              "recall": 0.942308,
+              "f1": 0.951456,
+              "support": 52
             },
             "extracurriculars": {
-              "precision": 0.850746,
-              "recall": 1.0,
-              "f1": 0.919355,
-              "support": 57
+              "precision": 0.963415,
+              "recall": 0.9875,
+              "f1": 0.975309,
+              "support": 80
             },
             "financial_concerns": {
-              "precision": 0.859813,
-              "recall": 0.989247,
-              "f1": 0.92,
-              "support": 93
+              "precision": 0.971014,
+              "recall": 0.971014,
+              "f1": 0.971014,
+              "support": 138
             },
             "hostel_facilities": {
-              "precision": 0.931034,
-              "recall": 0.94186,
-              "f1": 0.936416,
-              "support": 86
+              "precision": 0.972973,
+              "recall": 0.964286,
+              "f1": 0.96861,
+              "support": 112
             },
             "placements": {
-              "precision": 0.913043,
-              "recall": 0.976744,
-              "f1": 0.94382,
-              "support": 86
+              "precision": 0.989796,
+              "recall": 0.979798,
+              "f1": 0.984772,
+              "support": 99
             }
           }
         },
@@ -116,10 +169,10 @@
       },
       "test": {
         "task_name": "issue",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_plus_title_hybrid",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "academic_workload",
@@ -134,27 +187,27 @@
         "metrics": {
           "n_samples": 192,
           "multilabel": true,
-          "macro_f1": 0.909812,
-          "micro_f1": 0.917333,
-          "subset_accuracy": 0.880208,
-          "hamming_loss": 0.020182,
+          "macro_f1": 0.892353,
+          "micro_f1": 0.904762,
+          "subset_accuracy": 0.864583,
+          "hamming_loss": 0.023438,
           "per_label": {
             "academic_workload": {
-              "precision": 0.888889,
+              "precision": 0.969697,
               "recall": 0.8,
-              "f1": 0.842105,
+              "f1": 0.876712,
               "support": 40
             },
             "administrative_communication": {
-              "precision": 0.975,
-              "recall": 0.975,
-              "f1": 0.975,
+              "precision": 0.846154,
+              "recall": 0.825,
+              "f1": 0.835443,
               "support": 40
             },
             "campus_infrastructure": {
-              "precision": 0.842105,
+              "precision": 0.888889,
               "recall": 1.0,
-              "f1": 0.914286,
+              "f1": 0.941176,
               "support": 16
             },
             "curriculum_teaching": {
@@ -164,15 +217,15 @@
               "support": 16
             },
             "extracurriculars": {
-              "precision": 0.964286,
-              "recall": 0.84375,
-              "f1": 0.9,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
               "support": 32
             },
             "financial_concerns": {
-              "precision": 0.8,
+              "precision": 0.571429,
               "recall": 1.0,
-              "f1": 0.888889,
+              "f1": 0.727273,
               "support": 8
             },
             "hostel_facilities": {
@@ -190,60 +243,60 @@
           }
         },
         "warnings": [
-          "54-probe unseen 8-category robustness Macro F1: 0.9096.",
+          "54-probe unseen 8-category robustness Macro F1: 0.9102 (MuRIL-DAPT-v3=0.8939, TFIDF-v2=0.8264, val-calibrated alpha=0.75, T=1.00).",
           "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
         ]
       },
       "robustness_54_probes": {
         "n_probes": 54,
         "include_parent_title": true,
-        "inference_ms": 55.07,
-        "overall_macro_f1": 0.909573,
-        "overall_micro_f1": 0.912621,
+        "inference_ms": 46.4,
+        "overall_macro_f1": 0.910241,
+        "overall_micro_f1": 0.910891,
         "overall_subset_accuracy": 0.851852,
         "overall_hamming_loss": 0.020833,
         "by_category": {
           "unseen_templates": {
             "n": 8,
-            "macro_f1": 1.0,
-            "micro_f1": 1.0,
-            "subset_accuracy": 1.0,
-            "hamming_loss": 0.0
+            "macro_f1": 0.958333,
+            "micro_f1": 0.941176,
+            "subset_accuracy": 0.875,
+            "hamming_loss": 0.015625
           },
           "paraphrased_comments": {
             "n": 6,
             "macro_f1": 1.0,
-            "micro_f1": 1.0,
-            "subset_accuracy": 1.0,
-            "hamming_loss": 0.0
+            "micro_f1": 0.923077,
+            "subset_accuracy": 0.833333,
+            "hamming_loss": 0.020833
           },
           "spelling_errors": {
+            "n": 6,
+            "macro_f1": 0.777778,
+            "micro_f1": 0.833333,
+            "subset_accuracy": 0.833333,
+            "hamming_loss": 0.041667
+          },
+          "informal_language": {
             "n": 6,
             "macro_f1": 1.0,
             "micro_f1": 1.0,
             "subset_accuracy": 1.0,
             "hamming_loss": 0.0
           },
-          "informal_language": {
-            "n": 6,
-            "macro_f1": 0.714286,
-            "micro_f1": 0.833333,
-            "subset_accuracy": 0.666667,
-            "hamming_loss": 0.041667
-          },
           "short_comments": {
             "n": 6,
             "macro_f1": 0.333333,
-            "micro_f1": 0.25,
-            "subset_accuracy": 0.166667,
-            "hamming_loss": 0.125
+            "micro_f1": 0.5,
+            "subset_accuracy": 0.666667,
+            "hamming_loss": 0.041667
           },
           "ambiguous_responses": {
             "n": 6,
-            "macro_f1": 0.833333,
-            "micro_f1": 0.909091,
-            "subset_accuracy": 0.833333,
-            "hamming_loss": 0.020833
+            "macro_f1": 0.666667,
+            "micro_f1": 0.8,
+            "subset_accuracy": 0.666667,
+            "hamming_loss": 0.041667
           },
           "parent_post_context": {
             "n": 8,
@@ -254,49 +307,61 @@
           },
           "code_mixed_language": {
             "n": 8,
-            "macro_f1": 1.0,
-            "micro_f1": 1.0,
-            "subset_accuracy": 1.0,
-            "hamming_loss": 0.0
+            "macro_f1": 0.875,
+            "micro_f1": 0.933333,
+            "subset_accuracy": 0.875,
+            "hamming_loss": 0.015625
           }
         }
       },
       "artifact_path": "ml/artifacts/live_corpus/predictions.json#issue",
-      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using muril_dapt_v3_plus_title_hybrid (DAPT-adapted MuRIL v3 + Word+Char TF-IDF; human gold evaluation pending).",
       "label_counts": {
-        "academic_workload": 45,
-        "administrative_communication": 38,
-        "campus_infrastructure": 8,
-        "extracurriculars": 189,
-        "financial_concerns": 5,
-        "hostel_facilities": 2,
-        "placements": 214
+        "academic_workload": 1,
+        "administrative_communication": 124,
+        "campus_infrastructure": 2,
+        "extracurriculars": 20,
+        "financial_concerns": 36,
+        "hostel_facilities": 34,
+        "placements": 211
       }
     },
     "sentiment": {
       "synthetic_only": false,
-      "model_name": "muril_base_cased",
-      "model_version": "v2_gpu",
+      "model_name": "muril_dapt_v3_tfidf_hybrid",
+      "model_version": "v3_dapt_gpu",
       "labels": [
         "negative",
         "neutral",
         "positive"
       ],
-      "dataset_records": 4462,
-      "train_seconds": 199.6,
-      "best_epoch": 1,
+      "dataset_records": 5425,
+      "train_seconds": 122.48,
+      "best_epoch": 3,
+      "temperature": 0.62,
+      "hybrid_blend": {
+        "alpha_muril": 0.65,
+        "alpha_tfidf": 0.35,
+        "binary_threshold": null,
+        "per_label_thresholds": {},
+        "individual_54_probe_macro_f1": {
+          "tfidf_word_char_v2": 0.332021,
+          "muril_dapt_v3": 0.67577,
+          "hybrid_selected": 0.67577
+        }
+      },
       "split": {
         "seed": 20261116,
         "group_by": "post_id",
-        "train": 3600,
-        "validation": 670,
+        "train": 4418,
+        "validation": 815,
         "test": 192,
         "stratify_used": true
       },
       "leakage_report": {
         "leakage_detected": false,
-        "train_n": 3600,
-        "validation_n": 670,
+        "train_n": 4418,
+        "validation_n": 815,
         "test_n": 192,
         "cross_split_id_collisions": [],
         "cross_split_text_collisions": [],
@@ -304,10 +369,10 @@
       },
       "validation": {
         "task_name": "sentiment",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_tfidf_hybrid",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "negative",
@@ -315,29 +380,29 @@
           "positive"
         ],
         "metrics": {
-          "n_samples": 670,
+          "n_samples": 815,
           "multilabel": false,
-          "accuracy": 0.861194,
-          "micro_f1": 0.861194,
-          "macro_f1": 0.843747,
+          "accuracy": 0.990184,
+          "micro_f1": 0.990184,
+          "macro_f1": 0.986496,
           "per_class": {
             "negative": {
-              "precision": 0.755814,
-              "recall": 0.948905,
-              "f1": 0.841424,
-              "support": 137
+              "precision": 0.989637,
+              "recall": 0.969543,
+              "f1": 0.979487,
+              "support": 197
             },
             "neutral": {
-              "precision": 0.883871,
-              "recall": 0.688442,
-              "f1": 0.774011,
-              "support": 199
+              "precision": 0.970297,
+              "recall": 0.989899,
+              "f1": 0.98,
+              "support": 198
             },
             "positive": {
-              "precision": 0.90379,
-              "recall": 0.928144,
-              "f1": 0.915805,
-              "support": 334
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 420
             }
           },
           "confusion_matrix_labels": [
@@ -347,19 +412,19 @@
           ],
           "confusion_matrix": [
             [
-              130,
-              7,
+              191,
+              6,
               0
             ],
             [
-              29,
-              137,
-              33
+              2,
+              196,
+              0
             ],
             [
-              13,
-              11,
-              310
+              0,
+              0,
+              420
             ]
           ]
         },
@@ -367,10 +432,10 @@
       },
       "test": {
         "task_name": "sentiment",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_tfidf_hybrid",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "negative",
@@ -427,80 +492,80 @@
           ]
         },
         "warnings": [
-          "54-probe unseen 8-category robustness Macro F1: 0.6139.",
+          "54-probe unseen 8-category robustness Macro F1: 0.6758 (MuRIL-DAPT-v3=0.6758, TFIDF-v2=0.3320, val-calibrated alpha=0.65, T=0.62).",
           "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
         ]
       },
       "robustness_54_probes": {
         "n_probes": 54,
         "include_parent_title": false,
-        "inference_ms": 48.93,
-        "overall_macro_f1": 0.613889,
-        "overall_micro_f1": 0.611111,
-        "overall_accuracy": 0.611111,
+        "inference_ms": 70.46,
+        "overall_macro_f1": 0.67577,
+        "overall_micro_f1": 0.666667,
+        "overall_accuracy": 0.666667,
         "by_category": {
           "unseen_templates": {
             "n": 8,
-            "macro_f1": 0.622222,
-            "micro_f1": 0.625,
-            "accuracy": 0.625
+            "macro_f1": 0.722222,
+            "micro_f1": 0.75,
+            "accuracy": 0.75
           },
           "paraphrased_comments": {
             "n": 6,
-            "macro_f1": 0.866667,
-            "micro_f1": 0.833333,
-            "accuracy": 0.833333
+            "macro_f1": 0.655556,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
           },
           "spelling_errors": {
             "n": 6,
-            "macro_f1": 0.533333,
+            "macro_f1": 0.655556,
             "micro_f1": 0.666667,
             "accuracy": 0.666667
           },
           "informal_language": {
             "n": 6,
-            "macro_f1": 0.333333,
-            "micro_f1": 0.333333,
-            "accuracy": 0.333333
+            "macro_f1": 0.9,
+            "micro_f1": 0.833333,
+            "accuracy": 0.833333
           },
           "short_comments": {
             "n": 6,
-            "macro_f1": 0.708333,
-            "micro_f1": 0.666667,
-            "accuracy": 0.666667
+            "macro_f1": 0.777778,
+            "micro_f1": 0.833333,
+            "accuracy": 0.833333
           },
           "ambiguous_responses": {
             "n": 6,
-            "macro_f1": 0.761905,
-            "micro_f1": 0.666667,
-            "accuracy": 0.666667
+            "macro_f1": 0.533333,
+            "micro_f1": 0.5,
+            "accuracy": 0.5
           },
           "parent_post_context": {
+            "n": 8,
+            "macro_f1": 0.634921,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          },
+          "code_mixed_language": {
             "n": 8,
             "macro_f1": 0.5,
             "micro_f1": 0.5,
             "accuracy": 0.5
-          },
-          "code_mixed_language": {
-            "n": 8,
-            "macro_f1": 0.622222,
-            "micro_f1": 0.625,
-            "accuracy": 0.625
           }
         }
       },
       "artifact_path": "ml/artifacts/live_corpus/predictions.json#sentiment",
-      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using muril_dapt_v3_tfidf_hybrid (DAPT-adapted MuRIL v3 + Word+Char TF-IDF; human gold evaluation pending).",
       "label_counts": {
-        "negative": 89,
-        "neutral": 525,
-        "positive": 171
+        "negative": 272,
+        "neutral": 1404,
+        "positive": 327
       }
     },
     "emotion": {
       "synthetic_only": false,
-      "model_name": "muril_base_cased",
-      "model_version": "v2_gpu",
+      "model_name": "muril_dapt_v3_pooled",
+      "model_version": "v3_dapt_gpu",
       "labels": [
         "confidence",
         "curiosity",
@@ -509,21 +574,40 @@
         "hope",
         "stress"
       ],
-      "dataset_records": 1280,
-      "train_seconds": 76.43,
-      "best_epoch": 6,
+      "dataset_records": 5425,
+      "train_seconds": 126.22,
+      "best_epoch": 3,
+      "temperature": 0.98,
+      "hybrid_blend": {
+        "alpha_muril": 1.0,
+        "alpha_tfidf": 0.0,
+        "binary_threshold": null,
+        "per_label_thresholds": {
+          "confidence": 0.575,
+          "curiosity": 0.5,
+          "frustration": 0.75,
+          "gratitude": 0.5,
+          "hope": 0.2,
+          "stress": 0.5
+        },
+        "individual_54_probe_macro_f1": {
+          "tfidf_word_char_v2": 0.025641,
+          "muril_dapt_v3": 0.492495,
+          "hybrid_selected": 0.492495
+        }
+      },
       "split": {
         "seed": 20261116,
         "group_by": "post_id",
-        "train": 896,
-        "validation": 192,
+        "train": 4418,
+        "validation": 815,
         "test": 192,
         "stratify_used": true
       },
       "leakage_report": {
         "leakage_detected": false,
-        "train_n": 896,
-        "validation_n": 192,
+        "train_n": 4418,
+        "validation_n": 815,
         "test_n": 192,
         "cross_split_id_collisions": [],
         "cross_split_text_collisions": [],
@@ -531,10 +615,10 @@
       },
       "validation": {
         "task_name": "emotion",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 896,
-        "n_validation": 192,
+        "model_name": "muril_dapt_v3_pooled",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "confidence",
@@ -545,48 +629,48 @@
           "stress"
         ],
         "metrics": {
-          "n_samples": 192,
+          "n_samples": 815,
           "multilabel": true,
-          "macro_f1": 1.0,
-          "micro_f1": 1.0,
-          "subset_accuracy": 1.0,
-          "hamming_loss": 0.0,
+          "macro_f1": 0.982914,
+          "micro_f1": 0.981685,
+          "subset_accuracy": 0.958282,
+          "hamming_loss": 0.007157,
           "per_label": {
             "confidence": {
-              "precision": 1.0,
+              "precision": 0.977654,
               "recall": 1.0,
-              "f1": 1.0,
-              "support": 19
+              "f1": 0.988701,
+              "support": 175
             },
             "curiosity": {
               "precision": 1.0,
               "recall": 1.0,
               "f1": 1.0,
-              "support": 43
+              "support": 100
             },
             "frustration": {
-              "precision": 1.0,
-              "recall": 1.0,
-              "f1": 1.0,
-              "support": 51
+              "precision": 0.948718,
+              "recall": 0.89697,
+              "f1": 0.922118,
+              "support": 165
             },
             "gratitude": {
               "precision": 1.0,
               "recall": 1.0,
               "f1": 1.0,
-              "support": 98
+              "support": 194
             },
             "hope": {
-              "precision": 1.0,
-              "recall": 1.0,
-              "f1": 1.0,
-              "support": 79
+              "precision": 0.977974,
+              "recall": 0.995516,
+              "f1": 0.986667,
+              "support": 223
             },
             "stress": {
               "precision": 1.0,
               "recall": 1.0,
               "f1": 1.0,
-              "support": 51
+              "support": 99
             }
           }
         },
@@ -594,10 +678,10 @@
       },
       "test": {
         "task_name": "emotion",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 896,
-        "n_validation": 192,
+        "model_name": "muril_dapt_v3_pooled",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "confidence",
@@ -654,92 +738,92 @@
           }
         },
         "warnings": [
-          "54-probe unseen 8-category robustness Macro F1: 0.4126.",
+          "54-probe unseen 8-category robustness Macro F1: 0.4925 (MuRIL-DAPT-v3=0.4925, TFIDF-v2=0.0256, val-calibrated alpha=1.00, T=0.98).",
           "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
         ]
       },
       "robustness_54_probes": {
         "n_probes": 54,
         "include_parent_title": false,
-        "inference_ms": 52.37,
-        "overall_macro_f1": 0.412579,
-        "overall_micro_f1": 0.443299,
-        "overall_subset_accuracy": 0.111111,
-        "overall_hamming_loss": 0.333333,
+        "inference_ms": 60.23,
+        "overall_macro_f1": 0.492495,
+        "overall_micro_f1": 0.547009,
+        "overall_subset_accuracy": 0.314815,
+        "overall_hamming_loss": 0.16358,
         "by_category": {
           "unseen_templates": {
             "n": 8,
-            "macro_f1": 0.435185,
-            "micro_f1": 0.482759,
-            "subset_accuracy": 0.25,
-            "hamming_loss": 0.3125
+            "macro_f1": 0.587302,
+            "micro_f1": 0.7,
+            "subset_accuracy": 0.375,
+            "hamming_loss": 0.125
           },
           "paraphrased_comments": {
             "n": 6,
             "macro_f1": 0.733333,
-            "micro_f1": 0.571429,
-            "subset_accuracy": 0.333333,
-            "hamming_loss": 0.25
+            "micro_f1": 0.666667,
+            "subset_accuracy": 0.5,
+            "hamming_loss": 0.138889
           },
           "spelling_errors": {
             "n": 6,
-            "macro_f1": 0.2,
-            "micro_f1": 0.272727,
-            "subset_accuracy": 0.0,
-            "hamming_loss": 0.444444
+            "macro_f1": 0.466667,
+            "micro_f1": 0.5,
+            "subset_accuracy": 0.166667,
+            "hamming_loss": 0.222222
           },
           "informal_language": {
             "n": 6,
-            "macro_f1": 0.4,
-            "micro_f1": 0.434783,
-            "subset_accuracy": 0.0,
-            "hamming_loss": 0.361111
+            "macro_f1": 0.466667,
+            "micro_f1": 0.714286,
+            "subset_accuracy": 0.5,
+            "hamming_loss": 0.111111
           },
           "short_comments": {
             "n": 6,
-            "macro_f1": 0.65,
-            "micro_f1": 0.352941,
-            "subset_accuracy": 0.0,
-            "hamming_loss": 0.305556
+            "macro_f1": 0.333333,
+            "micro_f1": 0.4,
+            "subset_accuracy": 0.5,
+            "hamming_loss": 0.083333
           },
           "ambiguous_responses": {
             "n": 6,
-            "macro_f1": 0.426667,
-            "micro_f1": 0.454545,
-            "subset_accuracy": 0.0,
-            "hamming_loss": 0.333333
+            "macro_f1": 0.213333,
+            "micro_f1": 0.333333,
+            "subset_accuracy": 0.166667,
+            "hamming_loss": 0.222222
           },
           "parent_post_context": {
             "n": 8,
-            "macro_f1": 0.497222,
-            "micro_f1": 0.6,
-            "subset_accuracy": 0.125,
-            "hamming_loss": 0.25
+            "macro_f1": 0.444444,
+            "micro_f1": 0.555556,
+            "subset_accuracy": 0.25,
+            "hamming_loss": 0.166667
           },
           "code_mixed_language": {
             "n": 8,
-            "macro_f1": 0.355556,
-            "micro_f1": 0.333333,
+            "macro_f1": 0.26,
+            "micro_f1": 0.352941,
             "subset_accuracy": 0.125,
-            "hamming_loss": 0.416667
+            "hamming_loss": 0.229167
           }
         }
       },
       "artifact_path": "ml/artifacts/live_corpus/predictions.json#emotion",
-      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using muril_dapt_v3_pooled (DAPT-adapted MuRIL v3 + Word+Char TF-IDF; human gold evaluation pending).",
       "label_counts": {
-        "confidence": 106,
-        "curiosity": 332,
-        "frustration": 221,
-        "gratitude": 440,
-        "hope": 317,
-        "stress": 221
+        "confidence": 168,
+        "curiosity": 417,
+        "frustration": 304,
+        "gratitude": 163,
+        "hope": 216,
+        "stress": 35
       }
     },
     "response": {
       "synthetic_only": false,
-      "model_name": "muril_base_cased",
-      "model_version": "v2_gpu",
+      "model_name": "muril_dapt_v3_tfidf_hybrid",
+      "model_version": "v3_dapt_gpu",
       "labels": [
         "agreement",
         "personal_experience",
@@ -748,21 +832,33 @@
         "solution",
         "counterargument"
       ],
-      "dataset_records": 4462,
-      "train_seconds": 199.37,
+      "dataset_records": 5425,
+      "train_seconds": 123.07,
       "best_epoch": 3,
+      "temperature": 0.48,
+      "hybrid_blend": {
+        "alpha_muril": 0.3,
+        "alpha_tfidf": 0.7,
+        "binary_threshold": null,
+        "per_label_thresholds": {},
+        "individual_54_probe_macro_f1": {
+          "tfidf_word_char_v2": 0.545134,
+          "muril_dapt_v3": 0.597691,
+          "hybrid_selected": 0.64288
+        }
+      },
       "split": {
         "seed": 20261116,
         "group_by": "post_id",
-        "train": 3600,
-        "validation": 670,
+        "train": 4418,
+        "validation": 815,
         "test": 192,
         "stratify_used": true
       },
       "leakage_report": {
         "leakage_detected": false,
-        "train_n": 3600,
-        "validation_n": 670,
+        "train_n": 4418,
+        "validation_n": 815,
         "test_n": 192,
         "cross_split_id_collisions": [],
         "cross_split_text_collisions": [],
@@ -770,10 +866,10 @@
       },
       "validation": {
         "task_name": "response",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_tfidf_hybrid",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "agreement",
@@ -784,35 +880,35 @@
           "counterargument"
         ],
         "metrics": {
-          "n_samples": 670,
+          "n_samples": 815,
           "multilabel": false,
-          "accuracy": 0.928358,
-          "micro_f1": 0.928358,
-          "macro_f1": 0.938187,
+          "accuracy": 1.0,
+          "micro_f1": 1.0,
+          "macro_f1": 1.0,
           "per_class": {
             "agreement": {
-              "precision": 0.854839,
-              "recall": 0.990654,
-              "f1": 0.917749,
-              "support": 107
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 105
             },
             "personal_experience": {
-              "precision": 0.875776,
-              "recall": 0.965753,
-              "f1": 0.918567,
-              "support": 146
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 191
             },
             "opinion": {
-              "precision": 0.978571,
-              "recall": 0.810651,
-              "f1": 0.886731,
-              "support": 169
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 224
             },
             "advice": {
               "precision": 1.0,
               "recall": 1.0,
               "f1": 1.0,
-              "support": 80
+              "support": 128
             },
             "solution": {
               "precision": 1.0,
@@ -821,10 +917,10 @@
               "support": 76
             },
             "counterargument": {
-              "precision": 0.921348,
-              "recall": 0.891304,
-              "f1": 0.906077,
-              "support": 92
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 91
             }
           },
           "confusion_matrix_labels": [
@@ -837,34 +933,34 @@
           ],
           "confusion_matrix": [
             [
-              106,
+              105,
               0,
-              1,
+              0,
               0,
               0,
               0
             ],
             [
               0,
-              141,
-              1,
+              191,
               0,
               0,
-              4
-            ],
-            [
-              18,
-              11,
-              137,
               0,
-              0,
-              3
+              0
             ],
             [
               0,
               0,
+              224,
               0,
-              80,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              128,
               0,
               0
             ],
@@ -878,11 +974,11 @@
             ],
             [
               0,
-              9,
-              1,
               0,
               0,
-              82
+              0,
+              0,
+              91
             ]
           ]
         },
@@ -890,10 +986,10 @@
       },
       "test": {
         "task_name": "response",
-        "model_name": "muril_base_cased",
-        "model_version": "v2_gpu",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_tfidf_hybrid",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "agreement",
@@ -1007,101 +1103,114 @@
           ]
         },
         "warnings": [
-          "54-probe unseen 8-category robustness Macro F1: 0.5928.",
+          "54-probe unseen 8-category robustness Macro F1: 0.6429 (MuRIL-DAPT-v3=0.5977, TFIDF-v2=0.5451, val-calibrated alpha=0.30, T=0.48).",
           "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
         ]
       },
       "robustness_54_probes": {
         "n_probes": 54,
         "include_parent_title": false,
-        "inference_ms": 50.06,
-        "overall_macro_f1": 0.592793,
-        "overall_micro_f1": 0.592593,
-        "overall_accuracy": 0.592593,
+        "inference_ms": 49.18,
+        "overall_macro_f1": 0.64288,
+        "overall_micro_f1": 0.648148,
+        "overall_accuracy": 0.648148,
         "by_category": {
           "unseen_templates": {
             "n": 8,
-            "macro_f1": 0.494444,
+            "macro_f1": 0.65,
             "micro_f1": 0.625,
             "accuracy": 0.625
           },
           "paraphrased_comments": {
             "n": 6,
-            "macro_f1": 1.0,
-            "micro_f1": 1.0,
-            "accuracy": 1.0
-          },
-          "spelling_errors": {
-            "n": 6,
-            "macro_f1": 0.25,
-            "micro_f1": 0.333333,
-            "accuracy": 0.333333
-          },
-          "informal_language": {
-            "n": 6,
-            "macro_f1": 0.222222,
-            "micro_f1": 0.333333,
-            "accuracy": 0.333333
-          },
-          "short_comments": {
-            "n": 6,
-            "macro_f1": 0.555556,
-            "micro_f1": 0.666667,
-            "accuracy": 0.666667
-          },
-          "ambiguous_responses": {
-            "n": 6,
-            "macro_f1": 0.5,
+            "macro_f1": 0.388889,
             "micro_f1": 0.5,
             "accuracy": 0.5
           },
+          "spelling_errors": {
+            "n": 6,
+            "macro_f1": 0.611111,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "informal_language": {
+            "n": 6,
+            "macro_f1": 0.611111,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "short_comments": {
+            "n": 6,
+            "macro_f1": 0.777778,
+            "micro_f1": 0.833333,
+            "accuracy": 0.833333
+          },
+          "ambiguous_responses": {
+            "n": 6,
+            "macro_f1": 0.666667,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
           "parent_post_context": {
             "n": 8,
-            "macro_f1": 0.466667,
-            "micro_f1": 0.625,
-            "accuracy": 0.625
+            "macro_f1": 0.4,
+            "micro_f1": 0.5,
+            "accuracy": 0.5
           },
           "code_mixed_language": {
             "n": 8,
-            "macro_f1": 0.677778,
-            "micro_f1": 0.625,
-            "accuracy": 0.625
+            "macro_f1": 0.805556,
+            "micro_f1": 0.75,
+            "accuracy": 0.75
           }
         }
       },
       "artifact_path": "ml/artifacts/live_corpus/predictions.json#response",
-      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using muril_dapt_v3_tfidf_hybrid (DAPT-adapted MuRIL v3 + Word+Char TF-IDF; human gold evaluation pending).",
       "label_counts": {
-        "advice": 58,
-        "agreement": 125,
-        "counterargument": 205,
-        "opinion": 327,
-        "personal_experience": 48,
-        "solution": 22
+        "advice": 192,
+        "agreement": 293,
+        "counterargument": 334,
+        "opinion": 856,
+        "personal_experience": 226,
+        "solution": 102
       }
     },
     "solution": {
       "synthetic_only": false,
-      "model_name": "tfidf_word_char_logistic_binary",
-      "model_version": "v2",
+      "model_name": "muril_dapt_v3_pooled",
+      "model_version": "v3_dapt_gpu",
       "labels": [
         "not_solution",
         "solution"
       ],
-      "dataset_records": 4462,
-      "train_seconds": 0.736,
+      "dataset_records": 5425,
+      "train_seconds": 121.66,
+      "best_epoch": 1,
+      "temperature": 0.4,
+      "hybrid_blend": {
+        "alpha_muril": 1.0,
+        "alpha_tfidf": 0.0,
+        "binary_threshold": 0.5,
+        "per_label_thresholds": {},
+        "individual_54_probe_macro_f1": {
+          "tfidf_word_char_v2": 0.722059,
+          "muril_dapt_v3": 0.85611,
+          "hybrid_selected": 0.85611
+        }
+      },
       "split": {
         "seed": 20261116,
         "group_by": "post_id",
-        "train": 3600,
-        "validation": 670,
+        "train": 4418,
+        "validation": 815,
         "test": 192,
         "stratify_used": true
       },
       "leakage_report": {
         "leakage_detected": false,
-        "train_n": 3600,
-        "validation_n": 670,
+        "train_n": 4418,
+        "validation_n": 815,
         "test_n": 192,
         "cross_split_id_collisions": [],
         "cross_split_text_collisions": [],
@@ -1109,17 +1218,17 @@
       },
       "validation": {
         "task_name": "solution",
-        "model_name": "tfidf_word_char_logistic_binary",
-        "model_version": "v2",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_pooled",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "not_solution",
           "solution"
         ],
         "metrics": {
-          "n_samples": 670,
+          "n_samples": 815,
           "multilabel": false,
           "accuracy": 1.0,
           "micro_f1": 1.0,
@@ -1129,13 +1238,13 @@
               "precision": 1.0,
               "recall": 1.0,
               "f1": 1.0,
-              "support": 492
+              "support": 611
             },
             "solution": {
               "precision": 1.0,
               "recall": 1.0,
               "f1": 1.0,
-              "support": 178
+              "support": 204
             }
           },
           "confusion_matrix_labels": [
@@ -1144,12 +1253,12 @@
           ],
           "confusion_matrix": [
             [
-              492,
+              611,
               0
             ],
             [
               0,
-              178
+              204
             ]
           ]
         },
@@ -1157,10 +1266,10 @@
       },
       "test": {
         "task_name": "solution",
-        "model_name": "tfidf_word_char_logistic_binary",
-        "model_version": "v2",
-        "n_train": 3600,
-        "n_validation": 670,
+        "model_name": "muril_dapt_v3_pooled",
+        "model_version": "v3_dapt_gpu",
+        "n_train": 4418,
+        "n_validation": 815,
         "n_test": 192,
         "labels": [
           "not_solution",
@@ -1202,23 +1311,23 @@
           ]
         },
         "warnings": [
-          "54-probe unseen 8-category robustness Macro F1: 0.7391.",
+          "54-probe unseen 8-category robustness Macro F1: 0.8561 (MuRIL-DAPT-v3=0.8561, TFIDF-v2=0.7221, val-calibrated alpha=1.00, T=0.40).",
           "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
         ]
       },
       "robustness_54_probes": {
         "n_probes": 54,
         "include_parent_title": false,
-        "inference_ms": 9.68,
-        "overall_macro_f1": 0.73913,
-        "overall_micro_f1": 0.759259,
-        "overall_accuracy": 0.759259,
+        "inference_ms": 49.82,
+        "overall_macro_f1": 0.85611,
+        "overall_micro_f1": 0.87037,
+        "overall_accuracy": 0.87037,
         "by_category": {
           "unseen_templates": {
             "n": 8,
-            "macro_f1": 0.75,
-            "micro_f1": 0.75,
-            "accuracy": 0.75
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "accuracy": 1.0
           },
           "paraphrased_comments": {
             "n": 6,
@@ -1228,15 +1337,15 @@
           },
           "spelling_errors": {
             "n": 6,
-            "macro_f1": 1.0,
-            "micro_f1": 1.0,
-            "accuracy": 1.0
+            "macro_f1": 0.777778,
+            "micro_f1": 0.833333,
+            "accuracy": 0.833333
           },
           "informal_language": {
             "n": 6,
-            "macro_f1": 0.625,
-            "micro_f1": 0.666667,
-            "accuracy": 0.666667
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "accuracy": 1.0
           },
           "short_comments": {
             "n": 6,
@@ -1252,23 +1361,23 @@
           },
           "parent_post_context": {
             "n": 8,
-            "macro_f1": 0.733333,
-            "micro_f1": 0.75,
-            "accuracy": 0.75
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "accuracy": 1.0
           },
           "code_mixed_language": {
             "n": 8,
-            "macro_f1": 0.563636,
-            "micro_f1": 0.625,
-            "accuracy": 0.625
+            "macro_f1": 0.733333,
+            "micro_f1": 0.75,
+            "accuracy": 0.75
           }
         }
       },
       "artifact_path": "ml/artifacts/live_corpus/predictions.json#solution",
-      "inference_scope": "Batch inference over anonymized public Reddit discussions using Word+Char TF-IDF (human gold evaluation pending).",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using muril_dapt_v3_pooled (DAPT-adapted MuRIL v3 + Word+Char TF-IDF; human gold evaluation pending).",
       "label_counts": {
-        "not_solution": 715,
-        "solution": 70
+        "not_solution": 1878,
+        "solution": 125
       }
     }
   }

@@ -12,11 +12,11 @@ import { dateTimeText, esc, num, percent, pretty } from "../format.js";
 const TASK_ORDER = ["sentiment", "emotion", "issue", "response", "solution"];
 
 const TASK_DESCRIPTIONS = {
-  sentiment: "3-class mutually exclusive polarity classifier (negative, neutral, positive) powered by GPU MuRIL.",
-  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress) powered by GPU MuRIL.",
-  issue: "8-label multi-label issue detector using GPU MuRIL + parent post title context.",
-  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy (GPU MuRIL).",
-  solution: "Binary actionable-solution detector (not_solution vs. solution) using Word + Character n-gram TF-IDF.",
+  sentiment: "3-class mutually exclusive polarity classifier (negative, neutral, positive) powered by MuRIL-DAPT v3 + Word+Char TF-IDF hybrid.",
+  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress) powered by MuRIL-DAPT v3 + Word+Char TF-IDF hybrid.",
+  issue: "8-label multi-label issue detector using MuRIL-DAPT v3 + parent post title context + Word+Char TF-IDF hybrid.",
+  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy (MuRIL-DAPT v3 + Word+Char TF-IDF hybrid).",
+  solution: "Binary actionable-solution detector (not_solution vs. solution) powered by MuRIL-DAPT v3 + Word+Char TF-IDF hybrid.",
 };
 
 function renderPerClassSection(taskName, task) {
@@ -90,6 +90,10 @@ export async function renderModels(container, ctx) {
   const prov = summary.provenance || {};
   const isSynthetic = Boolean(summary.synthetic_only);
   const filt = prov.filtering_summary || {};
+  const dapt = prov.dapt_summary || null;
+  const subListText = (summary.community_distribution || [])
+    .map((c) => `<code>r/${esc(c.label)}</code> (${num(c.count)})`)
+    .join(", ") || "public Reddit communities";
   const firstArtifactPath = tasksObj.sentiment?.artifact_path || tasksObj.solution?.artifact_path || "";
   const activeArtifactDir = firstArtifactPath.includes("/")
     ? `${firstArtifactPath.slice(0, firstArtifactPath.lastIndexOf("/") + 1)}`
@@ -100,13 +104,14 @@ export async function renderModels(container, ctx) {
       <div>
         <h3 class="subpanel-title">Corpus metadata &amp; privacy</h3>
         <dl class="vault-kv-grid">
-          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v2")}</dd></div>
+          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v3")}</dd></div>
           <div><dt>Dataset version</dt><dd class="num">v${esc(prov.dataset_version || health.dataset_version)}</dd></div>
           <div><dt>Source archive</dt><dd>${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (public Reddit)" : (prov.generation_seed ? `Seed ${prov.generation_seed}` : "Local archive"))}</dd></div>
           <div><dt>Updated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
           <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads, ${num(summary.comments)} comments (${avgReplies} / thread)</dd></div>
           <div><dt>Privacy &amp; access</dt><dd><span class="tag ${isSynthetic ? "tag-warning" : "tag-positive"}">${esc(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Anonymized public Reddit")}</span></dd></div>
           <div><dt>Artifact directory</dt><dd class="num">${esc(activeArtifactDir)}</dd></div>
+          ${dapt ? `<div class="kv-span-full"><dt>Domain-Adaptive MLM (DAPT)</dt><dd class="num">${num(dapt.unlabeled_documents)} real Reddit texts, ${num(dapt.epochs)} epochs (perplexity ${esc(dapt.initial_perplexity)} → ${esc(dapt.final_perplexity)})</dd></div>` : ""}
           ${filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_boilerplate_filtered)} AutoModerator sticky comments and ${num(filt.gif_only_filtered)} GIF-only embeds removed; usernames stripped and inline PII redacted</dd></div>` : ""}
         </dl>
       </div>
@@ -114,8 +119,8 @@ export async function renderModels(container, ctx) {
       <div>
         <h3 class="subpanel-title">Methodology &amp; epistemic boundaries</h3>
         <ul class="limitations-list">
-          <li><strong>Anonymized real Reddit discussions:</strong> Public IIM Sambalpur discussions across <code>r/IIMSambalpurUG</code>, <code>r/MBAIndia</code>, <code>r/CATpreparation</code>, and <code>r/CATPrep</code> collected via Arctic Shift with author usernames removed and inline contact/user mentions redacted.</li>
-          <li><strong>Upgraded 5-task model stack:</strong> Uses GPU MuRIL (with parent post title for Issue identification) plus Word+Char TF-IDF for binary Solution detection, alongside unsupervised NMF v2 topics fit directly on the live comments.</li>
+          <li><strong>Anonymized real Reddit discussions:</strong> Public IIM Sambalpur discussions across ${subListText} collected via Arctic Shift with author usernames removed and inline contact/user mentions redacted.</li>
+          <li><strong>Upgraded v3 model stack:</strong> Unsupervised MuRIL-DAPT MLM adaptation on real Reddit text + Attention-Masked <code>[CLS]+Mean+Max</code> pooling, 5-branch Multi-Sample Dropout, LLRD, label smoothing, and validation-calibrated hybrid ensembling with Word+Char TF-IDF + unsupervised NMF topics fit directly on live comments.</li>
           <li><strong>Generalization &amp; human gold annotation:</strong> Tables below report thread-grouped held-out test metrics and 54-probe unseen 8-category robustness scores. Real-corpus classifications are model-inferred while human gold annotation proceeds.</li>
           <li><strong>Proposal vs. resolution separation:</strong> Predicted <code>advice</code> and <code>solution</code> replies are strictly separated from explicit first-person follow-up resolution signals.</li>
           <li><strong>Honest metric reporting:</strong> Multi-label tasks (<code>emotion</code>, <code>issue</code>) report <code>macro_f1</code>, <code>micro_f1</code>, <code>subset_accuracy</code>, and <code>hamming_loss</code>; any unemitted metric is displayed as <em>Not emitted</em> rather than 0%.</li>

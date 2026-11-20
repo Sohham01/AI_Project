@@ -72,6 +72,8 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Placement committee communication around company shortlists and PPOs",
             "Realistic expectations on median fixed pay versus total package claims",
             "Recruiter turnout and summer internship conversion rate review",
+            "IIM Sambalpur placements vs other baby IIMs and job market reality",
+            "What is the real average CTC and median package after MBA graduation?",
         ],
         "nouns": [
             "final placements",
@@ -82,6 +84,10 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "alumni referrals for consulting roles",
             "domain-wise hiring numbers",
             "resume verification timelines",
+            "median LPA package",
+            "audited placement statistics",
+            "baby IIM career outcomes",
+            "post-MBA job offers",
         ],
         "hinglish_nouns": [
             "placement ka scene",
@@ -90,6 +96,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "median package",
             "company interviews",
             "marketing aur finance roles",
+            "average CTC aur job market",
         ],
         "solutions": [
             "Request an audited role-wise median fixed pay sheet through the student placement council before finalizing offers.",
@@ -109,6 +116,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Single versus twin-sharing residence conditions on campus",
             "Housekeeping response speed for hostel plumbing and electrical repairs",
             "Evening canteen timings and weekend mess menu variety",
+            "AC rooms, hostel stay rules, and veg/non-veg mess options at IIM Sambalpur",
         ],
         "nouns": [
             "hostel maintenance requests",
@@ -119,6 +127,8 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "block warden follow-ups",
             "dining hall hygiene standards",
             "night canteen availability",
+            "single occupancy hostel rooms",
+            "resident hostel facilities",
         ],
         "hinglish_nouns": [
             "hostel rooms aur AC",
@@ -146,6 +156,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Overlapping case study deadlines across core management courses",
             "How intense is the first-year grading curve and submission calendar?",
             "Balancing live corporate projects with mid-term exam preparation",
+            "Strict attendance rules, CP marks, and MBA academic pressure",
         ],
         "nouns": [
             "overlapping quiz dates",
@@ -156,6 +167,8 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "daily pre-read volume",
             "relative grading pressure",
             "weekend assignment clusters",
+            "strict attendance requirements",
+            "academic workload and exams",
         ],
         "hinglish_nouns": [
             "Term 1 ka workload",
@@ -183,6 +196,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Is taking a 20+ lakh student loan sensible with prior work experience?",
             "Need-based financial aid, merit scholarships, and hostel fee breakup",
             "EMI burden after graduation versus starting post-MBA salary",
+            "IIM Sambalpur fee structure, acceptance deposit refund, and ROI review",
         ],
         "nouns": [
             "total program tuition",
@@ -193,6 +207,8 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "post-MBA return on investment",
             "collateral-free bank loan terms",
             "out-of-pocket living costs",
+            "acceptance fee withdrawal refund",
+            "20 lakh MBA fee structure",
         ],
         "hinglish_nouns": [
             "fees aur loan EMI",
@@ -200,7 +216,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "scholarship form",
             "bank loan disbursement",
             "tuition installment",
-            "living expenses",
+            "refund aur living expenses",
         ],
         "solutions": [
             "Email your bank loan sanction letter to the finance desk ten days before the due date to obtain a penalty-free extension.",
@@ -220,6 +236,8 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Visiting practitioners versus permanent faculty classroom quality",
             "Feedback on Python, SQL, and financial modeling lab modules",
             "Syllabus relevance to modern consulting and product management roles",
+            "Review of IIM Sambalpur UG BS Data Science and Management curriculum",
+            "MBA vs BS degree course structure, faculty expertise, and academic quality",
         ],
         "nouns": [
             "case discussion quality",
@@ -230,6 +248,9 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "updated syllabus materials",
             "faculty office hours",
             "applied simulation workshops",
+            "BS Data Science and AI curriculum",
+            "undergraduate management degree syllabus",
+            "MBA specialization electives",
         ],
         "hinglish_nouns": [
             "faculty aur teaching quality",
@@ -237,7 +258,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "electives ka syllabus",
             "visiting professors ke lectures",
             "practical analytics labs",
-            "class participation",
+            "BS Data Science course structure",
         ],
         "solutions": [
             "Share concrete tool requests like SQL dashboards and live valuation templates in the mid-term course feedback survey.",
@@ -257,6 +278,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "24/7 study rooms, power outlets, and sports complex facilities",
             "New permanent campus buildings, lab workstations, and medical clinic",
             "Network stability during online proctored assessments and interviews",
+            "IIM Sambalpur permanent campus connectivity, Jharsuguda airport, and location review",
         ],
         "nouns": [
             "campus Wi-Fi stability",
@@ -267,14 +289,16 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "indoor sports court lighting",
             "campus medical center hours",
             "high-speed LAN ports for interviews",
+            "new permanent campus infrastructure",
+            "airport and railway connectivity",
         ],
         "hinglish_nouns": [
             "campus Wi-Fi speed",
             "library seating aur sockets",
             "shuttle bus timing",
-            "new campus buildings",
+            "new permanent campus buildings",
             "sports ground lights",
-            "station tak connectivity",
+            "station aur airport connectivity",
         ],
         "solutions": [
             "Raise an IT ticket with the exact router floor ID and timestamp so network engineers can rebalance congested access points.",
@@ -292,8 +316,11 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Clarity and lead time on official program office circulars",
             "Transcript, bonafide certificate, and registration desk turnaround",
             "Last-minute schedule changes and attendance policy notifications",
-            "Admissions waitlist updates and official email responsiveness",
+            "Admissions waitlist updates, CAT percentile cutoffs, and merit list releases",
             "Document verification portal guidelines for incoming students",
+            "IIM Sambalpur CAP PI call, waitlist movement, and conversion chances",
+            "Offer letter timeline, buffer calls, and admission office email replies",
+            "UG BS admission process, JEE/CUET eligibility, and shortlist status",
         ],
         "nouns": [
             "official circular lead times",
@@ -304,14 +331,18 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "registration portal instructions",
             "timely exam timetable notices",
             "single-window student desk updates",
+            "CAT percentile cutoff and PI shortlist",
+            "CAP interview and merit list conversion",
+            "offer letter and buffer call updates",
+            "UG admission portal verification",
         ],
         "hinglish_nouns": [
             "admin office ke circulars",
             "mail ka reply",
-            "waitlist updates",
+            "waitlist movement aur merit list",
             "bonafide certificate process",
-            "last minute notices",
-            "document verification portal",
+            "CAP interview aur CAT cutoff",
+            "admission portal aur document verification",
         ],
         "solutions": [
             "Visit the academic office counter during the 10 AM to 12 PM window with your printed ID and form for same-day stamping.",
@@ -330,7 +361,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "Annual management fest organizing workload and sponsorship teams",
             "Balancing student council committees with academic commitments",
             "Do national B-school case competitions actually boost CV shortlists?",
-            "Cultural societies, sports tournaments, and peer networking events",
+            "Cultural societies, sports tournaments, and student club events",
         ],
         "nouns": [
             "club induction tasks",
@@ -348,7 +379,7 @@ ISSUE_DOMAINS: Dict[str, Dict[str, Any]] = {
             "fest committee ka kaam",
             "analytics aur finance clubs",
             "sports tournaments",
-            "clubs aur studies ka balance",
+            "clubs aur cultural societies",
         ],
         "solutions": [
             "Join at most one domain club and one cultural society in Term 1 so you can deliver strong work without burning out.",
@@ -517,109 +548,155 @@ def generate_expanded_synthetic_bundle(
         ag_tail = rng.choice(short_agree_tails)
         ct_tail = rng.choice(short_counter_tails)
 
-        # 10 richly varied comments per thread covering all 6 responses, 3 sentiments,
-        # all 6 emotions + empty, single/multi/empty issues, solution binary, and 6 registers
+        # 13 cleanly label-aligned multi-register comments per thread:
+        # Every single candidate pairs its EXACT text sentiment, emotion(s), issue(s),
+        # canonical response class, and binary solution flag with ZERO random label noise!
         candidates = [
-            # 1. Negative opinion + frustration/stress
+            # 1. Negative opinion -> frustration (explicit annoyance / dissatisfaction)
             {
                 "text": rng.choice([
-                    f"{rng.choice(casual_prefixes)}The recurring issues with {noun} make {cohort} planning stressful{rng.choice(casual_suffixes)}.",
-                    f"Every {cohort} cycle {noun} feels poorly organized and leaves students frustrated.",
-                    f"Yaar {cohort} mein {hnoun} kaafi exhausting ho gaya hai, proper transparency honi chahiye.",
-                    f"Honestly seeing zero progress on {noun} while {sec_noun} also piles up in {cohort} is draining.",
+                    f"{rng.choice(casual_prefixes)}The repeated mismanagement of {noun} in {cohort} is honestly super frustrating{rng.choice(casual_suffixes)}.",
+                    f"Every {cohort} cycle {noun} stays disorganized and students are fed up with the lack of accountability.",
+                    f"Yaar {cohort} mein {hnoun} ka haal kaafi irritating ho gaya hai, proper transparency honi chahiye.",
+                    f"Lowkey annoyed seeing zero action on {noun} while {sec_noun} also keeps breaking in {cohort}.",
                 ]),
                 "sentiment": "negative",
-                "emotions": rng.choice([["frustration"], ["stress"], ["frustration", "stress"]]),
+                "emotions": ["frustration"],
                 "issues": [primary_issue, secondary_issue] if rng.random() < 0.25 else [primary_issue],
                 "response": "opinion",
                 "solution": "not_solution",
                 "lang": "en",
             },
-            # 2. Positive personal experience + gratitude/confidence
+            # 2. Negative personal experience -> stress (+ frustration when paired)
             {
                 "text": rng.choice([
-                    f"In my {cohort} batch, {noun} turned out much smoother than expected once we settled into campus.",
-                    f"Speaking from personal experience during {cohort}, {noun} genuinely helped me build confidence.",
-                    f"Mere {cohort} mein {hnoun} actually kaafi positive experience raha, seniors ne bohot support kiya.",
-                    f"When I navigated {noun} in {cohort}, the peer support made a huge difference and I am really grateful.",
+                    f"Going through {noun} during {cohort} left me completely exhausted and stressed out every week.",
+                    f"Personally I felt super overwhelmed juggling {noun} alongside {sec_noun} in {cohort} without sleep.",
+                    f"Mere {cohort} mein {hnoun} ki wajah se kaafi tension aur burnout feel hua, neend hi ud gayi thi.",
+                    f"Ngl dealing with {noun} in {cohort} gave our whole wing serious anxiety before deadlines.",
+                ]),
+                "sentiment": "negative",
+                "emotions": ["stress", "frustration"] if t_idx % 3 == 0 else ["stress"],
+                "issues": [primary_issue, secondary_issue] if rng.random() < 0.30 else [primary_issue],
+                "response": "personal_experience",
+                "solution": "not_solution",
+                "lang": "en",
+            },
+            # 3. Positive personal experience -> confidence (assured, solid experience)
+            {
+                "text": rng.choice([
+                    f"In my {cohort} batch, {noun} turned out genuinely solid and made me feel well prepared.",
+                    f"Speaking from firsthand experience in {cohort}, {noun} gave me real confidence for interviews.",
+                    f"Mere {cohort} mein {hnoun} actually kaafi strong raha, koi doubt nahi ki sahi choice thi.",
+                    f"Honestly {noun} during {cohort} was a big win for me, felt totally ready afterwards.",
                 ]),
                 "sentiment": "positive",
-                "emotions": rng.choice([["confidence"], ["gratitude"], ["confidence", "gratitude"]]),
+                "emotions": ["confidence"],
                 "issues": [primary_issue],
                 "response": "personal_experience",
                 "solution": "not_solution",
                 "lang": "en",
             },
-            # 3. Actionable concrete solution (response=solution, is_solution=solution)
+            # 4. Positive remark -> gratitude (explicit thanks / appreciation)
             {
                 "text": rng.choice([
-                    f"{rng.choice(casual_prefixes)}{sol_text}",
-                    f"For {cohort} students dealing with {noun}: {sol_text[0].lower() + sol_text[1:]}",
-                    f"{hsol_text}",
-                    f"Best workaround we saw in {cohort}: {sol_text[0].lower() + sol_text[1:]}",
+                    f"Thanks a ton for laying out {noun} for {cohort} so clearly, really appreciate it!",
+                    f"Super grateful to the seniors who broke down {noun} for {cohort}, saved us so much guesswork.",
+                    f"Thank you bhai, {cohort} ke {hnoun} pe itni genuine clarity dene ke liye shukriya.",
+                    f"Much appreciated! That honest {cohort} breakdown on {noun} really helped me out.",
                 ]),
-                "sentiment": rng.choice(["positive", "neutral"]),
-                "emotions": rng.choice([["hope"], ["confidence"], ["hope", "confidence"]]),
-                "issues": [primary_issue],
-                "response": "solution",
-                "solution": "solution",
+                "sentiment": "positive",
+                "emotions": ["gratitude"],
+                "issues": [primary_issue] if rng.random() < 0.7 else [],
+                "response": "agreement" if t_idx % 2 == 0 else "opinion",
+                "solution": "not_solution",
                 "lang": "en",
             },
-            # 4. General advice (some actionable solution, some general non-solution guidance)
+            # 5. Actionable concrete solution -> hope (or neutral empty emotion for terse fixes)
             (
                 {
                     "text": rng.choice([
-                        f"You should speak with two recent {cohort} alumni about {noun} before making your final call.",
-                        f"Better to stay flexible on {noun} during {cohort} and keep a backup plan ready.",
-                        f"Bhai {cohort} ke {hnoun} ke baare mein seniors se honest feedback le lena, kaafi help milegi.",
-                        f"Consider tracking your priorities around {noun} early in {cohort} so nothing catches you off guard.",
+                        f"{rng.choice(casual_prefixes)}{sol_text} Hopefully that sorts it out smoothly.",
+                        f"For {cohort} students facing {noun}: {sol_text[0].lower() + sol_text[1:]} Should improve things soon.",
+                        f"{hsol_text} Umeed hai isse kaafi relief milega.",
+                        f"Best practical fix in {cohort}: {sol_text[0].lower() + sol_text[1:]}",
                     ]),
-                    "sentiment": rng.choice(["neutral", "positive"]),
-                    "emotions": rng.choice([["hope"], ["confidence"], []]),
+                    "sentiment": "positive",
+                    "emotions": ["hope"],
                     "issues": [primary_issue],
-                    "response": "advice",
+                    "response": "solution",
+                    "solution": "solution",
+                    "lang": "en",
+                }
+                if t_idx % 3 != 0
+                else {
+                    "text": rng.choice([
+                        f"{sol_text}",
+                        f"Fix for {cohort}: {sol_text[0].lower() + sol_text[1:]}",
+                        f"{hsol_text}",
+                    ]),
+                    "sentiment": "neutral",
+                    "emotions": [],
+                    "issues": [primary_issue],
+                    "response": "solution",
+                    "solution": "solution",
+                    "lang": "en",
+                }
+            ),
+            # 6. Actionable practical advice (response=advice, solution=solution) -> hope
+            {
+                "text": rng.choice([
+                    f"My practical tip on {noun} for {cohort}: {sol_text[0].lower() + sol_text[1:]}",
+                    f"Try doing this early in {cohort} for {noun}: {sol_text[0].lower() + sol_text[1:]}",
+                    f"Ek kaam karo bhai ({cohort}): {hsol_text[0].lower() + hsol_text[1:]}",
+                    f"Bro just reach out to two {cohort} seniors directly about {noun} and follow their checklist, legit saves time.",
+                ]),
+                "sentiment": "positive",
+                "emotions": ["hope"],
+                "issues": [primary_issue],
+                "response": "advice",
+                "solution": "solution",
+                "lang": "en",
+            },
+            # 7. General non-solution advice (response=advice, solution=not_solution) -> neutral / hope
+            {
+                "text": rng.choice([
+                    f"You should talk to a few {cohort} alumni about {noun} before locking your decision.",
+                    f"Better to stay patient around {noun} in {cohort} and weigh your priorities calmly.",
+                    f"Bhai {cohort} ke {hnoun} ke baare mein 2-3 logon se opinion zaroor le lena before deciding.",
+                    f"Keep realistic expectations on {noun} during {cohort} and always maintain a backup option.",
+                ]),
+                "sentiment": "neutral",
+                "emotions": ["hope"] if t_idx % 2 == 0 else [],
+                "issues": [primary_issue],
+                "response": "advice",
+                "solution": "not_solution",
+                "lang": "en",
+            },
+            # 8. Agreement (mix of frustrated issue-specific agreement and short neutral agreement)
+            (
+                {
+                    "text": rng.choice([
+                        f"Completely agree on {noun}, our entire {cohort} section was annoyed by the exact same issue.",
+                        f"Spot on about {noun}, it has been super frustrating for {cohort} students too.",
+                        f"Sahi bola bhai, {cohort} ke {hnoun} mein humne bhi bilkul yahi problem jheli hai.",
+                        f"Facts, {noun} in {cohort} really needs fixing asap.",
+                    ]),
+                    "sentiment": "negative",
+                    "emotions": ["frustration"],
+                    "issues": [primary_issue],
+                    "response": "agreement",
                     "solution": "not_solution",
                     "lang": "en",
                 }
                 if t_idx % 2 == 0
                 else {
                     "text": rng.choice([
-                        f"Try writing directly to the {cohort} coordinator about {noun}: {sol_text[0].lower() + sol_text[1:]}",
-                        f"My practical tip on {noun} for {cohort}: {sol_text[0].lower() + sol_text[1:]}",
-                        f"Ek kaam karo bhai ({cohort}): {hsol_text[0].lower() + hsol_text[1:]}",
-                    ]),
-                    "sentiment": "positive",
-                    "emotions": rng.choice([["hope"], ["hope", "gratitude"]]),
-                    "issues": [primary_issue],
-                    "response": "advice",
-                    "solution": "solution",
-                    "lang": "en",
-                }
-            ),
-            # 5. Agreement (mix of issue-explicit and short context-only replies!)
-            (
-                {
-                    "text": rng.choice([
-                        f"Completely agree on {noun}, our entire {cohort} section noticed the exact same pattern.",
-                        f"Spot on about {noun}, especially when {cohort} deadlines hit together.",
-                        f"Sahi bola bhai, {cohort} ke {hnoun} mein humne bhi bilkul yahi face kiya.",
-                        f"Seconding this—{noun} in {cohort} definitely needs tighter execution.",
-                    ]),
-                    "sentiment": rng.choice(["negative", "neutral"]),
-                    "emotions": rng.choice([["frustration"], ["stress"], []]),
-                    "issues": [primary_issue],
-                    "response": "agreement",
-                    "solution": "not_solution",
-                    "lang": "en",
-                }
-                if t_idx % 3 != 0
-                else {
-                    "text": rng.choice([
                         f"Totally agree {ag_tail}.",
-                        f"Same here {ag_tail}, 100% true.",
+                        f"Same here {ag_tail}, 100% accurate.",
                         f"Spot on {ag_tail}, couldn't agree more.",
                         f"Bilkul sahi baat hai bhai, {ag_tail}.",
-                        f"Facts, faced the exact same thing {ag_tail}.",
+                        f"Agreed, noticed the exact same thing {ag_tail}.",
                         f"Yes, completely second this {ag_tail}.",
                     ]),
                     "sentiment": "neutral",
@@ -630,46 +707,46 @@ def generate_expanded_synthetic_bundle(
                     "lang": "en",
                 }
             ),
-            # 6. Counterargument (mix of issue-specific and short/general!)
+            # 9. Counterargument (positive confident pushback OR crisp neutral/negative disagreement)
             (
                 {
                     "text": rng.choice([
-                        f"Actually I disagree—{noun} has noticeably improved across {cohort}.",
-                        f"Not entirely fair; {noun} works reasonably well in {cohort} when you follow the schedule.",
-                        f"Nahi yaar aisa nahi hai, {cohort} mein {hnoun} kaafi better ho gaya hai.",
-                        f"Hold on, that overlooks how much {cohort} upgraded {noun2} recently.",
+                        f"Actually I disagree—{noun} has noticeably improved across {cohort} and works pretty well now.",
+                        f"Not really fair; {noun} in {cohort} is actually quite solid once you check recent outcomes.",
+                        f"Nahi yaar aisa nahi hai, {cohort} mein {hnoun} pehle se kaafi better ho gaya hai.",
+                        f"Hold on, that ignores how much {cohort} upgraded {noun2} recently, I am pretty confident in it.",
                     ]),
-                    "sentiment": rng.choice(["neutral", "positive"]),
-                    "emotions": rng.choice([["confidence"], []]),
+                    "sentiment": "positive",
+                    "emotions": ["confidence"],
                     "issues": [primary_issue],
                     "response": "counterargument",
                     "solution": "not_solution",
                     "lang": "en",
                 }
-                if t_idx % 3 != 0
+                if t_idx % 2 == 0
                 else {
                     "text": rng.choice([
                         f"I disagree, that has not been true {ct_tail}.",
-                        f"Not really, things look different {ct_tail}.",
-                        f"Hard disagree on that take {ct_tail}.",
-                        f"Nahi bhai, thoda exaggerate ho raha hai {ct_tail}.",
-                        f"That feels overstated {ct_tail}.",
+                        f"Nah gotta push back on that, things look different {ct_tail}.",
+                        f"Not quite accurate {ct_tail}, feels pretty exaggerated.",
+                        f"Nahi bhai, thoda zyada negative ho raha hai {ct_tail}.",
+                        f"Strongly disagree with that claim {ct_tail}.",
                     ]),
-                    "sentiment": rng.choice(["neutral", "negative"]),
-                    "emotions": rng.choice([[], ["frustration"]]),
+                    "sentiment": "negative" if t_idx % 4 == 1 else "neutral",
+                    "emotions": ["frustration"] if t_idx % 4 == 1 else [],
                     "issues": [],
                     "response": "counterargument",
                     "solution": "not_solution",
                     "lang": "en",
                 }
             ),
-            # 7. Curious question / neutral inquiry (curiosity!)
+            # 10. Curious inquiry -> neutral + curiosity (always cleanly aligned!)
             {
                 "text": rng.choice([
                     f"Does anyone know how {noun} is handled for incoming {cohort} students?",
                     f"Quick question: has there been any official update on {noun} for {cohort}?",
                     f"Bhai {cohort} mein {hnoun} ka exact process kya hota hai? Koi bata sakta hai?",
-                    f"Curious whether {noun} in {cohort} differs for freshers versus people with work ex.",
+                    f"Wondering whether {noun} in {cohort} differs for freshers versus people with work ex?",
                 ]),
                 "sentiment": "neutral",
                 "emotions": ["curiosity"],
@@ -678,63 +755,93 @@ def generate_expanded_synthetic_bundle(
                 "solution": "not_solution",
                 "lang": "en",
             },
-            # 8. Personal experience describing a concrete fix (personal_experience + solution=solution!)
+            # 11. Personal experience describing a concrete fix (personal_experience + solution=solution) -> gratitude + confidence
             {
                 "text": rng.choice([
-                    f"When our {cohort} group hit trouble with {noun}, we tried this fix: {sol_text[0].lower() + sol_text[1:]} Worked cleanly.",
-                    f"Had the same headache with {noun} during {cohort} and resolved it fast once I emailed the desk with screenshots.",
+                    f"When our {cohort} group ran into trouble with {noun}, we tried this fix: {sol_text[0].lower() + sol_text[1:]} Worked cleanly and I'm so thankful.",
+                    f"Had the same issue with {noun} during {cohort} and got it resolved fast once I emailed the desk with screenshots.",
                     f"Humare {cohort} wing mein {hnoun} ka issue tha, portal pe joint ticket aur photos upload karne ke 48 ghante mein solve ho gaya.",
                 ]),
                 "sentiment": "positive",
-                "emotions": rng.choice([["gratitude", "confidence"], ["gratitude"], ["confidence"]]),
+                "emotions": ["confidence", "gratitude"],
                 "issues": [primary_issue],
                 "response": "personal_experience",
                 "solution": "solution",
                 "lang": "en",
             },
-            # 9. Short gratitude / hopeful positive remark
+            # 12. Informal Reddit positive opinion -> confidence / hope
             {
                 "text": rng.choice([
-                    f"Thanks a lot for explaining {noun} for {cohort} so clearly, really reassuring!",
-                    f"Super helpful breakdown on {noun} in {cohort}, appreciate you sharing this.",
-                    f"Thank you bhai, {cohort} ke {hnoun} pe kaafi clarity mil gayi.",
-                    f"Really appreciate the honest {cohort} update, thanks!",
-                    f"Thanks for sharing this {cohort} detail, feeling much more hopeful now.",
+                    f"Ngl {noun} in {cohort} has been surprisingly awesome lately, massive upgrade imo!",
+                    f"Tbh {noun} for {cohort} is legitimately strong if you put in the work, zero regrets.",
+                    f"Honestly {cohort} mein {hnoun} kaafi decent lag raha hai, hopefully it keeps getting better.",
+                    f"Lowkey impressed by {noun} this {cohort} cycle, solid overall vibe.",
                 ]),
                 "sentiment": "positive",
-                "emotions": rng.choice([["gratitude"], ["gratitude", "hope"]]),
-                "issues": [primary_issue] if rng.random() < 0.6 else [],
-                "response": rng.choice(["agreement", "opinion"]),
+                "emotions": ["hope"] if t_idx % 2 == 0 else ["confidence"],
+                "issues": [primary_issue],
+                "response": "opinion",
                 "solution": "not_solution",
                 "lang": "en",
             },
-            # 10. Context-dependent comment (for parent-post-context learning!)
-            {
-                "text": rng.choice([
-                    f"Same issue happened to our {cohort} group and nobody gave a clear timeline.",
-                    f"If the {cohort} committee handles this early, half the panic disappears.",
-                    f"Any recent {cohort} student who can verify whether this actually got fixed?",
-                    f"Honestly this improved a lot for {cohort} compared to before, worth checking directly.",
-                ]),
-                "sentiment": rng.choice(["negative", "neutral", "positive"]),
-                "emotions": rng.choice([["frustration"], ["curiosity"], ["hope"], []]),
-                "issues": [primary_issue] if rng.random() < 0.7 else [],
-                "response": rng.choice(["personal_experience", "opinion", "counterargument"]),
-                "solution": "not_solution",
-                "lang": "en",
-            },
+            # 13. Context-dependent comment (for parent-post-context learning — ZERO random label noise!)
+            (
+                {
+                    "text": f"Same problem hit our {cohort} batch and nobody gave a clear update, super frustrating.",
+                    "sentiment": "negative",
+                    "emotions": ["frustration"],
+                    "issues": [primary_issue],
+                    "response": "personal_experience",
+                    "solution": "not_solution",
+                    "lang": "en",
+                }
+                if t_idx % 4 == 0
+                else (
+                    {
+                        "text": f"Any recent {cohort} student here who can clarify whether this got sorted out?",
+                        "sentiment": "neutral",
+                        "emotions": ["curiosity"],
+                        "issues": [primary_issue],
+                        "response": "opinion",
+                        "solution": "not_solution",
+                        "lang": "en",
+                    }
+                    if t_idx % 4 == 1
+                    else (
+                        {
+                            "text": f"Actually this improved quite a bit for {cohort} compared to last cycle, worth checking directly.",
+                            "sentiment": "positive",
+                            "emotions": ["confidence"],
+                            "issues": [primary_issue],
+                            "response": "counterargument",
+                            "solution": "not_solution",
+                            "lang": "en",
+                        }
+                        if t_idx % 4 == 2
+                        else {
+                            "text": f"If the {cohort} team publishes a clear timeline early, it should ease a lot of tension.",
+                            "sentiment": "positive",
+                            "emotions": ["hope"],
+                            "issues": [primary_issue],
+                            "response": "opinion",
+                            "solution": "not_solution",
+                            "lang": "en",
+                        }
+                    )
+                )
+            ),
         ]
 
         for c_idx, cand in enumerate(candidates, start=1):
             raw_t = cand["text"]
-            if rng.random() < 0.22 and len(raw_t.split()) >= 7:
+            if rng.random() < 0.25 and len(raw_t.split()) >= 7:
                 raw_t = _mild_typo(raw_t, rng)
             text = _unique_text(raw_t, cohort)
             if not text:
                 continue
             is_mixed = any(
                 tok in text.lower()
-                for tok in ("bhai", "yaar", "kaafi", "nahi", "karo", "humare", "mein", "sahi")
+                for tok in ("bhai", "yaar", "kaafi", "nahi", "karo", "humare", "mein", "sahi", "umeed", "shukriya")
             )
             items.append(
                 {
@@ -756,7 +863,7 @@ def generate_expanded_synthetic_bundle(
     return items, post_titles
 
 
-def _ngrams(text: str, n: int = 6) -> set[Tuple[str, ...]]:
+def _ngrams(text: str, n: int = 5) -> set[Tuple[str, ...]]:
     toks = [t for t in text.lower().split() if t]
     if len(toks) < n:
         return set()
@@ -768,29 +875,35 @@ def verify_zero_contamination(
     heldout_test_texts: Sequence[str],
 ) -> Dict[str, Any]:
     probe_texts = [p["text"].strip().lower() for p in ROBUSTNESS_PROBES]
-    probe_ngrams = set().union(*(_ngrams(t, 6) for t in probe_texts))
+    probe_5grams = set().union(*(_ngrams(t, 5) for t in probe_texts))
+    probe_6grams = set().union(*(_ngrams(t, 6) for t in probe_texts))
     test_set = {t.strip().lower() for t in heldout_test_texts}
 
     exact_probe_hits = 0
-    ngram_probe_hits = 0
+    fivegram_probe_hits = 0
+    sixgram_probe_hits = 0
     exact_test_hits = 0
     for item in expanded_items:
         low = item["text"].strip().lower()
         if low in probe_texts:
             exact_probe_hits += 1
-        if _ngrams(low, 6) & probe_ngrams:
-            ngram_probe_hits += 1
+        if _ngrams(low, 5) & probe_5grams:
+            fivegram_probe_hits += 1
+        if _ngrams(low, 6) & probe_6grams:
+            sixgram_probe_hits += 1
         if low in test_set:
             exact_test_hits += 1
 
-    if exact_probe_hits or ngram_probe_hits or exact_test_hits:
+    if exact_probe_hits or fivegram_probe_hits or sixgram_probe_hits or exact_test_hits:
         raise RuntimeError(
             f"Contamination detected: exact_probe={exact_probe_hits}, "
-            f"ngram_probe={ngram_probe_hits}, exact_test={exact_test_hits}"
+            f"fivegram_probe={fivegram_probe_hits}, sixgram_probe={sixgram_probe_hits}, "
+            f"exact_test={exact_test_hits}"
         )
     return {
         "exact_probe_overlaps": exact_probe_hits,
-        "sixgram_probe_overlaps": ngram_probe_hits,
+        "fivegram_probe_overlaps": fivegram_probe_hits,
+        "sixgram_probe_overlaps": sixgram_probe_hits,
         "exact_heldout_test_overlaps": exact_test_hits,
         "clean": True,
     }

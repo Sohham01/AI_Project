@@ -277,5 +277,112 @@ class TestImportRedditExportAndDecodoPilot(unittest.TestCase):
         mock_post.assert_not_called()
 
 
+try:
+    import torch as _torch  # noqa: F401
+    _HAS_TORCH = True
+except ImportError:
+    _HAS_TORCH = False
+
+
+@unittest.skipUnless(_HAS_TORCH, "torch optional dependency not installed")
+class TestV3ModelArchitectureAndHybridEnsemble(unittest.TestCase):
+    def test_pooled_multisample_head_shapes_and_llrd_groups(self):
+        import types
+        import torch
+        from ml.models.transformer.muril_classifier import (
+            _PooledMultiSampleModel,
+            _build_llrd_param_groups,
+        )
+
+        class _TinyEncoder(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.embeddings = torch.nn.Embedding(32, 8)
+                self.encoder = torch.nn.Module()
+                self.encoder.layer = torch.nn.ModuleList([torch.nn.Linear(8, 8) for _ in range(2)])
+
+            def forward(self, input_ids, attention_mask, token_type_ids=None):
+                x = self.embeddings(input_ids)
+                for lyr in self.encoder.layer:
+                    x = lyr(x)
+                return types.SimpleNamespace(last_hidden_state=x)
+
+        enc = _TinyEncoder()
+        model = _PooledMultiSampleModel(enc, hidden_size=8, num_labels=6, multi_sample_dropout=5, dropout_rate=0.2)
+        ids = torch.tensor([[1, 2, 3, 0], [4, 5, 0, 0]])
+        mask = torch.tensor([[1, 1, 1, 0], [1, 1, 0, 0]])
+        logits = model(ids, mask)
+        self.assertEqual(tuple(logits.shape), (2, 6))
+
+        groups = _build_llrd_param_groups(
+            model,
+            base_lr=3e-5,
+            head_lr_multiplier=3.0,
+            llrd=0.90,
+            weight_decay=0.01,
+            num_hidden_layers=2,
+        )
+        lrs = sorted({round(g["lr"], 8) for g in groups})
+        # Embeddings < layer 0 < layer 1 < head
+        self.assertGreaterEqual(len(lrs), 4)
+        self.assertAlmostEqual(lrs[-1], 9e-5, places=7)
+
+    def test_validation_temperature_scaling_reduces_overconfident_nll(self):
+        import numpy as np
+        from ml.models.transformer.muril_classifier import _calibrate_temperature, _validation_nll
+
+        # Deliberately overconfident logits with 1 misclassified point -> T > 1.0 lowers NLL
+        logits = np.array(
+            [[8.0, -8.0], [8.0, -8.0], [-8.0, 8.0], [6.0, -6.0]],
+            dtype=np.float32,
+        )
+        y_val = np.array([0, 0, 1, 1], dtype=np.int64)
+        raw_nll = _validation_nll(logits, y_val, multilabel=False, temperature=1.0)
+        best_t = _calibrate_temperature(logits, y_val, multilabel=False)
+        cal_nll = _validation_nll(logits, y_val, multilabel=False, temperature=best_t)
+        self.assertGreater(best_t, 1.0)
+        self.assertLess(cal_nll, raw_nll)
+
+    def test_dapt_mlm_masking_never_masks_special_or_pad_tokens(self):
+        import torch
+        from ml.models.transformer.muril_dapt import _mask_tokens_bert
+
+        class _FakeTok:
+            cls_token_id = 101
+            sep_token_id = 102
+            pad_token_id = 0
+            unk_token_id = 100
+            mask_token_id = 103
+
+            def __len__(self):
+                return 1000
+
+        tok = _FakeTok()
+        ids = torch.tensor([[101, 200, 201, 202, 203, 204, 205, 102, 0, 0]])
+        mask = torch.tensor([[1, 1, 1, 1, 1, 1, 1, 1, 0, 0]])
+        gen = torch.Generator().manual_seed(42)
+        masked_ids, labels = _mask_tokens_bert(ids, mask, tok, mlm_probability=0.5, generator=gen)
+        # Special tokens & padding must NEVER be masked
+        for pos in (0, 7, 8, 9):
+            self.assertEqual(int(labels[0, pos].item()), -100)
+            self.assertEqual(int(masked_ids[0, pos].item()), int(ids[0, pos].item()))
+
+    def test_hybrid_blend_selects_complementary_alpha_on_validation(self):
+        import numpy as np
+        from backend.build_live_corpus_artifacts import _select_hybrid_blend_on_validation
+
+        labels = ["not_solution", "solution"]
+        val_targets = ["not_solution", "not_solution", "solution", "solution"]
+        # Model A is strong on rows 0, 2; Model B is strong on rows 1, 3 -> blend beats either solo
+        p_a = np.array([[0.95, 0.05], [0.45, 0.55], [0.05, 0.95], [0.55, 0.45]], dtype=np.float32)
+        p_b = np.array([[0.45, 0.55], [0.95, 0.05], [0.55, 0.45], [0.05, 0.95]], dtype=np.float32)
+        alpha, _, _, val_f1 = _select_hybrid_blend_on_validation(
+            p_a, p_b, val_targets, labels, multilabel=False, is_binary_solution=True
+        )
+        self.assertGreater(alpha, 0.0)
+        self.assertLess(alpha, 1.0)
+        self.assertAlmostEqual(val_f1, 1.0, places=4)
+
+
 if __name__ == "__main__":
     unittest.main()
