@@ -37,7 +37,7 @@ export function sankeyFlowChart(summary) {
   );
 
   const W = 1120;
-  const H = 396;
+  const H = 440;
   const topPad = 42;
   const botPad = 18;
   const usableH = H - topPad - botPad;
@@ -45,12 +45,14 @@ export function sankeyFlowChart(summary) {
   const midPillW = 188;
   const colX = { issue: 248, response: 468, resolution: 882 };
 
-  function layoutNodes(list, x, gap) {
+  function layoutNodes(list, x, gap, minH = 36) {
     const total = list.reduce((s, n) => s + n.weight, 0) || 1;
-    const avail = usableH - gap * Math.max(0, list.length - 1);
+    const avail = Math.max(0, usableH - gap * Math.max(0, list.length - 1));
+    const safeMin = Math.min(minH, list.length ? avail / list.length : minH);
+    const extra = Math.max(0, avail - safeMin * list.length);
     let y = topPad;
     return list.map((item) => {
-      const h = Math.max(18, (item.weight / total) * avail);
+      const h = safeMin + (item.weight / total) * extra;
       const node = { ...item, x, y, h, cy: y + h / 2 };
       y += h + gap;
       return node;
