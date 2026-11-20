@@ -157,21 +157,29 @@ class MuRILResponseClassifier(ResponseClassification):
 
     def _load_for_labels(self, labels: Sequence[str]) -> None:
         """Load pretrained encoder weights with a new classifier head."""
+        from ml.models.transformer.muril_classifier import resolve_local_muril_path
+
         self._device = self._resolve_device()
-        self._tokenizer = AutoTokenizer.from_pretrained(self._config.model_id)
+        model_path, local_only = resolve_local_muril_path(self._config.model_id)
+        self._tokenizer = AutoTokenizer.from_pretrained(
+            model_path, local_files_only=local_only
+        )
 
         label_to_id = {label: index for index, label in enumerate(labels)}
         id_to_label = {index: label for label, index in label_to_id.items()}
 
-        hf_config = AutoConfig.from_pretrained(self._config.model_id)
+        hf_config = AutoConfig.from_pretrained(
+            model_path, local_files_only=local_only
+        )
         hf_config.num_labels = len(labels)
         hf_config.label2id = label_to_id
         hf_config.id2label = id_to_label
         hf_config.problem_type = "single_label_classification"
 
         self._model = AutoModelForSequenceClassification.from_pretrained(
-            self._config.model_id,
+            model_path,
             config=hf_config,
+            local_files_only=local_only,
         ).to(self._device)
 
     def _check_trained(self) -> None:

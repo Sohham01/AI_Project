@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import FeatureUnion
 
 # Placeholders emitted by the preprocessing stage: <URL>, <MENTION>,
 # <EMOJI_loudly_crying_face>, ...
@@ -94,8 +95,8 @@ class TfidfLogisticTextModel:
 
     # -- Featurisation -------------------------------------------------
 
-    def _build_vectorizer(self) -> TfidfVectorizer:
-        return TfidfVectorizer(
+    def _build_vectorizer(self) -> Any:
+        word_vectorizer = TfidfVectorizer(
             max_features=self._config.max_features,
             min_df=self._config.min_df,
             max_df=self._config.max_df,
@@ -108,6 +109,21 @@ class TfidfLogisticTextModel:
             use_idf=self._config.use_idf,
             smooth_idf=self._config.smooth_idf,
         )
+        if not getattr(self._config, "use_char_ngrams", False):
+            return word_vectorizer
+        char_vectorizer = TfidfVectorizer(
+            analyzer="char_wb",
+            ngram_range=tuple(self._config.char_ngram_range),
+            max_features=self._config.char_max_features,
+            min_df=self._config.min_df,
+            max_df=self._config.max_df,
+            lowercase=self._config.lowercase,
+            sublinear_tf=self._config.sublinear_tf,
+            norm=self._config.norm,
+            use_idf=self._config.use_idf,
+            smooth_idf=self._config.smooth_idf,
+        )
+        return FeatureUnion([("word", word_vectorizer), ("char", char_vectorizer)])
 
     def _strip_placeholders(self, text: str) -> str:
         """

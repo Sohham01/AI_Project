@@ -12,7 +12,7 @@ COPY backend/requirements.txt /workspace/backend/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /workspace/backend/requirements.txt
 
-# Copy application source, isolated synthetic artifacts, and synthetic corpus
+# Copy application source, anonymized live corpus bundle, and preserved archive artifacts
 COPY backend /workspace/backend
 COPY ml /workspace/ml
 COPY data /workspace/data

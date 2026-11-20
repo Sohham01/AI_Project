@@ -66,6 +66,8 @@ function computeTreeOrder(comments) {
 export async function renderThread(container, ctx, postId) {
   const data = await api.discussionDetail(postId);
   const post = data.post;
+  const isSynthetic = Boolean(post.synthetic);
+  const formatSub = (sub) => (sub && !sub.startsWith("r/") ? `r/${sub}` : (sub || "community"));
   const comments = data.comments || [];
   const treeNodes = computeTreeOrder(comments);
   const byId = new Map(comments.map((c) => [c.reddit_id, c]));
@@ -146,20 +148,20 @@ export async function renderThread(container, ctx, postId) {
     const evidenceBanner = isEvidence
       ? `
         <div class="comment-evidence-banner comment-evidence-${comment.resolution_evidence_type === "reported_success" ? "positive" : "warning"}">
-          <strong>Explicit generated outcome evidence (${esc(RESOLUTION_META[comment.resolution_evidence_type]?.label || pretty(comment.resolution_evidence_type))})</strong>
-          <span>First-person synthetic scenario report, not real-world verification</span>
+          <strong>Explicit follow-up signal (${esc(RESOLUTION_META[comment.resolution_evidence_type]?.label || pretty(comment.resolution_evidence_type))})</strong>
+          <span>First-person outcome language detected in comment text</span>
         </div>
       `
       : "";
 
-    const scenarioComparison = threadUiState.showScenario
+    const scenarioComparison = isSynthetic && threadUiState.showScenario
       ? `
         <div class="scenario-compare-strip">
-          <span class="scenario-compare-title">Synthetic scenario labels:</span>
+          <span class="scenario-compare-title">Scenario reference labels:</span>
           ${roleBadge(comment.response_type)}
           ${sentimentBadge(comment.sentiment)}
           <span class="meta-inline">Emotions: ${esc((comment.emotions || []).map(pretty).join(", "))}</span>
-          ${comment.is_solution ? badge("Scenario: actionable", "positive") : `<span class="meta-inline">Scenario: non-solution</span>`}
+          ${comment.is_solution ? badge("Actionable", "positive") : `<span class="meta-inline">Non-solution</span>`}
         </div>
       `
       : "";
@@ -180,7 +182,7 @@ export async function renderThread(container, ctx, postId) {
         ${parentRef}
         <p class="comment-body" lang="${comment.language === "hi" ? "hi" : "en"}">${esc(comment.body)}</p>
 
-        <div class="comment-predictions-strip" aria-label="In-sample model predictions">
+        <div class="comment-predictions-strip" aria-label="Model predictions">
           <span class="strip-caption">Model output:</span>
           ${pResp ? roleBadge(pResp) : ""}
           ${pSent ? sentimentBadge(pSent) : ""}
@@ -195,7 +197,7 @@ export async function renderThread(container, ctx, postId) {
         ${scenarioComparison}
 
         <details class="comment-inspector">
-          <summary>Inspect all 5 model probability distributions (in-sample synthetic display)</summary>
+          <summary>Inspect all 5 model probability distributions</summary>
           <div class="inspector-prob-grid">
             <div class="prob-box">
               <h4>Response role <span class="num">${percent(pred.response?.confidence)}</span></h4>
@@ -213,8 +215,12 @@ export async function renderThread(container, ctx, postId) {
               <h4>Solution &amp; issue predictions</h4>
               <div class="prob-kv"><span>Solution probability</span><strong class="num">${percent(pSolProb)}</strong></div>
               <div class="prob-kv"><span>Predicted issues</span><strong>${pIssues.length ? esc(pIssues.map(pretty).join(", ")) : "None above threshold"}</strong></div>
-              <div class="prob-kv"><span>Scenario gold role</span><code>${esc(comment.response_type)}</code></div>
-              <div class="prob-kv"><span>Scenario gold sentiment</span><code>${esc(comment.sentiment)}</code></div>
+              ${isSynthetic ? `
+                <div class="prob-kv"><span>Reference role</span><code>${esc(comment.response_type)}</code></div>
+                <div class="prob-kv"><span>Reference sentiment</span><code>${esc(comment.sentiment)}</code></div>
+              ` : `
+                <div class="prob-kv"><span>NMF topic</span><code>${esc(pred.response?.topic_label || "Unassigned")}</code></div>
+              `}
             </div>
           </div>
         </details>
@@ -249,15 +255,15 @@ export async function renderThread(container, ctx, postId) {
         : `
           <div class="aside-section">
             <h3>Explicit outcome statement</h3>
-            <p class="muted" style="font-size:var(--text-sm)">No explicit outcome follow-up comment was generated for this thread.</p>
+            <p class="muted" style="font-size:var(--text-sm)">No explicit outcome follow-up comment was detected in this thread.</p>
           </div>
         `}
 
       <div class="aside-section">
         <h3>Proposed solutions &amp; advice</h3>
         <dl class="compact-kv">
-          <div><dt>Scenario <code>solution</code> replies</dt><dd class="num">${num(solutionComments.length)}</dd></div>
-          <div><dt>Scenario <code>advice</code> replies</dt><dd class="num">${num(adviceComments.length)}</dd></div>
+          <div><dt>Predicted <code>solution</code> replies</dt><dd class="num">${num(solutionComments.length)}</dd></div>
+          <div><dt>Predicted <code>advice</code> replies</dt><dd class="num">${num(adviceComments.length)}</dd></div>
           <div><dt>Binary model positive</dt><dd class="num">${num(modelSolutionPositives.length)}</dd></div>
         </dl>
         ${(solutionComments.length || adviceComments.length)
@@ -278,7 +284,7 @@ export async function renderThread(container, ctx, postId) {
       </div>
 
       <div class="aside-section">
-        <p class="muted" style="font-size:var(--text-xs)">${glossaryTip("in_sample_vs_heldout", "In-sample predictions")}. All thread content and outcomes are synthetic.</p>
+        <p class="muted" style="font-size:var(--text-xs)">${glossaryTip("in_sample_vs_heldout", "Model-inferred labels")}. Author usernames are stripped and inline PII is redacted.</p>
       </div>
     `;
 
@@ -298,11 +304,11 @@ export async function renderThread(container, ctx, postId) {
               <div class="op-card-meta">
                 <a class="tag tag-neutral" href="#/explorer?issue=${encodeURIComponent(post.issue_key)}">${esc(pretty(post.issue_category))}</a>
                 ${resolutionBadge(post.resolution_state)}
-                <span class="tag tag-neutral">${esc(post.subreddit)} (synthetic)</span>
+                <span class="tag tag-neutral">${esc(formatSub(post.subreddit))}</span>
                 <span class="num muted" style="font-size:var(--text-xs)">${dateText(post.created_at)}</span>
               </div>
               <h2 class="op-title">${esc(post.title)}</h2>
-              <p class="op-body">${esc(post.body)}</p>
+              ${post.body ? `<p class="op-body">${esc(post.body)}</p>` : ""}
               <div class="op-composition">
                 <span class="op-comp-label">Predicted comment roles in this thread (${num(comments.length)} replies):</span>
                 ${stackedCompositionBar(respSegments, { total: comments.length, unit: "comments", ariaLabel: "Thread predicted response roles" })}
@@ -323,10 +329,12 @@ export async function renderThread(container, ctx, postId) {
               <button type="button" class="pill-btn ${threadUiState.filter === "multilingual" ? "is-active" : ""}" data-thread-filter="multilingual">Hindi / Hinglish (${multilingualCount})</button>
             </div>
 
-            <label class="toggle-check">
-              <input type="checkbox" id="toggle-scenario-labels" ${threadUiState.showScenario ? "checked" : ""}>
-              <span>Compare scenario labels</span>
-            </label>
+            ${isSynthetic ? `
+              <label class="toggle-check">
+                <input type="checkbox" id="toggle-scenario-labels" ${threadUiState.showScenario ? "checked" : ""}>
+                <span>Compare scenario labels</span>
+              </label>
+            ` : ""}
           </div>
 
           <section class="comment-stream" aria-label="Comment reply thread">
@@ -338,7 +346,7 @@ export async function renderThread(container, ctx, postId) {
 
         <aside class="thread-sidebar" aria-label="Thread resolution evidence inspector">
           ${deck("Evidence inspector", {
-            subtitle: "Scenario metadata and model outputs kept strictly separate",
+            subtitle: "Model proposals and explicit follow-up signals kept strictly separate",
             body: evidenceSidebarBody,
           })}
         </aside>

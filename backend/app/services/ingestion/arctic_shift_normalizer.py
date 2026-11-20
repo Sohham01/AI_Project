@@ -1,7 +1,12 @@
 from datetime import datetime, timezone
 import math
+import re
 from typing import Any
 from urllib.parse import urlsplit
+
+_RELATIVE_REDDIT_PATH = re.compile(
+    r"^/r/[A-Za-z0-9_]{1,21}/comments/[A-Za-z0-9]+(?:/[^\s?#]*)?/?$"
+)
 
 from app.schemas.ingestion import CommentData, PostData
 from app.services.ingestion.arctic_shift import ArcticShiftClient
@@ -58,10 +63,12 @@ class ArcticShiftNormalizer:
 
     @staticmethod
     def _url(value: Any) -> str | None:
-        if value is None:
+        if value is None or value == "":
             return None
         if not isinstance(value, str) or any(char.isspace() for char in value):
             raise ProviderRequestError("invalid_payload")
+        if _RELATIVE_REDDIT_PATH.fullmatch(value):
+            return f"https://www.reddit.com{value}"
         try:
             parsed = urlsplit(value)
             if parsed.scheme not in {"http", "https"} or not parsed.hostname:

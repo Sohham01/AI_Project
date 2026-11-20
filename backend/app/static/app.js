@@ -21,19 +21,19 @@ import { renderTopics } from "./js/views/topics.js";
 const PAGE_META = {
   overview: {
     title: "Community intelligence studio",
-    description: "Trace how synthetic community issues unfold across six canonical response classes, actionable proposals, and explicit resolution evidence.",
+    description: "Trace how public IIM Sambalpur Reddit discussions unfold across issue domains, six canonical response classes, actionable proposals, and explicit resolution signals.",
     crumb: "Overview",
     nav: "overview",
   },
   issues: {
     title: "Issues intelligence",
-    description: "Compare scenario-labeled issue domains by actionable recommendation density, predicted polarity, and explicit outcome evidence.",
+    description: "Compare community issue domains by actionable recommendation density, predicted polarity, and explicit outcome evidence.",
     crumb: "Issues",
     nav: "issues",
   },
   explorer: {
     title: "Discussion workbench",
-    description: "Filter generated threads, switch tabs inside the live split preview, or open the full parent-child conversation tree.",
+    description: "Filter anonymized community threads, switch tabs inside the live split preview, or open the full parent-child conversation tree.",
     crumb: "Discussions",
     nav: "explorer",
   },
@@ -45,7 +45,7 @@ const PAGE_META = {
   },
   topics: {
     title: "Topic constellation",
-    description: "Explore unsupervised NMF clusters sized by corpus share, inspect weighted terms, and review Indic tokenization boundaries.",
+    description: "Explore unsupervised NMF clusters fit directly on community comments, inspect weighted terms, and audit representative replies.",
     crumb: "Topic map",
     nav: "topics",
   },
@@ -69,7 +69,7 @@ const PAGE_META = {
   },
   models: {
     title: "Models & dataset provenance",
-    description: "Verify synthetic corpus provenance, known pilot limits, held-out thread-grouped validation/test scores, and evaluator warnings.",
+    description: "Inspect anonymized Reddit corpus provenance, model architectures, held-out thread-grouped validation/test scores, and robustness probes.",
     crumb: "Models & data",
     nav: "models",
   },
@@ -104,6 +104,9 @@ const dom = {
   themeToggleBtn: document.querySelector("#theme-toggle-btn"),
   themeToggleLabel: document.querySelector("#theme-toggle-label"),
   provPillBtn: document.querySelector("#provenance-pill-btn"),
+  provPillText: document.querySelector("#prov-pill-text"),
+  provPopTitle: document.querySelector("#prov-pop-title"),
+  provPopBody: document.querySelector("#prov-pop-body"),
   provPopover: document.querySelector("#provenance-popover"),
   closeProvBtn: document.querySelector("#close-prov-popover"),
   toastRegion: document.querySelector("#toast-region"),
@@ -251,7 +254,7 @@ function paintPaletteList(items) {
   if (!dom.paletteResults) return;
   paletteFocusIdx = 0;
   if (!items.length) {
-    dom.paletteResults.innerHTML = `<div class="palette-item"><span class="muted">No matching views or synthetic threads</span></div>`;
+    dom.paletteResults.innerHTML = `<div class="palette-item"><span class="muted">No matching views or community threads</span></div>`;
     return;
   }
   dom.paletteResults.innerHTML = items.map((item, idx) => `
@@ -322,17 +325,32 @@ async function hydrateShell() {
     ctx.health = health;
     ctx.summary = summary;
 
-    dom.serviceState.textContent = "Local API ready";
+    dom.serviceState.textContent = "API ready";
     dom.stateDot.classList.add("ok");
     dom.stateDot.classList.remove("err");
 
+    const prov = summary.provenance || {};
+    const isSynthetic = Boolean(summary.synthetic_only);
     dom.datasetSize.textContent = `${num(summary.posts)} threads, ${num(summary.comments)} comments`;
     dom.generatedDate.textContent = dateText(summary.generated_at);
     dom.sidebarVersion.textContent = `v${summary.dataset_version}`;
-    dom.sidebarDataset.textContent = `Seed ${summary.provenance?.generation_seed || "20261116"}`;
+    dom.sidebarDataset.textContent = isSynthetic
+      ? `Seed ${prov.generation_seed || "20261116"}`
+      : (prov.source_provider === "arctic_shift" ? "Arctic Shift archive" : "Public Reddit corpus");
     dom.sidebarCounts.textContent = `${num(summary.posts)} threads, ${num(summary.comments)} comments`;
-    if (summary.provenance?.notice) dom.bannerNotice.textContent = summary.provenance.notice;
-    dom.footerProvenance.textContent = `Synthetic dataset v${summary.dataset_version} (seed ${summary.provenance?.generation_seed || "20261116"}), read-only /api/demo`;
+    if (dom.bannerNotice && prov.notice) dom.bannerNotice.textContent = prov.notice;
+    if (dom.provPillText) {
+      dom.provPillText.textContent = isSynthetic ? "Archived sample corpus" : "Public Reddit corpus";
+    }
+    if (dom.provPopTitle) {
+      dom.provPopTitle.textContent = isSynthetic ? "Archived sample provenance" : "Anonymized public Reddit corpus";
+    }
+    if (dom.provPopBody && prov.notice) {
+      dom.provPopBody.textContent = prov.notice;
+    }
+    dom.footerProvenance.textContent = isSynthetic
+      ? `Corpus v${summary.dataset_version}, read-only /api/demo`
+      : `Anonymized public Reddit corpus v${summary.dataset_version} (Arctic Shift), read-only /api/demo`;
   } catch (err) {
     dom.serviceState.textContent = "API unavailable";
     dom.stateDot.classList.add("err");

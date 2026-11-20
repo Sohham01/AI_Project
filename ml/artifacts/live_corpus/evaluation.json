@@ -1,0 +1,1275 @@
+{
+  "synthetic_only": false,
+  "dataset_version": "2.0.0",
+  "evaluation_scope": "Real anonymized Reddit discussions (72 threads, 785 human comments) analyzed with unsupervised NMF v2 plus upgraded multi-register GPU MuRIL & Word+Char TF-IDF classifiers; held-out & 54-probe metrics reflect model benchmark generalization while human gold annotation proceeds.",
+  "tasks": {
+    "issue": {
+      "synthetic_only": false,
+      "model_name": "muril_base_cased_plus_title",
+      "model_version": "v2_gpu",
+      "labels": [
+        "academic_workload",
+        "administrative_communication",
+        "campus_infrastructure",
+        "curriculum_teaching",
+        "extracurriculars",
+        "financial_concerns",
+        "hostel_facilities",
+        "placements"
+      ],
+      "dataset_records": 4462,
+      "train_seconds": 197.15,
+      "best_epoch": 1,
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 3600,
+        "validation": 670,
+        "test": 192,
+        "stratify_used": true
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 3600,
+        "validation_n": 670,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "issue",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "academic_workload",
+          "administrative_communication",
+          "campus_infrastructure",
+          "curriculum_teaching",
+          "extracurriculars",
+          "financial_concerns",
+          "hostel_facilities",
+          "placements"
+        ],
+        "metrics": {
+          "n_samples": 670,
+          "multilabel": true,
+          "macro_f1": 0.916831,
+          "micro_f1": 0.919255,
+          "subset_accuracy": 0.862687,
+          "hamming_loss": 0.019403,
+          "per_label": {
+            "academic_workload": {
+              "precision": 0.9,
+              "recall": 0.9,
+              "f1": 0.9,
+              "support": 70
+            },
+            "administrative_communication": {
+              "precision": 0.884211,
+              "recall": 0.988235,
+              "f1": 0.933333,
+              "support": 85
+            },
+            "campus_infrastructure": {
+              "precision": 0.873786,
+              "recall": 0.927835,
+              "f1": 0.9,
+              "support": 97
+            },
+            "curriculum_teaching": {
+              "precision": 0.788462,
+              "recall": 1.0,
+              "f1": 0.88172,
+              "support": 41
+            },
+            "extracurriculars": {
+              "precision": 0.850746,
+              "recall": 1.0,
+              "f1": 0.919355,
+              "support": 57
+            },
+            "financial_concerns": {
+              "precision": 0.859813,
+              "recall": 0.989247,
+              "f1": 0.92,
+              "support": 93
+            },
+            "hostel_facilities": {
+              "precision": 0.931034,
+              "recall": 0.94186,
+              "f1": 0.936416,
+              "support": 86
+            },
+            "placements": {
+              "precision": 0.913043,
+              "recall": 0.976744,
+              "f1": 0.94382,
+              "support": 86
+            }
+          }
+        },
+        "warnings": []
+      },
+      "test": {
+        "task_name": "issue",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "academic_workload",
+          "administrative_communication",
+          "campus_infrastructure",
+          "curriculum_teaching",
+          "extracurriculars",
+          "financial_concerns",
+          "hostel_facilities",
+          "placements"
+        ],
+        "metrics": {
+          "n_samples": 192,
+          "multilabel": true,
+          "macro_f1": 0.909812,
+          "micro_f1": 0.917333,
+          "subset_accuracy": 0.880208,
+          "hamming_loss": 0.020182,
+          "per_label": {
+            "academic_workload": {
+              "precision": 0.888889,
+              "recall": 0.8,
+              "f1": 0.842105,
+              "support": 40
+            },
+            "administrative_communication": {
+              "precision": 0.975,
+              "recall": 0.975,
+              "f1": 0.975,
+              "support": 40
+            },
+            "campus_infrastructure": {
+              "precision": 0.842105,
+              "recall": 1.0,
+              "f1": 0.914286,
+              "support": 16
+            },
+            "curriculum_teaching": {
+              "precision": 1.0,
+              "recall": 0.875,
+              "f1": 0.933333,
+              "support": 16
+            },
+            "extracurriculars": {
+              "precision": 0.964286,
+              "recall": 0.84375,
+              "f1": 0.9,
+              "support": 32
+            },
+            "financial_concerns": {
+              "precision": 0.8,
+              "recall": 1.0,
+              "f1": 0.888889,
+              "support": 8
+            },
+            "hostel_facilities": {
+              "precision": 1.0,
+              "recall": 0.75,
+              "f1": 0.857143,
+              "support": 8
+            },
+            "placements": {
+              "precision": 1.0,
+              "recall": 0.9375,
+              "f1": 0.967742,
+              "support": 32
+            }
+          }
+        },
+        "warnings": [
+          "54-probe unseen 8-category robustness Macro F1: 0.9096.",
+          "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
+        ]
+      },
+      "robustness_54_probes": {
+        "n_probes": 54,
+        "include_parent_title": true,
+        "inference_ms": 55.07,
+        "overall_macro_f1": 0.909573,
+        "overall_micro_f1": 0.912621,
+        "overall_subset_accuracy": 0.851852,
+        "overall_hamming_loss": 0.020833,
+        "by_category": {
+          "unseen_templates": {
+            "n": 8,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "subset_accuracy": 1.0,
+            "hamming_loss": 0.0
+          },
+          "paraphrased_comments": {
+            "n": 6,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "subset_accuracy": 1.0,
+            "hamming_loss": 0.0
+          },
+          "spelling_errors": {
+            "n": 6,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "subset_accuracy": 1.0,
+            "hamming_loss": 0.0
+          },
+          "informal_language": {
+            "n": 6,
+            "macro_f1": 0.714286,
+            "micro_f1": 0.833333,
+            "subset_accuracy": 0.666667,
+            "hamming_loss": 0.041667
+          },
+          "short_comments": {
+            "n": 6,
+            "macro_f1": 0.333333,
+            "micro_f1": 0.25,
+            "subset_accuracy": 0.166667,
+            "hamming_loss": 0.125
+          },
+          "ambiguous_responses": {
+            "n": 6,
+            "macro_f1": 0.833333,
+            "micro_f1": 0.909091,
+            "subset_accuracy": 0.833333,
+            "hamming_loss": 0.020833
+          },
+          "parent_post_context": {
+            "n": 8,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "subset_accuracy": 1.0,
+            "hamming_loss": 0.0
+          },
+          "code_mixed_language": {
+            "n": 8,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "subset_accuracy": 1.0,
+            "hamming_loss": 0.0
+          }
+        }
+      },
+      "artifact_path": "ml/artifacts/live_corpus/predictions.json#issue",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "label_counts": {
+        "academic_workload": 45,
+        "administrative_communication": 38,
+        "campus_infrastructure": 8,
+        "extracurriculars": 189,
+        "financial_concerns": 5,
+        "hostel_facilities": 2,
+        "placements": 214
+      }
+    },
+    "sentiment": {
+      "synthetic_only": false,
+      "model_name": "muril_base_cased",
+      "model_version": "v2_gpu",
+      "labels": [
+        "negative",
+        "neutral",
+        "positive"
+      ],
+      "dataset_records": 4462,
+      "train_seconds": 199.6,
+      "best_epoch": 1,
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 3600,
+        "validation": 670,
+        "test": 192,
+        "stratify_used": true
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 3600,
+        "validation_n": 670,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "sentiment",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "negative",
+          "neutral",
+          "positive"
+        ],
+        "metrics": {
+          "n_samples": 670,
+          "multilabel": false,
+          "accuracy": 0.861194,
+          "micro_f1": 0.861194,
+          "macro_f1": 0.843747,
+          "per_class": {
+            "negative": {
+              "precision": 0.755814,
+              "recall": 0.948905,
+              "f1": 0.841424,
+              "support": 137
+            },
+            "neutral": {
+              "precision": 0.883871,
+              "recall": 0.688442,
+              "f1": 0.774011,
+              "support": 199
+            },
+            "positive": {
+              "precision": 0.90379,
+              "recall": 0.928144,
+              "f1": 0.915805,
+              "support": 334
+            }
+          },
+          "confusion_matrix_labels": [
+            "negative",
+            "neutral",
+            "positive"
+          ],
+          "confusion_matrix": [
+            [
+              130,
+              7,
+              0
+            ],
+            [
+              29,
+              137,
+              33
+            ],
+            [
+              13,
+              11,
+              310
+            ]
+          ]
+        },
+        "warnings": []
+      },
+      "test": {
+        "task_name": "sentiment",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "negative",
+          "neutral",
+          "positive"
+        ],
+        "metrics": {
+          "n_samples": 192,
+          "multilabel": false,
+          "accuracy": 1.0,
+          "micro_f1": 1.0,
+          "macro_f1": 1.0,
+          "per_class": {
+            "negative": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            },
+            "neutral": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 46
+            },
+            "positive": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 95
+            }
+          },
+          "confusion_matrix_labels": [
+            "negative",
+            "neutral",
+            "positive"
+          ],
+          "confusion_matrix": [
+            [
+              51,
+              0,
+              0
+            ],
+            [
+              0,
+              46,
+              0
+            ],
+            [
+              0,
+              0,
+              95
+            ]
+          ]
+        },
+        "warnings": [
+          "54-probe unseen 8-category robustness Macro F1: 0.6139.",
+          "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
+        ]
+      },
+      "robustness_54_probes": {
+        "n_probes": 54,
+        "include_parent_title": false,
+        "inference_ms": 48.93,
+        "overall_macro_f1": 0.613889,
+        "overall_micro_f1": 0.611111,
+        "overall_accuracy": 0.611111,
+        "by_category": {
+          "unseen_templates": {
+            "n": 8,
+            "macro_f1": 0.622222,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          },
+          "paraphrased_comments": {
+            "n": 6,
+            "macro_f1": 0.866667,
+            "micro_f1": 0.833333,
+            "accuracy": 0.833333
+          },
+          "spelling_errors": {
+            "n": 6,
+            "macro_f1": 0.533333,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "informal_language": {
+            "n": 6,
+            "macro_f1": 0.333333,
+            "micro_f1": 0.333333,
+            "accuracy": 0.333333
+          },
+          "short_comments": {
+            "n": 6,
+            "macro_f1": 0.708333,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "ambiguous_responses": {
+            "n": 6,
+            "macro_f1": 0.761905,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "parent_post_context": {
+            "n": 8,
+            "macro_f1": 0.5,
+            "micro_f1": 0.5,
+            "accuracy": 0.5
+          },
+          "code_mixed_language": {
+            "n": 8,
+            "macro_f1": 0.622222,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          }
+        }
+      },
+      "artifact_path": "ml/artifacts/live_corpus/predictions.json#sentiment",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "label_counts": {
+        "negative": 89,
+        "neutral": 525,
+        "positive": 171
+      }
+    },
+    "emotion": {
+      "synthetic_only": false,
+      "model_name": "muril_base_cased",
+      "model_version": "v2_gpu",
+      "labels": [
+        "confidence",
+        "curiosity",
+        "frustration",
+        "gratitude",
+        "hope",
+        "stress"
+      ],
+      "dataset_records": 1280,
+      "train_seconds": 76.43,
+      "best_epoch": 6,
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 896,
+        "validation": 192,
+        "test": 192,
+        "stratify_used": true
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 896,
+        "validation_n": 192,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "emotion",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "confidence",
+          "curiosity",
+          "frustration",
+          "gratitude",
+          "hope",
+          "stress"
+        ],
+        "metrics": {
+          "n_samples": 192,
+          "multilabel": true,
+          "macro_f1": 1.0,
+          "micro_f1": 1.0,
+          "subset_accuracy": 1.0,
+          "hamming_loss": 0.0,
+          "per_label": {
+            "confidence": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 19
+            },
+            "curiosity": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 43
+            },
+            "frustration": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            },
+            "gratitude": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 98
+            },
+            "hope": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 79
+            },
+            "stress": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            }
+          }
+        },
+        "warnings": []
+      },
+      "test": {
+        "task_name": "emotion",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 896,
+        "n_validation": 192,
+        "n_test": 192,
+        "labels": [
+          "confidence",
+          "curiosity",
+          "frustration",
+          "gratitude",
+          "hope",
+          "stress"
+        ],
+        "metrics": {
+          "n_samples": 192,
+          "multilabel": true,
+          "macro_f1": 1.0,
+          "micro_f1": 1.0,
+          "subset_accuracy": 1.0,
+          "hamming_loss": 0.0,
+          "per_label": {
+            "confidence": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 16
+            },
+            "curiosity": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 46
+            },
+            "frustration": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            },
+            "gratitude": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 95
+            },
+            "hope": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 79
+            },
+            "stress": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 51
+            }
+          }
+        },
+        "warnings": [
+          "54-probe unseen 8-category robustness Macro F1: 0.4126.",
+          "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
+        ]
+      },
+      "robustness_54_probes": {
+        "n_probes": 54,
+        "include_parent_title": false,
+        "inference_ms": 52.37,
+        "overall_macro_f1": 0.412579,
+        "overall_micro_f1": 0.443299,
+        "overall_subset_accuracy": 0.111111,
+        "overall_hamming_loss": 0.333333,
+        "by_category": {
+          "unseen_templates": {
+            "n": 8,
+            "macro_f1": 0.435185,
+            "micro_f1": 0.482759,
+            "subset_accuracy": 0.25,
+            "hamming_loss": 0.3125
+          },
+          "paraphrased_comments": {
+            "n": 6,
+            "macro_f1": 0.733333,
+            "micro_f1": 0.571429,
+            "subset_accuracy": 0.333333,
+            "hamming_loss": 0.25
+          },
+          "spelling_errors": {
+            "n": 6,
+            "macro_f1": 0.2,
+            "micro_f1": 0.272727,
+            "subset_accuracy": 0.0,
+            "hamming_loss": 0.444444
+          },
+          "informal_language": {
+            "n": 6,
+            "macro_f1": 0.4,
+            "micro_f1": 0.434783,
+            "subset_accuracy": 0.0,
+            "hamming_loss": 0.361111
+          },
+          "short_comments": {
+            "n": 6,
+            "macro_f1": 0.65,
+            "micro_f1": 0.352941,
+            "subset_accuracy": 0.0,
+            "hamming_loss": 0.305556
+          },
+          "ambiguous_responses": {
+            "n": 6,
+            "macro_f1": 0.426667,
+            "micro_f1": 0.454545,
+            "subset_accuracy": 0.0,
+            "hamming_loss": 0.333333
+          },
+          "parent_post_context": {
+            "n": 8,
+            "macro_f1": 0.497222,
+            "micro_f1": 0.6,
+            "subset_accuracy": 0.125,
+            "hamming_loss": 0.25
+          },
+          "code_mixed_language": {
+            "n": 8,
+            "macro_f1": 0.355556,
+            "micro_f1": 0.333333,
+            "subset_accuracy": 0.125,
+            "hamming_loss": 0.416667
+          }
+        }
+      },
+      "artifact_path": "ml/artifacts/live_corpus/predictions.json#emotion",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "label_counts": {
+        "confidence": 106,
+        "curiosity": 332,
+        "frustration": 221,
+        "gratitude": 440,
+        "hope": 317,
+        "stress": 221
+      }
+    },
+    "response": {
+      "synthetic_only": false,
+      "model_name": "muril_base_cased",
+      "model_version": "v2_gpu",
+      "labels": [
+        "agreement",
+        "personal_experience",
+        "opinion",
+        "advice",
+        "solution",
+        "counterargument"
+      ],
+      "dataset_records": 4462,
+      "train_seconds": 199.37,
+      "best_epoch": 3,
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 3600,
+        "validation": 670,
+        "test": 192,
+        "stratify_used": true
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 3600,
+        "validation_n": 670,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "response",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "agreement",
+          "personal_experience",
+          "opinion",
+          "advice",
+          "solution",
+          "counterargument"
+        ],
+        "metrics": {
+          "n_samples": 670,
+          "multilabel": false,
+          "accuracy": 0.928358,
+          "micro_f1": 0.928358,
+          "macro_f1": 0.938187,
+          "per_class": {
+            "agreement": {
+              "precision": 0.854839,
+              "recall": 0.990654,
+              "f1": 0.917749,
+              "support": 107
+            },
+            "personal_experience": {
+              "precision": 0.875776,
+              "recall": 0.965753,
+              "f1": 0.918567,
+              "support": 146
+            },
+            "opinion": {
+              "precision": 0.978571,
+              "recall": 0.810651,
+              "f1": 0.886731,
+              "support": 169
+            },
+            "advice": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 80
+            },
+            "solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 76
+            },
+            "counterargument": {
+              "precision": 0.921348,
+              "recall": 0.891304,
+              "f1": 0.906077,
+              "support": 92
+            }
+          },
+          "confusion_matrix_labels": [
+            "agreement",
+            "personal_experience",
+            "opinion",
+            "advice",
+            "solution",
+            "counterargument"
+          ],
+          "confusion_matrix": [
+            [
+              106,
+              0,
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              141,
+              1,
+              0,
+              0,
+              4
+            ],
+            [
+              18,
+              11,
+              137,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              80,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              76,
+              0
+            ],
+            [
+              0,
+              9,
+              1,
+              0,
+              0,
+              82
+            ]
+          ]
+        },
+        "warnings": []
+      },
+      "test": {
+        "task_name": "response",
+        "model_name": "muril_base_cased",
+        "model_version": "v2_gpu",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "agreement",
+          "personal_experience",
+          "opinion",
+          "advice",
+          "solution",
+          "counterargument"
+        ],
+        "metrics": {
+          "n_samples": 192,
+          "multilabel": false,
+          "accuracy": 1.0,
+          "micro_f1": 1.0,
+          "macro_f1": 1.0,
+          "per_class": {
+            "agreement": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 31
+            },
+            "personal_experience": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 33
+            },
+            "opinion": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 32
+            },
+            "advice": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 36
+            },
+            "solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 29
+            },
+            "counterargument": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 31
+            }
+          },
+          "confusion_matrix_labels": [
+            "agreement",
+            "personal_experience",
+            "opinion",
+            "advice",
+            "solution",
+            "counterargument"
+          ],
+          "confusion_matrix": [
+            [
+              31,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              33,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              32,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              36,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              29,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              31
+            ]
+          ]
+        },
+        "warnings": [
+          "54-probe unseen 8-category robustness Macro F1: 0.5928.",
+          "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
+        ]
+      },
+      "robustness_54_probes": {
+        "n_probes": 54,
+        "include_parent_title": false,
+        "inference_ms": 50.06,
+        "overall_macro_f1": 0.592793,
+        "overall_micro_f1": 0.592593,
+        "overall_accuracy": 0.592593,
+        "by_category": {
+          "unseen_templates": {
+            "n": 8,
+            "macro_f1": 0.494444,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          },
+          "paraphrased_comments": {
+            "n": 6,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "accuracy": 1.0
+          },
+          "spelling_errors": {
+            "n": 6,
+            "macro_f1": 0.25,
+            "micro_f1": 0.333333,
+            "accuracy": 0.333333
+          },
+          "informal_language": {
+            "n": 6,
+            "macro_f1": 0.222222,
+            "micro_f1": 0.333333,
+            "accuracy": 0.333333
+          },
+          "short_comments": {
+            "n": 6,
+            "macro_f1": 0.555556,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "ambiguous_responses": {
+            "n": 6,
+            "macro_f1": 0.5,
+            "micro_f1": 0.5,
+            "accuracy": 0.5
+          },
+          "parent_post_context": {
+            "n": 8,
+            "macro_f1": 0.466667,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          },
+          "code_mixed_language": {
+            "n": 8,
+            "macro_f1": 0.677778,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          }
+        }
+      },
+      "artifact_path": "ml/artifacts/live_corpus/predictions.json#response",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using fine-tuned MuRIL (human gold evaluation pending).",
+      "label_counts": {
+        "advice": 58,
+        "agreement": 125,
+        "counterargument": 205,
+        "opinion": 327,
+        "personal_experience": 48,
+        "solution": 22
+      }
+    },
+    "solution": {
+      "synthetic_only": false,
+      "model_name": "tfidf_word_char_logistic_binary",
+      "model_version": "v2",
+      "labels": [
+        "not_solution",
+        "solution"
+      ],
+      "dataset_records": 4462,
+      "train_seconds": 0.736,
+      "split": {
+        "seed": 20261116,
+        "group_by": "post_id",
+        "train": 3600,
+        "validation": 670,
+        "test": 192,
+        "stratify_used": true
+      },
+      "leakage_report": {
+        "leakage_detected": false,
+        "train_n": 3600,
+        "validation_n": 670,
+        "test_n": 192,
+        "cross_split_id_collisions": [],
+        "cross_split_text_collisions": [],
+        "warnings": []
+      },
+      "validation": {
+        "task_name": "solution",
+        "model_name": "tfidf_word_char_logistic_binary",
+        "model_version": "v2",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "not_solution",
+          "solution"
+        ],
+        "metrics": {
+          "n_samples": 670,
+          "multilabel": false,
+          "accuracy": 1.0,
+          "micro_f1": 1.0,
+          "macro_f1": 1.0,
+          "per_class": {
+            "not_solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 492
+            },
+            "solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 178
+            }
+          },
+          "confusion_matrix_labels": [
+            "not_solution",
+            "solution"
+          ],
+          "confusion_matrix": [
+            [
+              492,
+              0
+            ],
+            [
+              0,
+              178
+            ]
+          ]
+        },
+        "warnings": []
+      },
+      "test": {
+        "task_name": "solution",
+        "model_name": "tfidf_word_char_logistic_binary",
+        "model_version": "v2",
+        "n_train": 3600,
+        "n_validation": 670,
+        "n_test": 192,
+        "labels": [
+          "not_solution",
+          "solution"
+        ],
+        "metrics": {
+          "n_samples": 192,
+          "multilabel": false,
+          "accuracy": 1.0,
+          "micro_f1": 1.0,
+          "macro_f1": 1.0,
+          "per_class": {
+            "not_solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 127
+            },
+            "solution": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 65
+            }
+          },
+          "confusion_matrix_labels": [
+            "not_solution",
+            "solution"
+          ],
+          "confusion_matrix": [
+            [
+              127,
+              0
+            ],
+            [
+              0,
+              65
+            ]
+          ]
+        },
+        "warnings": [
+          "54-probe unseen 8-category robustness Macro F1: 0.7391.",
+          "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress."
+        ]
+      },
+      "robustness_54_probes": {
+        "n_probes": 54,
+        "include_parent_title": false,
+        "inference_ms": 9.68,
+        "overall_macro_f1": 0.73913,
+        "overall_micro_f1": 0.759259,
+        "overall_accuracy": 0.759259,
+        "by_category": {
+          "unseen_templates": {
+            "n": 8,
+            "macro_f1": 0.75,
+            "micro_f1": 0.75,
+            "accuracy": 0.75
+          },
+          "paraphrased_comments": {
+            "n": 6,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "accuracy": 1.0
+          },
+          "spelling_errors": {
+            "n": 6,
+            "macro_f1": 1.0,
+            "micro_f1": 1.0,
+            "accuracy": 1.0
+          },
+          "informal_language": {
+            "n": 6,
+            "macro_f1": 0.625,
+            "micro_f1": 0.666667,
+            "accuracy": 0.666667
+          },
+          "short_comments": {
+            "n": 6,
+            "macro_f1": 0.777778,
+            "micro_f1": 0.833333,
+            "accuracy": 0.833333
+          },
+          "ambiguous_responses": {
+            "n": 6,
+            "macro_f1": 0.485714,
+            "micro_f1": 0.5,
+            "accuracy": 0.5
+          },
+          "parent_post_context": {
+            "n": 8,
+            "macro_f1": 0.733333,
+            "micro_f1": 0.75,
+            "accuracy": 0.75
+          },
+          "code_mixed_language": {
+            "n": 8,
+            "macro_f1": 0.563636,
+            "micro_f1": 0.625,
+            "accuracy": 0.625
+          }
+        }
+      },
+      "artifact_path": "ml/artifacts/live_corpus/predictions.json#solution",
+      "inference_scope": "Batch inference over anonymized public Reddit discussions using Word+Char TF-IDF (human gold evaluation pending).",
+      "label_counts": {
+        "not_solution": 715,
+        "solution": 70
+      }
+    }
+  }
+}

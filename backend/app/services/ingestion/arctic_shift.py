@@ -16,6 +16,8 @@ class ArcticShiftClient:
 
     def __init__(self, timeout: int = 60) -> None:
         self.timeout = self._timeout(timeout)
+        self.last_ratelimit_reset: float | None = None
+        self.last_ratelimit_remaining: int | None = None
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -150,7 +152,10 @@ class ArcticShiftClient:
             raise ProviderRequestError(category) from None
         if isinstance(response.status_code, bool) or not isinstance(response.status_code, int):
             raise ProviderRequestError("invalid_payload")
+        self._record_ratelimit_headers(response)
         if not 200 <= response.status_code < 300:
+            if response.status_code == 422 and self._is_server_timeout_response(response):
+                raise ProviderRequestError("timeout", 422)
             raise ProviderRequestError("http_status", response.status_code)
         try:
             payload = response.json()
@@ -159,11 +164,50 @@ class ArcticShiftClient:
         self.response_data(payload)
         return payload
 
+    def _record_ratelimit_headers(self, response: Any) -> None:
+        """Record Arctic Shift rate-limit headers safely without failing on mocks."""
+        headers = getattr(response, "headers", None)
+        if not isinstance(headers, dict) and not hasattr(headers, "get"):
+            return
+        raw_reset = headers.get("x-ratelimit-reset") or headers.get("X-RateLimit-Reset")
+        if raw_reset is not None:
+            try:
+                val = float(raw_reset)
+                if math.isfinite(val) and 0.0 <= val <= 300.0:
+                    self.last_ratelimit_reset = val
+            except (TypeError, ValueError):
+                pass
+        raw_rem = headers.get("x-ratelimit-remaining") or headers.get("X-RateLimit-Remaining")
+        if raw_rem is not None:
+            try:
+                rem = int(raw_rem)
+                if rem >= 0:
+                    self.last_ratelimit_remaining = rem
+            except (TypeError, ValueError):
+                pass
+
+    @staticmethod
+    def _is_server_timeout_response(response: Any) -> bool:
+        """Detect Arctic Shift's documented HTTP 422 server-side timeout/throttle response.
+
+        Arctic Shift returns ``HTTP 422 {"data": null, "error": "Timeout. Maybe slow down a bit"}``
+        when a search query exceeds its backend execution budget or hits sliding-window
+        pacing limits. Inspects ``response.text`` without invoking ``response.json()``
+        and never echoes any response content into exception messages.
+        """
+        raw_text = getattr(response, "text", None)
+        if not isinstance(raw_text, str):
+            return False
+        lowered = raw_text.lower()
+        return any(tok in lowered for tok in ("timeout", "timed out", "slow down", "rate limit"))
+
     def search_posts(
         self,
         *,
         subreddit: str | None = None,
         query: str | None = None,
+        title: str | None = None,
+        selftext: str | None = None,
         limit: int = 25,
         after: str | None = "30d",
         before: str | None = None,
@@ -172,9 +216,9 @@ class ArcticShiftClient:
     ) -> dict[str, Any]:
         """Fetch one bounded page, never a complete archive/window crawl.
 
-        The upstream API README documents ``query`` as title/selftext keyword
-        search, requiring subreddit or author scope. This client supports the
-        subreddit scope. No unsupported generic filters or pagination are sent.
+        The upstream API README documents ``query`` (title/selftext), ``title``,
+        and ``selftext`` keyword search, requiring subreddit or author scope.
+        This client supports the subreddit scope.
         """
         self._limit(limit, self.MAX_POSTS)
         if sort not in ("asc", "desc"):
@@ -185,10 +229,13 @@ class ArcticShiftClient:
             subreddit = subreddit.removeprefix("r/")
             if not subreddit or not re.fullmatch(r"[A-Za-z0-9_.]+", subreddit):
                 raise ValueError("invalid subreddit")
-        if query is not None and not isinstance(query, str):
-            raise ValueError("query must be text")
+        for field_name, field_val in (("query", query), ("title", title), ("selftext", selftext)):
+            if field_val is not None and not isinstance(field_val, str):
+                raise ValueError(f"{field_name} must be text")
         query = query.strip() if query is not None else None
-        if query and not subreddit:
+        title = title.strip() if title is not None else None
+        selftext = selftext.strip() if selftext is not None else None
+        if (query or title or selftext) and not subreddit:
             raise ValueError("keyword search requires a subreddit")
         now = datetime.now(timezone.utc)
         after_param, after_date = self._date(after, now)
@@ -202,6 +249,10 @@ class ArcticShiftClient:
             params["subreddit"] = subreddit
         if query:
             params["query"] = query
+        if title:
+            params["title"] = title
+        if selftext:
+            params["selftext"] = selftext
         if after_param is not None:
             params["after"] = after_param
         if before_param is not None:
@@ -228,3 +279,51 @@ class ArcticShiftClient:
             params={"link_id": f"t3_{clean_post_id}", "limit": limit},
             timeout=timeout,
         )
+
+    def search_comments(
+        self,
+        *,
+        subreddit: str | None = None,
+        query: str | None = None,
+        link_id: str | None = None,
+        limit: int = 25,
+        after: str | None = "30d",
+        before: str | None = None,
+        sort: str = "desc",
+        timeout: float | None = None,
+    ) -> dict[str, Any]:
+        """Fetch one bounded page of comments from ``/api/comments/search``."""
+        self._limit(limit, self.MAX_POSTS)
+        if sort not in ("asc", "desc"):
+            raise ValueError("sort must be asc or desc")
+        if subreddit is not None:
+            if not isinstance(subreddit, str):
+                raise ValueError("invalid subreddit")
+            subreddit = subreddit.removeprefix("r/")
+            if not subreddit or not re.fullmatch(r"[A-Za-z0-9_.]+", subreddit):
+                raise ValueError("invalid subreddit")
+        if query is not None and not isinstance(query, str):
+            raise ValueError("query must be text")
+        query = query.strip() if query is not None else None
+        if query and not (subreddit or link_id):
+            raise ValueError("keyword search requires a subreddit or link_id")
+        clean_link = self._id(link_id, "t3") if link_id is not None else None
+        now = datetime.now(timezone.utc)
+        after_param, after_date = self._date(after, now)
+        before_param, before_date = self._date(before, now)
+        if after_date is not None and before_date is not None and after_date >= before_date:
+            raise ValueError("after must precede before")
+        if timeout is not None:
+            self._timeout(timeout)
+        params: dict[str, Any] = {"limit": limit, "sort": sort}
+        if subreddit:
+            params["subreddit"] = subreddit
+        if query:
+            params["body"] = query
+        if clean_link:
+            params["link_id"] = f"t3_{clean_link}"
+        if after_param is not None:
+            params["after"] = after_param
+        if before_param is not None:
+            params["before"] = before_param
+        return self._get("/api/comments/search", params=params, timeout=timeout)

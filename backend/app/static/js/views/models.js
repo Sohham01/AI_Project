@@ -12,11 +12,11 @@ import { dateTimeText, esc, num, percent, pretty } from "../format.js";
 const TASK_ORDER = ["sentiment", "emotion", "issue", "response", "solution"];
 
 const TASK_DESCRIPTIONS = {
-  sentiment: "3-class mutually exclusive polarity classifier (negative, neutral, positive).",
-  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress).",
-  issue: "8-label multi-label issue category detector trained on comment text alone.",
-  response: "6-class multiclass classifier preserving exact canonical response taxonomy.",
-  solution: "Binary actionable-solution detector (is_solution: true vs. false; advice and solution roles).",
+  sentiment: "3-class mutually exclusive polarity classifier (negative, neutral, positive) powered by GPU MuRIL.",
+  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress) powered by GPU MuRIL.",
+  issue: "8-label multi-label issue detector using GPU MuRIL + parent post title context.",
+  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy (GPU MuRIL).",
+  solution: "Binary actionable-solution detector (not_solution vs. solution) using Word + Character n-gram TF-IDF.",
 };
 
 function renderPerClassSection(taskName, task) {
@@ -88,33 +88,37 @@ export async function renderModels(container, ctx) {
   );
 
   const prov = summary.provenance || {};
+  const isSynthetic = Boolean(summary.synthetic_only);
+  const filt = prov.filtering_summary || {};
   const firstArtifactPath = tasksObj.sentiment?.artifact_path || tasksObj.solution?.artifact_path || "";
   const activeArtifactDir = firstArtifactPath.includes("/")
     ? `${firstArtifactPath.slice(0, firstArtifactPath.lastIndexOf("/") + 1)}`
-    : "ml/artifacts/demo_synthetic_v2/";
+    : "ml/artifacts/live_corpus/";
+  const avgReplies = summary.posts ? (Number(summary.comments || 0) / Number(summary.posts)).toFixed(1) : "0";
   const provenanceBody = `
     <div class="provenance-two-col">
       <div>
-        <h3 class="subpanel-title">Corpus metadata &amp; isolation</h3>
+        <h3 class="subpanel-title">Corpus metadata &amp; privacy</h3>
         <dl class="vault-kv-grid">
-          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "reddit-community-intelligence-demo")}</dd></div>
+          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v2")}</dd></div>
           <div><dt>Dataset version</dt><dd class="num">v${esc(prov.dataset_version || health.dataset_version)}</dd></div>
-          <div><dt>Deterministic seed</dt><dd class="num">${esc(prov.generation_seed)}</dd></div>
-          <div><dt>Generated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
-          <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} posts, ${num(summary.comments)} comments (8 / thread)</dd></div>
-          <div><dt>Authorization status</dt><dd><span class="tag tag-warning">${esc(prov.authorization_status || "synthetic_only")}</span></dd></div>
+          <div><dt>Source archive</dt><dd>${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (public Reddit)" : (prov.generation_seed ? `Seed ${prov.generation_seed}` : "Local archive"))}</dd></div>
+          <div><dt>Updated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
+          <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads, ${num(summary.comments)} comments (${avgReplies} / thread)</dd></div>
+          <div><dt>Privacy &amp; access</dt><dd><span class="tag ${isSynthetic ? "tag-warning" : "tag-positive"}">${esc(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Anonymized public Reddit")}</span></dd></div>
           <div><dt>Artifact directory</dt><dd class="num">${esc(activeArtifactDir)}</dd></div>
+          ${filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_boilerplate_filtered)} AutoModerator sticky comments and ${num(filt.gif_only_filtered)} GIF-only embeds removed; usernames stripped and inline PII redacted</dd></div>` : ""}
         </dl>
       </div>
 
       <div>
-        <h3 class="subpanel-title">Known pilot limitations</h3>
+        <h3 class="subpanel-title">Methodology &amp; epistemic boundaries</h3>
         <ul class="limitations-list">
-          <li><strong>Synthetic generator family only:</strong> All posts, comments, IDs, labels, and outcome statements are fabricated. Not real Reddit data or real student testimony.</li>
-          <li><strong>Inflated synthetic scores:</strong> Near-100% test F1 on sentiment, response, emotion, and solution reflects reproducible generator templates, not expected accuracy on noisy real discussions.</li>
-          <li><strong>In-sample explorer display vs. held-out evaluation:</strong> Predictions on thread pages cover all 1,280 records; evaluation tables below strictly reflect the held-out 192-comment test split.</li>
-          <li><strong>Partial multilingual coverage:</strong> Pilot includes English, Devanagari Hindi, and Hinglish; Bengali, Odia, Banglish, Gen-Z slang, and emoji semantics are not yet evaluated.</li>
-          <li><strong>Task-appropriate metric families:</strong> Multi-label tasks (<code>emotion</code>, <code>issue</code>) report <code>subset_accuracy</code>, <code>hamming_loss</code>, <code>macro_f1</code>, and <code>micro_f1</code> (with single-label <code>accuracy</code> kept <code>null</code>); any uncomputed metric is displayed as <em>Not emitted</em> rather than 0%.</li>
+          <li><strong>Anonymized real Reddit discussions:</strong> Public IIM Sambalpur discussions across <code>r/IIMSambalpurUG</code>, <code>r/MBAIndia</code>, <code>r/CATpreparation</code>, and <code>r/CATPrep</code> collected via Arctic Shift with author usernames removed and inline contact/user mentions redacted.</li>
+          <li><strong>Upgraded 5-task model stack:</strong> Uses GPU MuRIL (with parent post title for Issue identification) plus Word+Char TF-IDF for binary Solution detection, alongside unsupervised NMF v2 topics fit directly on the live comments.</li>
+          <li><strong>Generalization &amp; human gold annotation:</strong> Tables below report thread-grouped held-out test metrics and 54-probe unseen 8-category robustness scores. Real-corpus classifications are model-inferred while human gold annotation proceeds.</li>
+          <li><strong>Proposal vs. resolution separation:</strong> Predicted <code>advice</code> and <code>solution</code> replies are strictly separated from explicit first-person follow-up resolution signals.</li>
+          <li><strong>Honest metric reporting:</strong> Multi-label tasks (<code>emotion</code>, <code>issue</code>) report <code>macro_f1</code>, <code>micro_f1</code>, <code>subset_accuracy</code>, and <code>hamming_loss</code>; any unemitted metric is displayed as <em>Not emitted</em> rather than 0%.</li>
         </ul>
       </div>
     </div>
@@ -196,13 +200,19 @@ export async function renderModels(container, ctx) {
       .map(([k, v]) => `<span class="tag tag-neutral">${esc(k)}: <span class="num">${num(v)}</span></span>`)
       .join("");
 
+    const probeF1 = task.robustness_54_probes?.overall_macro_f1;
+    const probeBadge = probeF1 !== undefined && probeF1 !== null
+      ? badge(`54-probe unseen F1: ${percent(probeF1)}`, probeF1 >= 0.7 ? "positive" : "info")
+      : "";
+
     return deck(`${esc(pretty(name))} classifier`, {
       id: `model-task-${esc(name)}`,
       className: "model-detail-card",
       subtitle: TASK_DESCRIPTIONS[name] || "",
       action: `
         ${badge(`${task.model_name} ${task.model_version}`, "info")}
-        ${copyIdChip(task.registry_id || "unregistered", { label: "registry" })}
+        ${probeBadge}
+        ${task.registry_id ? copyIdChip(task.registry_id, { label: "registry" }) : ""}
       `,
       body: `
         <div class="eval-row-grid">${primaryMetricTiles}</div>
@@ -215,7 +225,7 @@ export async function renderModels(container, ctx) {
             ${confusionMatrixTable(tm.confusion_matrix, tm.confusion_matrix_labels)}
           </div>
           <div>
-            <h3 class="subpanel-title">Full corpus label distribution (n = ${num(task.dataset_records)})</h3>
+            <h3 class="subpanel-title">Live corpus predicted label distribution (n = ${num(summary.comments)})</h3>
             <div class="label-chip-wrap">${labelDistHtml}</div>
             <div class="spacer-md"></div>
             <h3 class="subpanel-title">Artifact &amp; scope</h3>
@@ -223,7 +233,7 @@ export async function renderModels(container, ctx) {
               <div><dt>Artifact</dt><dd><code class="break-code">${esc(task.artifact_path || "None")}</code></dd></div>
               <div><dt>Split seed</dt><dd class="num">${esc(split.seed)}</dd></div>
               <div><dt>Stratified</dt><dd>${split.stratify_used ? "Yes" : "No (group-aware)"}</dd></div>
-              <div><dt>Scope</dt><dd>${esc(task.inference_scope || "Synthetic pilot only")}</dd></div>
+              <div><dt>Scope</dt><dd>${esc(task.inference_scope || "Batch inference over anonymized Reddit corpus")}</dd></div>
             </dl>
           </div>
         </div>
@@ -233,20 +243,20 @@ export async function renderModels(container, ctx) {
 
   container.innerHTML = `
     ${callout(
-      `<strong>Synthetic training and evaluation data only.</strong> ${esc(modelsData.evaluation_scope)} High scores on synthetic template data must never be cited as real-world community NLP accuracy.`,
-      { tone: "warning", title: "Evaluation scope:" }
+      `${esc(modelsData.evaluation_scope)}`,
+      { tone: "info", title: "Evaluation & inference scope:" }
     )}
-    ${deck("Dataset provenance, governance & pilot limitations", {
+    ${deck("Dataset provenance, governance & methodology", {
       subtitle: "Verified metadata read directly from /api/demo/summary and /api/demo/health",
       body: provenanceBody,
     })}
-    ${deck("Cross-task baseline performance summary", {
-      subtitle: "Side-by-side comparison of held-out validation vs. held-out test macro F1 across all five TF-IDF baselines (896 / 192 / 192 thread-grouped splits)",
+    ${deck("Cross-task model benchmark summary", {
+      subtitle: "Side-by-side comparison of held-out validation vs. held-out test macro F1 across all five active classifiers (thread-grouped zero-leakage splits)",
       body: `
         ${modelComparisonSvgChart(chartTasks)}
         <div class="spacer-md"></div>
         <div class="table-scroll">
-          <table class="data-table" aria-label="Five synthetic TF-IDF baseline models comparison">
+          <table class="data-table" aria-label="Five active NLP models benchmark comparison">
             <thead>
               <tr>
                 <th scope="col">Task &amp; model</th>

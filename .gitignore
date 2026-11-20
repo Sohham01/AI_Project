@@ -192,6 +192,8 @@ ml/artifacts/*/
 !ml/artifacts/demo_synthetic/**
 !ml/artifacts/demo_synthetic_v2/
 !ml/artifacts/demo_synthetic_v2/**
+!ml/artifacts/live_corpus/
+!ml/artifacts/live_corpus/**
 ml/artifacts/registry.json
 ml/artifacts/**/trainer_metadata.json
 
@@ -211,6 +213,7 @@ data/raw/
 data/interim/
 data/processed/
 data/exports/
+data/annotations/*pilot*/
 
 # Local databases and caches.
 *.sqlite

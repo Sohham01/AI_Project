@@ -14,7 +14,7 @@ import {
   sankeyFlowChart,
 } from "../charts.js";
 import { copyIdChip, deck, resolutionBadge, tallyStrip } from "../components.js";
-import { dateText, esc, num, pretty } from "../format.js";
+import { dateText, esc, monthLabel, num, pretty } from "../format.js";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes] = await Promise.all([
@@ -25,6 +25,10 @@ export async function renderOverview(container, ctx) {
 
   const totalPosts = Number(summary.posts || 0);
   const totalComments = Number(summary.comments || 0);
+  const monthly = sentimentRes.monthly || [];
+  const dateSpan = monthly.length >= 2
+    ? `${monthLabel(monthly[0].month)} to ${monthLabel(monthly[monthly.length - 1].month)}`
+    : (monthly.length === 1 ? monthLabel(monthly[0].month) : "Full archive");
   const resMap = Object.fromEntries(
     (summary.resolution_summary || []).map((r) => [r.label, Number(r.count || 0)])
   );
@@ -37,16 +41,17 @@ export async function renderOverview(container, ctx) {
   const unconfirmedTotal = totalPosts - reportedSuccess - reportedPending;
   const actionablePct = totalComments ? (totalActionable / totalComments) * 100 : 0;
   const successPct = totalPosts ? (reportedSuccess / totalPosts) * 100 : 0;
+  const communityCount = (summary.community_distribution || []).length;
 
   // Row 1: Dusk Ruled Tally Strip (micro-arcs strictly for real ratios, zero fake 100% rings)
   const tallyRow = tallyStrip([
     {
-      label: "Synthetic corpus",
+      label: "Community corpus",
       valueText: num(totalPosts),
       countTo: totalPosts,
       unit: "threads",
       accent: true,
-      note: `${num(totalComments)} comments across ${num(summary.issue_count)} balanced issue domains`,
+      note: `${num(totalComments)} anonymized comments across ${num(communityCount)} subreddits`,
       href: "#/explorer",
     },
     {
@@ -69,19 +74,19 @@ export async function renderOverview(container, ctx) {
       href: "#/resolution",
     },
     {
-      label: "Isolated baseline models",
+      label: "Active ML pipeline",
       valueText: "5",
       countTo: 5,
       unit: "models",
-      note: `Thread-grouped splits (896 / 192 / 192, zero leakage), ${num(summary.topic_count)} NMF topics`,
+      note: `GPU MuRIL + Word+Char TF-IDF classifiers, ${num(summary.topic_count)} NMF topics`,
       href: "#/models",
     },
-  ], "Synthetic corpus headline figures");
+  ], "Community corpus headline figures");
 
   // Row 2: Full-width Interactive 3-Stage Sankey Research Flow
   const sankeyDeck = deck("Interactive issue-to-evidence flow", {
-    subtitle: "Hover any node or ribbon to trace synthetic discussions across 8 issue domains, the 6 fixed canonical response classes, and 4 resolution states; click any node to drill in",
-    action: `<a class="btn btn-quiet btn-sm" href="#/resolution">Audit all 160 threads</a>`,
+    subtitle: `Hover any node or ribbon to trace public discussions across ${num(issues.length)} issue domains, the 6 fixed canonical response classes, and 4 resolution states; click any node to drill in`,
+    action: `<a class="btn btn-quiet btn-sm" href="#/resolution">Audit all ${num(totalPosts)} threads</a>`,
     body: sankeyFlowChart(summary),
   });
 
@@ -91,21 +96,27 @@ export async function renderOverview(container, ctx) {
   );
   const issueBars = sortedIssues.map((issue, idx) => ({
     label: pretty(issue.label),
+    sublabel: `${num(issue.posts)} threads`,
     count: Number(issue.actionable_recommendations || 0),
     color: idx === 0 ? "var(--color-accent)" : idx < 3 ? "var(--color-role-advice)" : "var(--color-series-val)",
     href: `#/issues?selected=${encodeURIComponent(issue.key)}`,
   }));
 
   const splineDeck = deck("Monthly sentiment pulse", {
-    subtitle: "Hover across Jan to Nov 2025 to scrub polarity counts; synthetic threads were generated sequentially by domain",
+    subtitle: `Hover across ${dateSpan} to scrub predicted polarity counts by comment month`,
     action: `<a class="btn btn-quiet btn-sm" href="#/sentiment">Full affect studio</a>`,
-    body: interactiveSplineAreaChart(sentimentRes.monthly || [], { chartId: "ov-spline" }),
+    body: interactiveSplineAreaChart(monthly, { chartId: "ov-spline" }),
   });
 
   const issuesDeck = deck("Actionable density by issue", {
-    subtitle: "20 synthetic threads (160 comments) per domain, ranked by solution and advice count",
+    subtitle: "Ranked by total predicted solution and advice replies across public community threads",
     action: `<a class="btn btn-quiet btn-sm" href="#/issues">Issues studio</a>`,
-    body: horizontalBarChart(issueBars, { total: 160, maxCount: Math.max(...issueBars.map((b) => b.count)), unit: "actionable", showShare: true }),
+    body: horizontalBarChart(issueBars, {
+      total: Math.max(1, totalActionable),
+      maxCount: Math.max(1, ...issueBars.map((b) => b.count)),
+      unit: "actionable",
+      showShare: true,
+    }),
   });
 
   // Row 4: Thread Spotlight Hairline List (flat, single containment layer)
@@ -123,22 +134,23 @@ export async function renderOverview(container, ctx) {
     </a>
   `).join("");
 
-  const spotlightDeck = deck("Recent generated discussions", {
-    subtitle: "Latest fictional discussions ordered by synthetic timestamp; open any thread to inspect nested parent-child replies",
+  const spotlightDeck = deck("Recent community discussions", {
+    subtitle: "Latest anonymized public Reddit discussions ordered by post date; open any thread to inspect nested parent-child replies",
     action: `<a class="btn btn-primary btn-sm" href="#/explorer">Open discussion workbench</a>`,
     body: `<div class="spotlight-grid">${spotlightRows}</div>`,
   });
 
   const prov = summary.provenance || {};
-  const provenanceDeck = deck("Dataset provenance & synthetic boundaries", {
-    subtitle: "Live metadata read from data/demo_synthetic/corpus.json",
+  const isSynthetic = Boolean(summary.synthetic_only);
+  const provenanceDeck = deck("Dataset provenance & methodology", {
+    subtitle: "Live corpus metadata read from /api/demo/summary",
     action: `<a class="btn btn-quiet btn-sm" href="#/models">Models &amp; evaluation</a>`,
     body: `
       <dl class="vault-kv-grid">
-        <div><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "reddit-community-intelligence-demo")}</dd></div>
-        <div><dt>Deterministic seed &amp; version</dt><dd class="num">Seed ${esc(prov.generation_seed)}, v${esc(prov.dataset_version || summary.dataset_version)}</dd></div>
-        <div><dt>Authorization status</dt><dd><span class="tag tag-warning">${esc(prov.authorization_status || "synthetic_only")}</span></dd></div>
-        <div><dt>Timestamp ordering</dt><dd>Sequential 2-day domain intervals (Jan to Nov 2025)</dd></div>
+        <div><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v2")}</dd></div>
+        <div><dt>Source &amp; version</dt><dd class="num">${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift public archive" : "Local corpus")}, v${esc(prov.dataset_version || summary.dataset_version)}</dd></div>
+        <div><dt>Privacy &amp; access</dt><dd><span class="tag ${isSynthetic ? "tag-warning" : "tag-positive"}">${esc(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Anonymized public Reddit")}</span></dd></div>
+        <div><dt>Archive time span</dt><dd>${esc(dateSpan)} (${num(communityCount)} subreddits)</dd></div>
       </dl>
     `,
   });

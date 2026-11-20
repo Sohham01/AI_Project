@@ -171,7 +171,7 @@ export function errorState(message, { canRetry = true } = {}) {
         <h2>Data could not be loaded</h2>
       </div>
       <p>${esc(message)}</p>
-      <p class="error-state-hint">Confirm the local FastAPI service is running from <code>backend/</code> and synthetic artifacts exist under <code>data/demo_synthetic/</code> and <code>ml/artifacts/demo_synthetic/</code>.</p>
+      <p class="error-state-hint">Confirm the FastAPI service is reachable and corpus artifacts exist under <code>data/live_corpus/</code> and <code>ml/artifacts/live_corpus/</code>.</p>
       ${canRetry ? `<button type="button" class="btn btn-quiet" data-retry>Retry connection</button>` : ""}
     </section>
   `;

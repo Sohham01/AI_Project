@@ -30,34 +30,34 @@ function classifyClusterCharacter(topic) {
   if (script === "devanagari") {
     return {
       script: "devanagari",
-      tag: "Devanagari fragments",
+      tag: "Devanagari tokens",
       tone: "warning",
-      note: "Regex tokenization split Hindi combining vowel signs (matras), surfacing consonant fragments.",
+      note: "Devanagari-script terms extracted by unsupervised NMF.",
     };
   }
-  const hasHinglish = kws.some((k) => ["hai", "aap", "ek", "mein", "baat", "kar lo", "chahiye", "aur contact"].includes(k));
+  const hasHinglish = kws.some((k) => ["hai", "bhi", "bhai", "kya", "nhi", "nahi", "hoga", "aap", "ek", "mein", "baat", "kar", "kar lo", "chahiye", "toh", "aur"].includes(k));
   if (hasHinglish) {
     return {
       script: "latin",
-      tag: "Hinglish phrasing cluster",
+      tag: "Hinglish & code-mixed cluster",
       tone: "info",
-      note: "Captures Romanized Hindi-English response templates rather than a single issue domain.",
+      note: "Romanized Hindi-English phrasing and conversational community terms.",
     };
   }
   const hasStopwords = kws.filter((k) => ["the", "that", "for", "would", "my", "i", "it", "is"].includes(k)).length >= 2;
   if (hasStopwords) {
     return {
       script: "latin",
-      tag: "English syntax / stopwords",
+      tag: "High-frequency discourse cluster",
       tone: "neutral",
-      note: "Dominated by high-frequency English function words retained during informal-text preprocessing.",
+      note: "High-frequency conversational terms retained across threads.",
     };
   }
   return {
     script: "latin",
-    tag: "Latin term cluster",
+    tag: "Thematic discussion cluster",
     tone: "neutral",
-    note: "Unsupervised NMF term co-occurrence cluster.",
+    note: "Unsupervised NMF topic derived directly from anonymized community comments.",
   };
 }
 
@@ -126,10 +126,13 @@ export async function renderTopics(container, ctx) {
     ...t,
     character: classifyClusterCharacter(t),
   }));
-  const totalDocs = rawTopics.reduce((s, t) => s + Number(t.document_count || 0), 0) || Number(summary.comments || 1280);
+  const totalDocs = rawTopics.reduce((s, t) => s + Number(t.document_count || 0), 0) || Number(summary.comments || 0);
+  const termsPerTopic = rawTopics[0]?.keywords?.length || 10;
   const largestTopic = [...rawTopics].sort((a, b) => Number(b.document_count) - Number(a.document_count))[0];
   const devTopics = rawTopics.filter((t) => t.character.script === "devanagari");
   const devComments = devTopics.reduce((s, t) => s + Number(t.document_count || 0), 0);
+  const hinglishTopics = rawTopics.filter((t) => t.character.tone === "info");
+  const hinglishComments = hinglishTopics.reduce((s, t) => s + Number(t.document_count || 0), 0);
   if (!rawTopics.some((t) => Number(t.topic_id) === Number(topicState.selectedId)) && largestTopic) {
     topicState.selectedId = largestTopic.topic_id;
   }
@@ -143,8 +146,29 @@ export async function renderTopics(container, ctx) {
       return hay.includes(q);
     });
     const activeTopic = rawTopics.find((t) => Number(t.topic_id) === Number(topicState.selectedId)) || rawTopics[0];
-    const largestPct = largestTopic ? (Number(largestTopic.document_count) / totalDocs) * 100 : 0;
-    const devPct = (devComments / totalDocs) * 100;
+    const largestPct = largestTopic && totalDocs ? (Number(largestTopic.document_count) / totalDocs) * 100 : 0;
+    const devPct = totalDocs ? (devComments / totalDocs) * 100 : 0;
+    const hinglishPct = totalDocs ? (hinglishComments / totalDocs) * 100 : 0;
+
+    const fourthTally = devTopics.length > 0
+      ? {
+          label: "Devanagari script clusters",
+          valueText: num(devTopics.length),
+          countTo: devTopics.length,
+          unit: "topics",
+          ratioPct: devPct,
+          color: "var(--color-accent-2)",
+          note: `${num(devComments)} comments (${devPct.toFixed(1)}%)`,
+        }
+      : {
+          label: "Hinglish / code-mixed",
+          valueText: num(hinglishTopics.length),
+          countTo: hinglishTopics.length,
+          unit: "topics",
+          ratioPct: hinglishPct,
+          color: "var(--color-role-advice)",
+          note: `${num(hinglishComments)} comments (${hinglishPct.toFixed(1)}%) with Romanized Hindi terms`,
+        };
 
     const tallyRow = tallyStrip([
       {
@@ -153,13 +177,13 @@ export async function renderTopics(container, ctx) {
         countTo: rawTopics.length,
         unit: "clusters",
         accent: true,
-        note: "Bag-of-words TF-IDF factorization, 8 weighted terms per cluster",
+        note: `TF-IDF (1–2 grams, English stopwords removed), ${num(termsPerTopic)} weighted terms per cluster`,
       },
       {
         label: "Assigned comments",
         valueText: num(totalDocs),
         countTo: totalDocs,
-        note: "Dominant cluster assignment across synthetic comments",
+        note: "Dominant cluster assignment across anonymized community comments",
       },
       {
         label: "Largest cluster share",
@@ -169,17 +193,9 @@ export async function renderTopics(container, ctx) {
         suffix: "%",
         ratioPct: largestPct,
         color: "var(--color-role-advice)",
-        note: largestTopic ? `Topic ${largestTopic.topic_id} (${num(largestTopic.document_count)} comments, English stopwords)` : "",
+        note: largestTopic ? `Topic ${largestTopic.topic_id} (${num(largestTopic.document_count)} comments: ${(largestTopic.keywords || []).slice(0, 3).join(", ")})` : "",
       },
-      {
-        label: "Devanagari script clusters",
-        valueText: num(devTopics.length),
-        countTo: devTopics.length,
-        unit: "topics",
-        ratioPct: devPct,
-        color: "var(--color-accent-2)",
-        note: `${num(devComments)} comments (${devPct.toFixed(1)}%), regex-fragmented tokens`,
-      },
+      fourthTally,
     ], "NMF topic overview");
 
     const modeControls = `
@@ -187,11 +203,11 @@ export async function renderTopics(container, ctx) {
         <div class="filter-pills" role="group" aria-label="Filter topics by dominant script">
           <button type="button" class="pill-btn ${topicState.scriptFilter === "all" ? "is-active" : ""}" data-topic-script="all">All (${rawTopics.length})</button>
           <button type="button" class="pill-btn ${topicState.scriptFilter === "latin" ? "is-active" : ""}" data-topic-script="latin">Latin / Hinglish (${rawTopics.length - devTopics.length})</button>
-          <button type="button" class="pill-btn ${topicState.scriptFilter === "devanagari" ? "is-active" : ""}" data-topic-script="devanagari">Devanagari (${devTopics.length})</button>
+          ${devTopics.length > 0 ? `<button type="button" class="pill-btn ${topicState.scriptFilter === "devanagari" ? "is-active" : ""}" data-topic-script="devanagari">Devanagari (${devTopics.length})</button>` : ""}
         </div>
         <div class="segmented" role="group" aria-label="Topic visualization layout">
           <button type="button" class="seg-btn ${topicState.viewMode === "constellation" ? "is-active" : ""}" data-topic-mode="constellation">Interactive constellation</button>
-          <button type="button" class="seg-btn ${topicState.viewMode === "all" ? "is-active" : ""}" data-topic-mode="all">All 8 cards</button>
+          <button type="button" class="seg-btn ${topicState.viewMode === "all" ? "is-active" : ""}" data-topic-mode="all">All ${rawTopics.length} cards</button>
         </div>
       </div>
     `;
@@ -203,9 +219,9 @@ export async function renderTopics(container, ctx) {
             ${topicConstellationSvg(filtered.length ? filtered : rawTopics, activeTopic.topic_id)}
             <div class="spacer-sm"></div>
             <div class="chart-legend">
-              <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>English syntax / stopwords</span></span>
-              <span class="legend-item"><span class="legend-swatch" style="background:var(--color-role-advice)"></span><span>Hinglish phrasing cluster</span></span>
-              <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent-2)"></span><span>Devanagari consonant fragments</span></span>
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Thematic English cluster</span></span>
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--color-role-advice)"></span><span>Hinglish / code-mixed cluster</span></span>
+              ${devTopics.length > 0 ? `<span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent-2)"></span><span>Devanagari cluster</span></span>` : ""}
             </div>
           </div>
           <div>
@@ -226,8 +242,8 @@ export async function renderTopics(container, ctx) {
     const distRows = [...rawTopics]
       .sort((a, b) => Number(b.document_count) - Number(a.document_count))
       .map((t) => ({
-        label: `Topic ${t.topic_id}: ${t.character.tag}`,
-        sublabel: (t.keywords || []).slice(0, 4).join(", "),
+        label: `Topic ${t.topic_id}: ${(t.keywords || []).slice(0, 3).join(" · ")}`,
+        sublabel: t.character.tag,
         count: Number(t.document_count || 0),
         color: t.character.script === "devanagari"
           ? "var(--color-accent-2)"
@@ -238,8 +254,8 @@ export async function renderTopics(container, ctx) {
 
     container.innerHTML = `
       ${callout(
-        `Unsupervised ${glossaryTip("nmf_topics", "NMF topic outputs")} are shown unmodified from <code>ml/artifacts/demo_synthetic/topic_discovery.json</code>. On this multilingual synthetic corpus, bag-of-words NMF separates <strong>script and phrasing templates</strong> (Devanagari consonant fragments, Hinglish templates, and English stopwords) rather than the 8 issue domains. Compare with <a href="#/issues">Issues studio</a>.`,
-        { tone: "warning", title: "Methodological transparency:" }
+        `Unsupervised ${glossaryTip("nmf_topics", "NMF topic clusters")} are fit directly on anonymized public Reddit comments (unigrams &amp; bigrams, English stopwords and AutoMod boilerplate removed). Click any cluster orb to inspect its top weighted terms and representative replies, or compare against supervised domains in <a href="#/issues">Issues studio</a>.`,
+        { tone: "info", title: "Unsupervised topic discovery:" }
       )}
       ${tallyRow}
       <section class="anim-enter" aria-label="Topic constellation and weighted terms">
@@ -248,13 +264,13 @@ export async function renderTopics(container, ctx) {
         ${topicState.viewMode === "constellation" ? constellationSection : `
           <div class="field" style="max-width:420px;margin-bottom:var(--space-md)">
             <label for="topic-search">Search topic terms or representative comments</label>
-            <input id="topic-search" type="search" value="${esc(topicState.search)}" placeholder="Search keywords (confirm, screenshot, office, update)…">
+            <input id="topic-search" type="search" value="${esc(topicState.search)}" placeholder="Search keywords (sambalpur, waitlist, placement, cat, fees)…">
           </div>
           ${allCardsHtml}
         `}
       </section>
-      ${deck("Corpus coverage across all 8 NMF topics", {
-        subtitle: "Number and share of synthetic comments assigned to each dominant unsupervised cluster (n = 1,280)",
+      ${deck(`Corpus coverage across all ${num(rawTopics.length)} NMF topics`, {
+        subtitle: `Number and share of anonymized comments assigned to each dominant unsupervised cluster (n = ${num(totalDocs)})`,
         body: horizontalBarChart(distRows, { total: totalDocs, unit: "comments", showShare: true }),
       })}
     `;

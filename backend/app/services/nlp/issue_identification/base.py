@@ -130,6 +130,11 @@ class IssueModelConfig(BaseModel):
     min_training_documents: int = 5
     min_positive_examples_per_label: int = 2
 
+    # --- Optional character n-gram features (code-mixed / Hinglish / Indic) ---
+    use_char_ngrams: bool = False
+    char_ngram_range: Tuple[int, int] = (3, 5)
+    char_max_features: Optional[int] = 30000
+
     # --- Optional topic-derived features ---
     use_topic_features: bool = False
 

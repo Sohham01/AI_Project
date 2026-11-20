@@ -206,6 +206,11 @@ class ResponseModelConfig(BaseModel):
     #: report warns (it does not refuse) that the model may be near-trivial.
     imbalance_warning_share: float = 0.8
 
+    # --- Optional character n-gram features (code-mixed / Hinglish / Indic) ---
+    use_char_ngrams: bool = False
+    char_ngram_range: Tuple[int, int] = (3, 5)
+    char_max_features: Optional[int] = 30000
+
     # --- Preprocessing-stage placeholders (<URL>, <EMOJI_...>) ---
     drop_placeholder_tokens: bool = True
 

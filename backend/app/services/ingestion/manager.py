@@ -10,16 +10,22 @@ from app.services.ingestion.providers.arctic_shift import ArcticShiftProvider
 from app.services.ingestion.providers.rss import RSSProvider
 from app.services.ingestion.providers.hermes import HermesProvider
 from app.services.ingestion.providers.decodo import DecodoProvider
+from app.services.ingestion.providers.reddit_oauth import RedditOAuthProvider
 
 
 class IngestionManager:
-    def __init__(self) -> None:
-        self.providers = {
+    def __init__(self, include_reddit_oauth: Optional[bool] = None) -> None:
+        self.providers: dict[str, IngestionProvider] = {
             "arctic_shift": ArcticShiftProvider(),
             "rss": RSSProvider(),
             "hermes": HermesProvider(),
             "decodo": DecodoProvider(),
         }
+        reddit_provider = RedditOAuthProvider()
+        if include_reddit_oauth is True or (
+            include_reddit_oauth is None and reddit_provider.is_configured
+        ):
+            self.providers["reddit_oauth"] = reddit_provider
 
     def get_provider(self, name: str) -> IngestionProvider:
         if name not in self.providers:

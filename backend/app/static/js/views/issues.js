@@ -122,7 +122,7 @@ export async function renderIssues(container, ctx, params = {}) {
           }).join("")}
         </div>
       `
-      : emptyState({ title: "No issue domains match your filter", description: "Clear the search input to view all 8 synthetic categories." });
+      : emptyState({ title: "No issue domains match your filter", description: "Clear the search input to view all issue categories." });
 
     const sortBtn = (col, label, isNum = false) => {
       const activeCol = viewState.sortBy === col;
@@ -133,7 +133,7 @@ export async function renderIssues(container, ctx, params = {}) {
     const tableMarkup = rows.length
       ? `
         <div class="table-scroll">
-          <table class="data-table sortable-table" aria-label="Synthetic issue categories with solution and outcome metrics">
+          <table class="data-table sortable-table" aria-label="Community issue categories with solution and outcome metrics">
             <thead>
               <tr>
                 ${sortBtn("label", "Issue category")}
@@ -209,7 +209,7 @@ export async function renderIssues(container, ctx, params = {}) {
       inspectorHtml = deck(`Deep dive: ${esc(pretty(active.label))}`, {
         id: "issue-inspector",
         className: viewState.mode === "cards" ? "sticky-inspector" : "",
-        subtitle: "Aggregate polarity, resolution states, and representative synthetic proposals",
+        subtitle: "Aggregate polarity, resolution states, and representative proposed solutions",
         action: `
           <a class="btn btn-primary btn-sm" href="#/explorer?issue=${encodeURIComponent(active.key)}">Explore ${num(active.posts)} threads</a>
         `,
@@ -248,7 +248,7 @@ export async function renderIssues(container, ctx, params = {}) {
           <div class="aside-section">
             <h3>Supporting threads</h3>
             <div id="issue-threads-slot" class="preview-comment-list">
-              <div class="muted">Loading matching synthetic discussions…</div>
+              <div class="muted">Loading matching community discussions…</div>
             </div>
           </div>
         `,
@@ -257,13 +257,13 @@ export async function renderIssues(container, ctx, params = {}) {
 
     container.innerHTML = `
       ${callout(
-        "Issue categories below are scenario labels from the synthetic generator (20 fictional threads, 160 comments per domain). Sentiment percentages reflect in-sample baseline predictions; resolution counts reflect explicit synthetic outcome reports only.",
-        { tone: "info", title: "Data provenance:" }
+        "Thread issue domains are assigned using our GPU MuRIL + parent post title classifier across anonymized public Reddit discussions. Sentiment percentages reflect model outputs; resolution counts reflect explicit first-person follow-up signals only.",
+        { tone: "info", title: "Methodology:" }
       )}
       ${viewState.mode === "cards"
         ? `
           <div class="issues-studio-split">
-            <section class="issues-canvas-col" aria-label="Scenario issue domains">
+            <section class="issues-canvas-col" aria-label="Community issue domains">
               ${toolbar}
               <div class="spacer-md"></div>
               ${cardsMarkup}
@@ -272,7 +272,7 @@ export async function renderIssues(container, ctx, params = {}) {
           </div>
         `
         : `
-          ${deck("Scenario issue comparison ledger", {
+          ${deck("Issue comparison ledger", {
             subtitle: "Exact /api/demo/issues counts enriched with predicted negative polarity share from /api/demo/sentiment",
             body: `${toolbar}<div class="spacer-md"></div>${tableMarkup}`,
           })}

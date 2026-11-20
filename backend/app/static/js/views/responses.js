@@ -25,7 +25,7 @@ export async function renderResponses(container, ctx) {
     examples: byKey[key]?.examples || [],
   }));
 
-  const total = ordered.reduce((s, r) => s + r.count, 0) || Number(summary.comments || 1280);
+  const total = ordered.reduce((s, r) => s + r.count, 0) || Number(summary.comments || 1);
   const adviceCount = byKey.advice?.count || 0;
   const solutionCount = byKey.solution?.count || 0;
   const actionableTotal = adviceCount + solutionCount;
@@ -54,7 +54,7 @@ export async function renderResponses(container, ctx) {
       label: "Classified comments",
       valueText: num(total),
       countTo: total,
-      note: "In-sample multiclass predictions on synthetic corpus",
+      note: "6-class GPU MuRIL predictions across anonymized community replies",
     },
     {
       label: "Actionable roles",
@@ -99,7 +99,7 @@ export async function renderResponses(container, ctx) {
             </div>
             <div style="margin-top:var(--space-xs);display:flex;gap:var(--space-xs);flex-wrap:wrap">
               ${badge(groupText, groupTone)}
-              <span class="tag tag-neutral">Synthetic baseline output</span>
+              <span class="tag tag-neutral">MuRIL 6-class prediction</span>
             </div>
           </div>
           <div class="response-role-stat">
@@ -111,7 +111,7 @@ export async function renderResponses(container, ctx) {
         <p class="response-role-def">${esc(item.meta.definition)}</p>
 
         <div class="example-switcher">
-          <span class="muted" style="font-size:var(--text-xs)">Classified fictional examples (${item.examples.length} returned)</span>
+          <span class="muted" style="font-size:var(--text-xs)">Representative community replies (${item.examples.length} returned)</span>
           ${item.examples.length > 1
             ? `<div class="example-tabs" role="group" aria-label="Switch example for ${esc(item.key)}">
                 ${item.examples.map((_, idx) => `<button type="button" class="ex-tab-btn ${idx === exIdx ? "is-active" : ""}" data-ex-role="${esc(item.key)}" data-ex-idx="${idx}">${idx + 1}</button>`).join("")}
@@ -153,8 +153,8 @@ export async function renderResponses(container, ctx) {
 
   container.innerHTML = `
     ${callout(
-      `The six canonical community response classes remain locked in exact order: <code>agreement</code>, <code>personal_experience</code>, <code>opinion</code>, <code>advice</code>, <code>solution</code>, <code>counterargument</code>. Predictions below are in-sample outputs from the isolated synthetic TF-IDF baseline.`,
-      { tone: "info", title: "Canonical taxonomy & epistemic boundary:" }
+      `The six canonical community response classes remain locked in exact order: <code>agreement</code>, <code>personal_experience</code>, <code>opinion</code>, <code>advice</code>, <code>solution</code>, <code>counterargument</code>. Counts below reflect GPU MuRIL 6-class predictions over anonymized public Reddit replies.`,
+      { tone: "info", title: "Canonical taxonomy:" }
     )}
     ${tallyRow}
     ${deck("Canonical six-class distribution wheel", {

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Local keyboard-first human annotation studio for labeling real Reddit pilot comments across five NLP tasks with live training-readiness validation.">
+  <title>RCI Annotation Studio | Local Real-Data Pilot</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23161824'/%3E%3Ccircle cx='11' cy='16' r='3.5' fill='%239aa8ff'/%3E%3Ccircle cx='21' cy='11' r='2.8' fill='%23f5ba7a'/%3E%3Ccircle cx='21' cy='21' r='2.8' fill='%2378dcb3'/%3E%3Cpath d='M14 14.6L18.5 12.2M14 17.4L18.5 19.8' stroke='%239aa8ff' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/annotate-tokens.css">
+  <link rel="stylesheet" href="/annotate-base.css">
+  <link rel="stylesheet" href="/annotate-assets/studio.css">
+</head>
+<body>
+  <a class="skip-link" href="#reading-card">Skip to active comment</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-left">
+        <a class="brand-link" href="/annotate" aria-label="RCI Annotation Studio home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="7" cy="12" r="3.2" fill="var(--color-accent)"/>
+              <circle cx="17.5" cy="6.8" r="2.6" fill="var(--color-accent-2)"/>
+              <circle cx="17.5" cy="17.2" r="2.6" fill="var(--color-positive)"/>
+              <path d="M10 10.6L15 8.1M10 13.4L15 15.9" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <h1 class="brand-title">RCI Annotation Studio</h1>
+            <span class="brand-sub">Local pilot workbench, isolated from demo</span>
+          </span>
+        </a>
+        <span class="scope-tag" role="status" title="Reads and writes local CSV only; never published to /api/demo">127.0.0.1 local</span>
+      </div>
+
+      <div class="topbar-right">
+        <label class="annotator-field" for="annotator-id">
+          <span class="annotator-label">Annotator</span>
+          <input id="annotator-id" name="annotator_id" type="text" value="researcher_1" placeholder="your_id" autocomplete="username" spellcheck="false">
+        </label>
+        <button id="btn-focus-mode" class="tool-btn" type="button" aria-pressed="false" title="Toggle distraction-free focus mode (M)">
+          Focus <kbd>M</kbd>
+        </button>
+        <button id="btn-guidelines" class="tool-btn" type="button" title="Open annotation rules and keyboard shortcuts (?)">
+          Shortcuts <kbd>?</kbd>
+        </button>
+        <button id="btn-theme" class="tool-btn" type="button" aria-label="Switch between dark and light theme">
+          Light
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workbench" id="workbench">
+    <section class="stage" aria-label="Active comment annotation">
+      <!-- Compact Queue Navigation Bar -->
+      <div class="stage-nav">
+        <div class="stage-nav-left">
+          <button id="btn-prev" class="btn btn-secondary btn-sm" type="button" title="Previous comment ([ or Left arrow)">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3.5L5.5 8L10 12.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Prev</span>
+            <kbd>[</kbd>
+          </button>
+          <span class="queue-pos num" id="queue-pos" aria-live="polite">0 of 0</span>
+          <button id="btn-next" class="btn btn-secondary btn-sm" type="button" title="Next comment (] or Right arrow)">
+            <span>Next</span>
+            <kbd>]</kbd>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 3.5L10.5 8L6 12.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button id="btn-undo-last" class="btn btn-ghost btn-sm" type="button" hidden title="Return to your most recently saved comment (Z)">
+            Last saved <kbd>Z</kbd>
+          </button>
+        </div>
+
+        <div class="stage-nav-right">
+          <span class="doc-id-chip" id="doc-id-chip">Loading</span>
+          <span class="status-badge" id="status-badge" role="status">Unreviewed</span>
+        </div>
+      </div>
+
+      <!-- Loading Skeleton State -->
+      <div class="surface-glass skeleton-card" id="loading-state" aria-busy="true" aria-label="Loading pilot comments">
+        <div class="skel-line skel-title"></div>
+        <div class="skel-line skel-meta"></div>
+        <div class="skel-block"></div>
+        <div class="skel-row">
+          <div class="skel-chip"></div>
+          <div class="skel-chip"></div>
+          <div class="skel-chip"></div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="surface-glass state-panel" id="error-state" hidden role="alert">
+        <h2>Unable to load annotation sheet</h2>
+        <p class="muted" id="error-message">The local annotation API did not respond.</p>
+        <div class="state-actions">
+          <button id="btn-retry-load" class="btn btn-primary" type="button">Retry loading</button>
+        </div>
+      </div>
+
+      <!-- Empty Queue State -->
+      <div class="surface-glass state-panel" id="empty-state" hidden>
+        <h2>No comments match the active filter</h2>
+        <p class="muted">Clear the current search or switch back to all comments to review labeled or adjudicated items.</p>
+        <div class="state-actions">
+          <button id="btn-show-all" class="btn btn-secondary" type="button">Show all comments</button>
+        </div>
+      </div>
+
+      <!-- Focal Comment Specimen (Single Smoked-Glass Containment Layer, Zero Nested Cards) -->
+      <article class="surface-glass specimen-card" id="reading-card" hidden tabindex="-1">
+        <header class="specimen-head">
+          <h2 class="post-title" id="post-title">Loading thread…</h2>
+          <dl class="meta-strip" id="meta-row" aria-label="Comment provenance">
+            <div class="meta-pair">
+              <dt class="visually-hidden">Subreddit</dt>
+              <dd class="meta-sub" id="meta-subreddit">r/unknown</dd>
+            </div>
+            <div class="meta-pair">
+              <dt class="visually-hidden">Date</dt>
+              <dd id="meta-date">Unknown date</dd>
+            </div>
+            <div class="meta-pair">
+              <dt class="visually-hidden">Score</dt>
+              <dd class="num" id="meta-score">Score 0</dd>
+            </div>
+            <div class="meta-pair">
+              <dt class="visually-hidden">Language</dt>
+              <dd id="meta-lang">Unknown</dd>
+            </div>
+            <div class="meta-pair meta-pair-end" id="noise-flag-wrap" hidden>
+              <dt class="visually-hidden">Noise detection</dt>
+              <dd class="noise-flag" id="noise-flag">Bot noise</dd>
+            </div>
+          </dl>
+        </header>
+
+        <figure class="parent-quote" id="parent-quote" hidden>
+          <figcaption class="quote-caption">Replying to parent comment</figcaption>
+          <blockquote class="parent-body" id="parent-body"></blockquote>
+        </figure>
+
+        <div class="comment-prose-wrap">
+          <div class="comment-body" id="comment-body"></div>
+        </div>
+
+        <!-- Integrated 5-Task Triage Rack (Separated by Hairline Rule, Not a Second Box) -->
+        <section class="triage-rack" id="triage-card" aria-label="Five-task annotation controls">
+          <div class="triage-pair-row">
+            <fieldset class="task-group">
+              <legend class="task-legend">
+                <span class="task-title">1. Sentiment</span>
+                <span class="task-req">Required, single</span>
+              </legend>
+              <div class="chip-row" id="group-sentiment" role="radiogroup" aria-label="Sentiment"></div>
+            </fieldset>
+
+            <fieldset class="task-group">
+              <legend class="task-legend">
+                <span class="task-title">5. Solution</span>
+                <span class="task-req">Required, binary</span>
+              </legend>
+              <div class="chip-row" id="group-solution" role="radiogroup" aria-label="Solution"></div>
+            </fieldset>
+          </div>
+
+          <fieldset class="task-group">
+            <legend class="task-legend">
+              <span class="task-title">4. Community response</span>
+              <span class="task-req">Required, single in canonical six-class order</span>
+            </legend>
+            <div class="chip-row" id="group-response" role="radiogroup" aria-label="Community response"></div>
+          </fieldset>
+
+          <fieldset class="task-group">
+            <legend class="task-legend">
+              <span class="task-title">2. Emotions</span>
+              <span class="task-opt">Optional, multi-label (empty allowed)</span>
+            </legend>
+            <div class="chip-row" id="group-emotion" role="group" aria-label="Emotions"></div>
+          </fieldset>
+
+          <fieldset class="task-group">
+            <legend class="task-legend">
+              <span class="task-title">3. Issue domains</span>
+              <span class="task-opt">Optional, multi-label <kbd>Shift+1..8</kbd></span>
+            </legend>
+            <div class="chip-row chip-row-issues" id="group-issue" role="group" aria-label="Issue domains"></div>
+          </fieldset>
+
+          <div class="notes-field">
+            <label class="notes-label" for="annotator-notes">Notes</label>
+            <input id="annotator-notes" name="annotator_notes" type="text" placeholder="Optional nuance, Hinglish context, or edge-case rationale…" autocomplete="off">
+          </div>
+
+          <div class="action-bar">
+            <div class="action-buttons">
+              <button id="btn-save-next" class="btn btn-primary" type="button">
+                <span>Save and next</span>
+                <kbd>Enter</kbd>
+              </button>
+              <button id="btn-toggle-abstain" class="btn btn-warn-outline" type="button" aria-expanded="false" aria-controls="abstain-panel" title="Flag as uncertain, abstain, or excluded (U)">
+                <span>Uncertain or abstain</span>
+                <kbd>U</kbd>
+              </button>
+              <button id="btn-reset-row" class="btn btn-ghost btn-sm" type="button" title="Clear saved labels and return to unreviewed">
+                Reset
+              </button>
+            </div>
+            <p class="validation-hint" id="validation-hint" aria-live="polite"></p>
+          </div>
+
+          <!-- Progressive Disclosure: Explicit Adjudication Routing (Never Coerced to Training Classes) -->
+          <div class="abstain-panel" id="abstain-panel" hidden>
+            <div class="abstain-head">
+              <h3>Route to adjudication queue</h3>
+              <p class="muted">Uncertain, abstained, and excluded items are kept out of training splits and never converted into normal labels.</p>
+            </div>
+            <div class="abstain-controls">
+              <div class="abstain-status-row" id="abstain-status-row" role="radiogroup" aria-label="Adjudication status">
+                <button type="button" class="chip abstain-status-chip active" data-abstain-status="uncertain">Uncertain</button>
+                <button type="button" class="chip abstain-status-chip" data-abstain-status="abstain">Abstain</button>
+                <button type="button" class="chip abstain-status-chip" data-abstain-status="excluded">Excluded</button>
+              </div>
+              <div class="abstain-reasons" id="abstain-reasons" role="radiogroup" aria-label="Adjudication reason"></div>
+              <div class="abstain-submit-row">
+                <button id="btn-confirm-abstain" class="btn btn-warn-outline" type="button">
+                  Confirm and advance
+                </button>
+                <button id="btn-cancel-abstain" class="btn btn-ghost btn-sm" type="button">
+                  Cancel <kbd>Esc</kbd>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+    <!-- Calm 340px Telemetry & Queue Rail -->
+    <aside class="rail" id="side-rail" aria-label="Training readiness and comment queue">
+      <!-- Dusk Readiness Ledger (Ruled Tally + Structured 3-Task Quota Matrix) -->
+      <section class="surface-glass rail-panel">
+        <div class="rail-head">
+          <h2 class="rail-title">Training readiness</h2>
+          <span class="ready-pill" id="ready-pill" role="status">Not ready</span>
+        </div>
+
+        <!-- Dusk Signature Hairline-Parted Ruled Tally (No Boxed KPI Tiles) -->
+        <dl class="ruled-tally">
+          <div class="tally-cell">
+            <dt class="tally-label">Labeled</dt>
+            <dd class="tally-figure num" id="kpi-labeled">0<span class="tally-denom">/60</span></dd>
+          </div>
+          <div class="tally-cell">
+            <dt class="tally-label">Threads</dt>
+            <dd class="tally-figure num" id="kpi-threads">0<span class="tally-denom">/10</span></dd>
+          </div>
+          <div class="tally-cell">
+            <dt class="tally-label">Adjudicated</dt>
+            <dd class="tally-figure num" id="kpi-adj">0</dd>
+          </div>
+        </dl>
+
+        <div class="progress-stack">
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar-role" aria-label="Minimum labeled comments progress">
+            <div class="progress-fill" id="bar-comments"></div>
+          </div>
+          <div class="progress-meta num">
+            <span id="bar-comments-text">0 of 60 comments</span>
+            <span id="bar-threads-text">0 of 10 threads</span>
+          </div>
+          <p class="session-hint" id="session-hint">Session count starts at 0.</p>
+        </div>
+
+        <!-- Structured 3-Task Quota Ledger -->
+        <div class="quota-ledger" aria-label="Required per-class minimums">
+          <div class="quota-ledger-head">
+            <h3 class="sub-head">Class quotas</h3>
+            <span class="quota-target num">Minimum 3 each</span>
+          </div>
+          <div class="quota-rows" id="quota-grid"></div>
+        </div>
+
+        <!-- Deterministic Bot/GIF Noise Banner -->
+        <div class="noise-banner" id="noise-banner" hidden>
+          <div class="noise-banner-text">
+            <strong id="noise-count-label">0 bot or GIF rows</strong>
+            <span>AutoMod and GIF embeds</span>
+          </div>
+          <button id="btn-exclude-noise" class="btn btn-secondary btn-sm" type="button">
+            Exclude all
+          </button>
+        </div>
+
+        <!-- Supervised Training Gate -->
+        <div class="train-box" id="train-box">
+          <h3 class="sub-head">Supervised training gate</h3>
+          <p class="train-note" id="train-note">
+            Meet every quota above to start thread-grouped V1/V2 TF-IDF and GPU MuRIL training.
+          </p>
+          <div class="train-actions" id="train-actions" hidden>
+            <button id="btn-train-classical" class="btn btn-secondary btn-sm" type="button">
+              Train V1/V2 TF-IDF
+            </button>
+            <button id="btn-train-muril" class="btn btn-secondary btn-sm" type="button">
+              Train with GPU MuRIL
+            </button>
+          </div>
+          <div class="train-status" id="train-status" hidden role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- Queue Navigator -->
+      <section class="surface-glass rail-panel queue-panel">
+        <div class="rail-head">
+          <h2 class="rail-title">Queue</h2>
+          <label class="inline-select-label" for="sort-mode">
+            <span class="visually-hidden">Queue ordering</span>
+            <select id="sort-mode" name="sort_mode" class="compact-select">
+              <option value="balanced">Thread-balanced</option>
+              <option value="original">CSV order</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="filter-tabs" id="filter-tabs" role="tablist" aria-label="Filter by review status">
+          <button class="filter-tab active" data-filter="unreviewed" role="tab" aria-selected="true" type="button">Unreviewed</button>
+          <button class="filter-tab" data-filter="all" role="tab" aria-selected="false" type="button">All</button>
+          <button class="filter-tab" data-filter="labeled" role="tab" aria-selected="false" type="button">Labeled</button>
+          <button class="filter-tab" data-filter="adjudication" role="tab" aria-selected="false" type="button">Adj / excl</button>
+        </div>
+
+        <div class="queue-filters-row">
+          <label class="filter-field" for="filter-subreddit">
+            <span class="visually-hidden">Filter by subreddit</span>
+            <select id="filter-subreddit" name="subreddit" class="compact-select">
+              <option value="">All subreddits</option>
+            </select>
+          </label>
+          <label class="filter-field" for="filter-search">
+            <span class="visually-hidden">Search comment text</span>
+            <input id="filter-search" name="search" class="compact-input" type="search" placeholder="Search comments…" autocomplete="off">
+          </label>
+        </div>
+
+        <ul class="queue-list" id="queue-list" aria-label="Filtered comments"></ul>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog class="guide-dialog" id="guide-dialog" aria-labelledby="guide-dialog-title">
+    <div class="guide-header">
+      <h2 id="guide-dialog-title">Annotation guidelines and keyboard shortcuts</h2>
+      <button id="btn-close-guide" class="btn btn-ghost btn-sm" type="button">Close <kbd>Esc</kbd></button>
+    </div>
+    <div class="guide-body">
+      <div class="guide-col">
+        <h3>Keyboard shortcuts</h3>
+        <ul class="shortcut-list">
+          <li><span>Sentiment: Negative, Neutral, Positive</span><span class="kbd-group"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span></li>
+          <li><span>Response: Agr, Exp, Opn, Adv, Sol, Ctr</span><span class="kbd-group"><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>Y</kbd></span></li>
+          <li><span>Solution: Not solution, Solution</span><span class="kbd-group"><kbd>N</kbd><kbd>S</kbd></span></li>
+          <li><span>Emotions: Conf, Cur, Frust, Grat, Hope, Stress</span><span class="kbd-group"><kbd>A</kbd><kbd>D</kbd><kbd>F</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd></span></li>
+          <li><span>Issue domains (toggle 1 to 8)</span><span class="kbd-group"><kbd>Shift+1</kbd><kbd>Shift+8</kbd></span></li>
+          <li><span>Save labeled row and advance</span><span class="kbd-group"><kbd>Enter</kbd></span></li>
+          <li><span>Toggle uncertain or abstain panel</span><span class="kbd-group"><kbd>U</kbd></span></li>
+          <li><span>Return to last saved comment</span><span class="kbd-group"><kbd>Z</kbd></span></li>
+          <li><span>Toggle focus mode</span><span class="kbd-group"><kbd>M</kbd></span></li>
+          <li><span>Previous or next comment</span><span class="kbd-group"><kbd>[</kbd><kbd>]</kbd></span></li>
+        </ul>
+      </div>
+      <div class="guide-col">
+        <h3>Decision boundaries</h3>
+        <ul class="rules-list">
+          <li><strong>Advice vs solution:</strong> <code>advice</code> is general guidance (“reach out to seniors”). <code>solution</code> is a concrete, actionable fix. Set <code>is_solution</code> to <code>solution</code> whenever a comment supplies a concrete remedy, even when its primary response role is <code>advice</code> or <code>personal_experience</code>.</li>
+          <li><strong>Empty multi-label sets are valid:</strong> Plain factual replies (“Yes, 92 percentile”) can carry zero emotions and zero issue domains. Leave optional groups blank rather than forcing a guess.</li>
+          <li><strong>Adjudication routing:</strong> Use <code>uncertain</code> when borderline, <code>abstain</code> when parent context is missing or untranslatable, and <code>excluded</code> for AutoModerator boilerplate or GIF embeds.</li>
+          <li><strong>Thread-balanced ordering:</strong> Default order rotates across threads and subreddits so your first 60 to 100 annotations span 30 or more distinct threads for leakage-free splits.</li>
+        </ul>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/annotate-assets/studio.js"></script>
+</body>
+</html>

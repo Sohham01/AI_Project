@@ -26,20 +26,25 @@ class ArcticShiftProvider(IngestionProvider):
         A short/empty page is not proof that an archive/time window is complete.
         In particular, no timestamp pagination is attempted around tied dates.
         """
-        allowed = {"subreddit", "query", "limit", "after", "before", "sort", "timeout"}
+        allowed = {"subreddit", "query", "title", "selftext", "limit", "after", "before", "sort", "timeout"}
         if kwargs.keys() - allowed:
             raise ValueError("unsupported Arctic Shift search parameter")
         subreddit = kwargs.get("subreddit")
         limit = ArcticShiftClient._limit(kwargs.get("limit", 25), ArcticShiftClient.MAX_POSTS)
-        raw_response = self.client.search_posts(
-            subreddit=subreddit,
-            query=kwargs.get("query"),
-            limit=limit,
-            after=kwargs.get("after", "30d"),
-            before=kwargs.get("before"),
-            sort=kwargs.get("sort", "desc"),
-            timeout=kwargs.get("timeout"),
-        )
+        search_kwargs: dict[str, Any] = {
+            "subreddit": subreddit,
+            "query": kwargs.get("query"),
+            "limit": limit,
+            "after": kwargs.get("after", "30d"),
+            "before": kwargs.get("before"),
+            "sort": kwargs.get("sort", "desc"),
+            "timeout": kwargs.get("timeout"),
+        }
+        if "title" in kwargs:
+            search_kwargs["title"] = kwargs.get("title")
+        if "selftext" in kwargs:
+            search_kwargs["selftext"] = kwargs.get("selftext")
+        raw_response = self.client.search_posts(**search_kwargs)
         raw_posts = ArcticShiftClient.response_data(raw_response)
         posts: dict[str, PostData] = {}
         for raw_post in raw_posts:

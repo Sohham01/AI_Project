@@ -101,6 +101,7 @@ class TfidfLogisticEmotionClassifier(TfidfLogisticTextModel, EmotionAnalysis):
         self._vectorizer = self._build_vectorizer()
         self._binarizer: Optional[MultiLabelBinarizer] = None
         self._model: Optional[OneVsRestClassifier] = None
+        self._per_label_thresholds: Dict[str, float] = {}
         self._trained = False
         self._training_summary: Optional[EmotionTrainingReport] = None
         self._warnings: List[str] = []
@@ -174,6 +175,7 @@ class TfidfLogisticEmotionClassifier(TfidfLogisticTextModel, EmotionAnalysis):
 
         # Reset any previous fit so train() is safely repeatable.
         self._model = None
+        self._per_label_thresholds = {}
         self._trained = False
         self._warnings = []
         X = self._fit_vectorizer(texts)
@@ -217,7 +219,7 @@ class TfidfLogisticEmotionClassifier(TfidfLogisticTextModel, EmotionAnalysis):
             n_labels=len(binarizer.classes_),
             labels=[str(label) for label in binarizer.classes_],
             positive_examples_per_label=positive_counts,
-            n_features=int(len(self._vectorizer.vocabulary_)),
+            n_features=int(X.shape[1]),
             n_documents_without_emotions=sum(1 for labels in labels_seen if not labels),
             n_multi_label_documents=sum(1 for labels in labels_seen if len(labels) > 1),
             threshold=self._threshold,
@@ -314,7 +316,11 @@ class TfidfLogisticEmotionClassifier(TfidfLogisticTextModel, EmotionAnalysis):
             predicted = sorted(
                 label
                 for label, probability in label_probabilities.items()
-                if probability > effective_threshold
+                if probability > (
+                    effective_threshold
+                    if threshold is not None
+                    else self._per_label_thresholds.get(label, effective_threshold)
+                )
             )
             confidence = (
                 round(max(label_probabilities.values()), 6)
@@ -408,6 +414,71 @@ class TfidfLogisticEmotionClassifier(TfidfLogisticTextModel, EmotionAnalysis):
         if overlap:
             report.warnings.append(overlap)
         return report
+
+    @property
+    def per_label_thresholds(self) -> Dict[str, float]:
+        """Optional validation-calibrated thresholds keyed by emotion label."""
+        return dict(self._per_label_thresholds)
+
+    def calibrate_thresholds(
+        self,
+        validation_annotations: Sequence[EmotionAnnotation],
+        grid: Optional[Sequence[float]] = None,
+    ) -> Dict[str, float]:
+        """Tune per-label sigmoid thresholds on a held-out validation split."""
+        self._require_trained()
+        records = list(validation_annotations or [])
+        if not records or self._binarizer is None:
+            return dict(self._per_label_thresholds)
+
+        candidates = [
+            self._validate_threshold(value)
+            for value in (
+                grid
+                if grid is not None
+                else [round(0.15 + 0.05 * i, 2) for i in range(15)]
+            )
+        ]
+        known = set(self.labels)
+        gold: List[List[str]] = []
+        for annotation in records:
+            annotation.validate_emotions()
+            gold.append(sorted({label for label in annotation.emotions if label in known}))
+        y_true = self._binarizer.transform(gold)
+        docs = [annotation.to_document() for annotation in records]
+        texts = [
+            self._featurize_text(doc.text, doc.topic_id, doc.topic_keywords)
+            for doc in docs
+        ]
+        X = self._vectorizer.transform(texts)
+        probabilities = self._model.predict_proba(X)
+
+        tuned: Dict[str, float] = {}
+        for col, label in enumerate(self.labels):
+            truth = y_true[:, col]
+            if int(truth.sum()) == 0:
+                tuned[label] = self._threshold
+                continue
+            probs = probabilities[:, col]
+            best_tau = self._threshold
+            best_f1 = -1.0
+            for tau in candidates:
+                pred = (probs > tau).astype(int)
+                tp = int(((truth == 1) & (pred == 1)).sum())
+                fp = int(((truth == 0) & (pred == 1)).sum())
+                fn = int(((truth == 1) & (pred == 0)).sum())
+                denom = 2 * tp + fp + fn
+                f1 = (2.0 * tp / denom) if denom > 0 else 0.0
+                if (f1 > best_f1 + 1e-12) or (
+                    abs(f1 - best_f1) <= 1e-12
+                    and abs(tau - self._threshold) < abs(best_tau - self._threshold)
+                ):
+                    best_f1 = f1
+                    best_tau = tau
+            tuned[label] = best_tau
+
+        self._per_label_thresholds = tuned
+        return dict(tuned)
 
     # ------------------------------------------------------------------
     # Internals

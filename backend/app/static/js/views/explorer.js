@@ -84,11 +84,12 @@ export async function renderExplorer(container, ctx, params = {}) {
     `
     : "";
 
+  const formatSub = (sub) => (sub && !sub.startsWith("r/") ? `r/${sub}` : (sub || "community"));
   const issueOptions = (summary.issue_distribution || [])
     .map((item) => `<option value="${esc(item.key)}" ${filters.issue === item.key ? "selected" : ""}>${esc(pretty(item.label))}</option>`)
     .join("");
   const communityOptions = (summary.community_distribution || [])
-    .map((item) => `<option value="${esc(item.label)}" ${filters.community === item.label ? "selected" : ""}>${esc(item.label)} (synthetic)</option>`)
+    .map((item) => `<option value="${esc(item.label)}" ${filters.community === item.label ? "selected" : ""}>${esc(formatSub(item.label))}</option>`)
     .join("");
   const emotionOptions = (summary.emotion_distribution || [])
     .map((item) => `<option value="${esc(item.label)}" ${filters.emotion === item.label ? "selected" : ""}>${esc(pretty(item.label))}</option>`)
@@ -98,16 +99,16 @@ export async function renderExplorer(container, ctx, params = {}) {
     .join("");
 
   const filterBar = `
-    <form id="explorer-filter-form" class="filter-dock anim-enter" role="search" aria-label="Filter synthetic discussions">
+    <form id="explorer-filter-form" class="filter-dock anim-enter" role="search" aria-label="Filter community discussions">
       <div class="filter-grid">
         <div class="field">
           <label for="ex-q">Search titles, posts &amp; comments</label>
-          <input id="ex-q" name="q" type="search" maxlength="120" value="${esc(filters.q || "")}" placeholder="Offer comparison guide, scholarship, hostel…">
+          <input id="ex-q" name="q" type="search" maxlength="120" value="${esc(filters.q || "")}" placeholder="Placements, waitlist, hostel, fees, CAT…">
         </div>
         <div class="field">
-          <label for="ex-issue">Issue domain (scenario)</label>
+          <label for="ex-issue">Issue domain</label>
           <select id="ex-issue" name="issue">
-            <option value="">All 8 issue domains</option>
+            <option value="">All issue domains</option>
             ${issueOptions}
           </select>
         </div>
@@ -133,9 +134,9 @@ export async function renderExplorer(container, ctx, params = {}) {
           </select>
         </div>
         <div class="field">
-          <label for="ex-community">Synthetic community</label>
+          <label for="ex-community">Subreddit</label>
           <select id="ex-community" name="community">
-            <option value="">All synthetic communities</option>
+            <option value="">All subreddits</option>
             ${communityOptions}
           </select>
         </div>
@@ -143,7 +144,7 @@ export async function renderExplorer(container, ctx, params = {}) {
       <div class="filter-actions">
         <button type="submit" class="btn btn-primary btn-sm">Apply filters</button>
         ${activeChips.length ? `<a class="btn btn-quiet btn-sm" href="#/explorer">Clear filters</a>` : ""}
-        <span class="filter-hint">Model filters match threads containing at least one comment with that baseline prediction.</span>
+        <span class="filter-hint">Model filters match threads containing at least one comment with that predicted label.</span>
       </div>
     </form>
   `;
@@ -164,13 +165,13 @@ export async function renderExplorer(container, ctx, params = {}) {
         </div>
       </nav>
     `
-    : `<div class="results-bar"><span>Showing all <strong class="num">${num(data.total)}</strong> matching thread${data.total === 1 ? "" : "s"}</span><span>Ordered by synthetic timestamp (newest first)</span></div>`;
+    : `<div class="results-bar"><span>Showing all <strong class="num">${num(data.total)}</strong> matching thread${data.total === 1 ? "" : "s"}</span><span>Ordered by post date (newest first)</span></div>`;
 
   const splitWorkspace = items.length
     ? `
       <section class="deck anim-enter" aria-label="Discussions stream and live split preview">
         <div class="explorer-split">
-          <div class="explorer-list-pane" role="list" aria-label="Matching synthetic discussions">
+          <div class="explorer-list-pane" role="list" aria-label="Matching community discussions">
             <div class="pane-head">
               <strong class="pane-title">Narratives (<span class="num">${num(data.total)}</span>)</strong>
               <span class="pane-sub">Click any thread to live-inspect</span>
@@ -187,7 +188,7 @@ export async function renderExplorer(container, ctx, params = {}) {
                   <h2 class="discussion-card-title">
                     <a href="#/thread/${encodeURIComponent(post.id)}">${esc(post.title)}</a>
                   </h2>
-                  <p class="discussion-card-excerpt">${esc(post.body)}</p>
+                  <p class="discussion-card-excerpt">${esc(post.body || "Image or title-only community post — open thread to inspect replies.")}</p>
                   <div class="discussion-card-footer">
                     ${responseMiniStrip(post.response_counts)}
                     <a class="row-open-link" href="#/thread/${encodeURIComponent(post.id)}">Open full tree</a>
@@ -204,7 +205,7 @@ export async function renderExplorer(container, ctx, params = {}) {
       </section>
     `
     : emptyState({
-        title: "No synthetic discussions match these filters",
+        title: "No discussions match these filters",
         description: "Remove one of the active filters or broaden your search phrase.",
         actionHtml: `<a class="btn btn-primary btn-sm" href="#/explorer">Reset all filters</a>`,
       });
@@ -213,7 +214,7 @@ export async function renderExplorer(container, ctx, params = {}) {
     ${filterBar}
     ${chipsHtml}
     <div class="results-bar">
-      <span><strong class="num">${num(data.total)}</strong> matching synthetic thread${data.total === 1 ? "" : "s"}</span>
+      <span><strong class="num">${num(data.total)}</strong> matching thread${data.total === 1 ? "" : "s"}</span>
       <span class="canonical-key-inline">
         ${CANONICAL_RESPONSE_TYPES.map((k) => `<span class="micro-legend"><span class="legend-swatch" style="background:${RESPONSE_META[k].color}" aria-hidden="true"></span>${RESPONSE_META[k].short}</span>`).join("")}
       </span>
@@ -256,8 +257,8 @@ export async function renderExplorer(container, ctx, params = {}) {
           <h3>Resolution evidence status</h3>
           <p style="font-size:var(--text-sm);color:var(--color-ink-2);margin-bottom:var(--space-xs)">${esc(RESOLUTION_META[post.resolution_state]?.description || "")}</p>
           ${evidence
-            ? `<blockquote class="preview-quote">“${esc(evidence.body)}”<footer>Explicit synthetic outcome report in comment <span class="num">${esc(shortCommentLabel(evidence.reddit_id))}</span></footer></blockquote>`
-            : `<p class="muted" style="font-size:var(--text-sm)">No explicit outcome statement was generated for this thread.</p>`}
+            ? `<blockquote class="preview-quote">“${esc(evidence.body)}”<footer>Explicit follow-up signal in comment <span class="num">${esc(shortCommentLabel(evidence.reddit_id))}</span></footer></blockquote>`
+            : `<p class="muted" style="font-size:var(--text-sm)">No explicit outcome follow-up statement detected in this thread.</p>`}
         </div>
 
         <div class="aside-section">
@@ -327,8 +328,8 @@ export async function renderExplorer(container, ctx, params = {}) {
         </div>
 
         <h2 class="preview-title">${esc(post.title)}</h2>
-        <p class="preview-body">${esc(post.body)}</p>
-        <p class="preview-dateline">${esc(post.subreddit)} (synthetic), ${dateText(post.created_at)}, <span class="num">${num(comments.length)}</span> replies</p>
+        ${post.body ? `<p class="preview-body">${esc(post.body)}</p>` : `<p class="preview-body muted">Title-only or media discussion post.</p>`}
+        <p class="preview-dateline">${esc(formatSub(post.subreddit))}, ${dateText(post.created_at)}, <span class="num">${num(comments.length)}</span> replies</p>
 
         <div class="segmented" role="tablist" aria-label="Preview inspector tabs">
           <button type="button" role="tab" aria-selected="${activePreviewTab === "evidence"}" class="seg-btn ${activePreviewTab === "evidence" ? "is-active" : ""}" data-preview-tab="evidence">Evidence</button>

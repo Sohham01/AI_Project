@@ -82,7 +82,7 @@ export const RESOLUTION_META = Object.freeze({
     short: "Reported success",
     cls: "positive",
     color: "var(--color-positive)",
-    description: "An explicit first-person follow-up comment reports the issue was resolved in their case (synthetic scenario).",
+    description: "An explicit first-person follow-up comment indicates the issue or admission step was resolved.",
   },
   reported_pending: {
     label: "Reported pending",
@@ -125,11 +125,11 @@ export const LANGUAGE_LABELS = Object.freeze({
 export const GLOSSARY = Object.freeze({
   macro_f1: "Unweighted mean of F1 scores across every class or label. Treats rare and frequent classes equally.",
   micro_f1: "Global F1 computed by pooling all true positives, false positives, and false negatives across labels.",
-  subset_accuracy: "Strictest multi-label metric: requires the entire predicted label set to match the gold set exactly. Omitted (null) by ml/evaluation/reports.py in the current artifacts.",
+  subset_accuracy: "Strictest multi-label metric: requires the entire predicted label set to match the gold set exactly.",
   group_split: "All comments from a thread (post_id) stay inside a single split (train, validation, or test) to prevent cross-split thread leakage.",
-  in_sample_vs_heldout: "Thread-level predictions shown in the explorer are in-sample predictions on the synthetic corpus; model evaluation tables use only the held-out 192-comment test split.",
-  nmf_topics: "Non-negative Matrix Factorization over bag-of-words TF-IDF features. Unsupervised and sensitive to script tokenization and stopwords; not validated semantic research themes.",
-  proposal_vs_resolution: "A comment classified as advice or solution is only a proposed intervention. Resolution requires an explicit follow-up outcome statement and remains synthetic in this pilot.",
+  in_sample_vs_heldout: "Thread-level tags shown in the explorer are batch model predictions over anonymized Reddit comments; evaluation tables report held-out thread-grouped test and 54-probe robustness metrics.",
+  nmf_topics: "Non-negative Matrix Factorization over TF-IDF unigrams and bigrams fit directly on the anonymized community comment corpus.",
+  proposal_vs_resolution: "A comment classified as advice or solution is only a proposed intervention. Resolution requires an explicit follow-up outcome statement in the thread.",
 });
 
 export function esc(value) {

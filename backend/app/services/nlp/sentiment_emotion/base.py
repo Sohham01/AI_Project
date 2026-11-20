@@ -166,6 +166,11 @@ class BaseTextFeatureConfig(BaseModel):
     # --- Data-adequacy guards (never ship a model trained on too little data) ---
     min_training_documents: int = 5
 
+    # --- Optional character n-gram features (code-mixed / Hinglish / Indic) ---
+    use_char_ngrams: bool = False
+    char_ngram_range: Tuple[int, int] = (3, 5)
+    char_max_features: Optional[int] = 30000
+
     # --- Features ---
     use_topic_features: bool = False
     drop_placeholder_tokens: bool = True

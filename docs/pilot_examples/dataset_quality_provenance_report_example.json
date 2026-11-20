@@ -1,0 +1,81 @@
+{
+  "dataset_id": "synthetic-intake-example-v1",
+  "generated_at": "2026-11-19T15:05:57Z",
+  "provenance": {
+    "dataset_id": "synthetic-intake-example-v1",
+    "source": {
+      "community": "IIMSambalpur",
+      "source_reference": "sha256:9def301567e75faa85545d742c3058f9b02c1c7ec02b921e3b8a20de6ad9158f",
+      "source_provider": "synthetic-intake-fixture",
+      "source_mode": "direct",
+      "collected_at": "2026-11-19T15:05:57Z"
+    },
+    "completeness": {
+      "comments_complete": false
+    },
+    "authorization": {
+      "authorization_status": "pending-review",
+      "authorization_reference": "example-fixture-not-real-reddit"
+    }
+  },
+  "import_stats": {
+    "files_parsed": 2,
+    "posts_seen": 2,
+    "posts_extracted": 2,
+    "comments_seen": 5,
+    "comments_attached": 5,
+    "orphaned_comments_skipped": 0,
+    "parent_context_breakdown": {
+      "top_level": 2,
+      "available": 2,
+      "unavailable": 1
+    },
+    "pii_redactions": {
+      "author_fields_stripped": 10,
+      "email_redactions": 3,
+      "phone_redactions": 1,
+      "user_mention_redactions": 2
+    },
+    "diagnostics_and_rejections": {
+      "comment_deleted_or_removed": 1,
+      "comment_missing_score_unfabricated": 1,
+      "duplicate_comment_id_deduped": 1,
+      "unresolved_comment_parent": 1
+    },
+    "input_sha256": "9def301567e75faa85545d742c3058f9b02c1c7ec02b921e3b8a20de6ad9158f"
+  },
+  "validation_summary": {
+    "format": "json",
+    "valid": true,
+    "usable_for_pilot": false,
+    "posts_seen": 2,
+    "posts_accepted": 2,
+    "comments_seen": 5,
+    "comments_accepted": 5,
+    "errors": [],
+    "warnings": [
+      "comments_incomplete",
+      "comment_score_missing",
+      "unresolved_comment_parent",
+      "fewer_comments_than_reported"
+    ],
+    "lossy_default_fields": [
+      "comment.score"
+    ]
+  },
+  "candidate_export_summary": {
+    "rows_exported": 5,
+    "unified_candidates_csv": "D:\\AI_Project\\docs\\pilot_examples\\real_annotation_candidates.csv",
+    "response_candidates_csv": "D:\\AI_Project\\docs\\pilot_examples\\response_candidates.csv",
+    "review_manifest_jsonl": "D:\\AI_Project\\docs\\pilot_examples\\review_manifest.jsonl",
+    "candidate_validation_valid": true,
+    "manifest_join_valid": true,
+    "language_distribution": {
+      "en": 5
+    },
+    "script_distribution": {
+      "latin": 5
+    },
+    "code_mixed_comments": 0
+  }
+}

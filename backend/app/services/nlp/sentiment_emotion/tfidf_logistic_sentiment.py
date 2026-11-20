@@ -205,7 +205,7 @@ class TfidfLogisticSentimentClassifier(TfidfLogisticTextModel, SentimentAnalysis
             labels=class_names,
             examples_per_class={name: counts.get(name, 0) for name in class_names},
             majority_class_share=majority_share,
-            n_features=int(len(self._vectorizer.vocabulary_)),
+            n_features=int(X.shape[1]),
             classes_per_document=1,
             threshold=self._threshold,
             config=self.config_dict(),

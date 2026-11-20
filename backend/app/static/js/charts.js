@@ -57,6 +57,8 @@ export function sankeyFlowChart(summary) {
     });
   }
 
+  const totalComments = Number(summary.comments || 1);
+  const totalPosts = Number(summary.posts || 1);
   const issueNodes = layoutNodes(
     issues.map((i, idx) => ({
       id: `iss-${i.key}`,
@@ -64,7 +66,7 @@ export function sankeyFlowChart(summary) {
       key: i.key,
       label: pretty(i.label),
       sub: `${num(i.actionable_recommendations)} actionable`,
-      weight: Number(i.comments || 160),
+      weight: Math.max(1, Number(i.comments || 1)),
       color: idx === 0 ? "var(--color-accent)" : idx < 3 ? "var(--color-info)" : "var(--color-series-val)",
       href: `#/issues?selected=${encodeURIComponent(i.key)}`,
       detail: `${num(i.posts)} threads, ${num(i.comments)} comments (${num(i.solutions_proposed)} solution, ${num(i.advice_comments)} advice, ${num(i.reported_successes)} reported success)`,
@@ -83,7 +85,7 @@ export function sankeyFlowChart(summary) {
       weight: respMap[k] || 1,
       color: RESPONSE_META[k].color,
       href: `#/explorer?response=${encodeURIComponent(k)}`,
-      detail: `${num(respMap[k] || 0)} predicted comments (${share(respMap[k] || 0, summary.comments || 1280)}) in canonical slot #${idx + 1}`,
+      detail: `${num(respMap[k] || 0)} predicted comments (${share(respMap[k] || 0, totalComments)}) in canonical slot #${idx + 1}`,
     })),
     colX.response,
     10
@@ -96,10 +98,10 @@ export function sankeyFlowChart(summary) {
       key: k,
       label: RESOLUTION_META[k].label,
       sub: `${num(resMap[k] || 0)} threads`,
-      weight: (resMap[k] || 1) * 8,
+      weight: Math.max(1, (resMap[k] || 0) * 8),
       color: RESOLUTION_META[k].color,
       href: `#/resolution?state=${encodeURIComponent(k)}`,
-      detail: `${num(resMap[k] || 0)} of ${num(summary.posts || 160)} threads (${share(resMap[k] || 0, summary.posts || 160)}): ${RESOLUTION_META[k].description}`,
+      detail: `${num(resMap[k] || 0)} of ${num(totalPosts)} threads (${share(resMap[k] || 0, totalPosts)}): ${RESOLUTION_META[k].description}`,
     })),
     colX.resolution,
     16
@@ -186,8 +188,8 @@ export function sankeyFlowChart(summary) {
 
   return `
     <div class="sankey-wrap" data-sankey-root>
-      <svg class="sankey-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive research flow diagram from 8 synthetic issue categories through 6 canonical community response classes to 4 explicit resolution evidence states">
-        <text x="${colX.issue + nodeW}" y="20" text-anchor="end" class="sankey-col-head">1. Issue categories (8)</text>
+      <svg class="sankey-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive research flow diagram from ${issues.length} issue categories through 6 canonical community response classes to 4 explicit resolution evidence states">
+        <text x="${colX.issue + nodeW}" y="20" text-anchor="end" class="sankey-col-head">1. Issue categories (${issues.length})</text>
         <text x="${colX.response}" y="20" text-anchor="start" class="sankey-col-head">2. Canonical response roles (1 to 6)</text>
         <text x="${colX.resolution}" y="20" text-anchor="start" class="sankey-col-head">3. Resolution evidence (4 states)</text>
 
@@ -371,9 +373,12 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
     `;
   }).join("");
 
-  const xLabels = normalized.map((m, idx) => `
-    <text x="${xAt(idx).toFixed(1)}" y="${(H - 12).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="12" font-family="var(--font-body)">${esc(monthLabel(m.month))}</text>
-  `).join("");
+  const xStep = normalized.length > 10 ? Math.ceil(normalized.length / 8) : 1;
+  const xLabels = normalized.map((m, idx) => {
+    const show = idx === 0 || idx === normalized.length - 1 || idx % xStep === 0;
+    if (!show) return "";
+    return `<text x="${xAt(idx).toFixed(1)}" y="${(H - 12).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="12" font-family="var(--font-body)">${esc(monthLabel(m.month))}</text>`;
+  }).join("");
 
   const seriesGroups = seriesMeta.map((s) => {
     const pts = normalized.map((m, idx) => ({
@@ -434,7 +439,7 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
         `).join("")}
       </div>
       <div class="spacer-xs"></div>
-      <svg class="spline-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive smooth spline area chart of predicted comment sentiment counts by generated month">
+      <svg class="spline-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive smooth spline area chart of predicted comment sentiment counts by month">
         <defs>${defs}</defs>
         ${gridLines}
         ${seriesGroups}
@@ -511,20 +516,27 @@ export function topicConstellationSvg(topics, selectedId) {
   const maxCount = Math.max(1, ...sorted.map((t) => Number(t.document_count || 0)));
 
   const positions = [
-    { x: 274, y: 186 },
-    { x: 446, y: 122 },
-    { x: 108, y: 170 },
-    { x: 448, y: 264 },
-    { x: 128, y: 294 },
-    { x: 300, y: 318 },
-    { x: 376, y: 60 },
-    { x: 212, y: 62 },
+    { x: 280, y: 188 },
+    { x: 432, y: 122 },
+    { x: 126, y: 124 },
+    { x: 446, y: 254 },
+    { x: 118, y: 262 },
+    { x: 284, y: 318 },
+    { x: 368, y: 58 },
+    { x: 196, y: 58 },
+    { x: 504, y: 186 },
+    { x: 64, y: 194 },
   ];
 
   const orbs = sorted.map((t, idx) => {
-    const pos = positions[idx % positions.length];
+    const pos = idx < positions.length
+      ? positions[idx]
+      : {
+          x: Math.round(cx + 158 * Math.cos((idx / sorted.length) * Math.PI * 2)),
+          y: Math.round(cy + 132 * Math.sin((idx / sorted.length) * Math.PI * 2)),
+        };
     const ratio = Math.sqrt(Number(t.document_count || 1) / maxCount);
-    const r = Math.round(28 + ratio * 36);
+    const r = Math.round(24 + ratio * 30);
     const color = t.character.script === "devanagari"
       ? "var(--color-accent-2)"
       : t.character.tone === "info"
@@ -543,7 +555,7 @@ export function topicConstellationSvg(topics, selectedId) {
 
   return `
     <div class="constellation-stage">
-      <svg class="constellation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive constellation of 8 unsupervised NMF topic clusters sized by comment count">
+      <svg class="constellation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive constellation of ${orbs.length} unsupervised NMF topic clusters sized by comment count">
         <circle cx="${cx}" cy="${cy}" r="96" fill="none" stroke="var(--color-rule)" stroke-width="1" opacity="0.45"/>
         <circle cx="${cx}" cy="${cy}" r="168" fill="none" stroke="var(--color-rule)" stroke-width="1" opacity="0.32"/>
         ${spokes}
@@ -833,15 +845,15 @@ export function modelComparisonSvgChart(tasks) {
 
   return `
     <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Held-out validation and test macro F1 comparison across all five synthetic TF-IDF baseline models">
-        <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">Held-out macro F1 (%) on thread-grouped synthetic splits (n = 192 validation, 192 test)</text>
+      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Held-out validation and test macro F1 comparison across all five active NLP models">
+        <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">Held-out macro F1 (%) on thread-grouped validation and test splits</text>
         ${grid}
         ${groups}
       </svg>
       <div class="spacer-xs"></div>
       <div class="chart-legend">
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-series-val)"></span><span>Validation macro F1 (n = 192)</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Held-out test macro F1 (n = 192)</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-series-val)"></span><span>Validation macro F1</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Held-out test macro F1</span></span>
       </div>
     </div>
   `;

@@ -18,6 +18,7 @@ import {
   SENTIMENT_ORDER,
   esc,
   issueLabelFromKey,
+  monthLabel,
   num,
   pretty,
 } from "../format.js";
@@ -32,7 +33,11 @@ export async function renderSentiment(container, ctx) {
   ctx.summary = summary;
 
   const sentMap = Object.fromEntries((data.sentiment || data.overall || []).map((s) => [s.label, Number(s.count || 0)]));
-  const totalComments = SENTIMENT_ORDER.reduce((sum, k) => sum + (sentMap[k] || 0), 0) || Number(summary.comments || 1280);
+  const totalComments = SENTIMENT_ORDER.reduce((sum, k) => sum + (sentMap[k] || 0), 0) || Number(summary.comments || 0);
+  const monthly = data.monthly || [];
+  const dateSpan = monthly.length >= 2
+    ? `${monthLabel(monthly[0].month)} to ${monthLabel(monthly[monthly.length - 1].month)}`
+    : (monthly.length === 1 ? monthLabel(monthly[0].month) : "Full archive");
   const emotions = [...(data.emotions || [])].sort((a, b) => Number(b.count) - Number(a.count));
   const totalEmotionAssignments = emotions.reduce((sum, e) => sum + Number(e.count || 0), 0);
   const avgEmotions = totalComments ? totalEmotionAssignments / totalComments : 0;
@@ -103,7 +108,7 @@ export async function renderSentiment(container, ctx) {
         suffix: "%",
         ratioPct: posPct,
         color: "var(--color-positive)",
-        note: `${num(sentMap.positive || 0)} of ${num(totalComments)} comments (in-sample baseline)`,
+        note: `${num(sentMap.positive || 0)} of ${num(totalComments)} comments (GPU MuRIL prediction)`,
         href: "#/explorer?sentiment=positive",
       },
       {
@@ -141,20 +146,20 @@ export async function renderSentiment(container, ctx) {
 
     container.innerHTML = `
       ${callout(
-        "All polarity and emotion counts below are <strong>predicted outputs</strong> from the isolated synthetic TF-IDF baselines (in-sample corpus display), not verified human affect. Sentiment is single-label; emotions are multi-label (comments may carry multiple emotions simultaneously).",
-        { tone: "warning", title: "Predicted vs. verified affect:" }
+        "Polarity and emotion distributions below are <strong>model-inferred outputs</strong> from our GPU MuRIL classifiers applied to anonymized public Reddit comments. Sentiment is mutually exclusive (single-label); emotions are multi-label so a single comment may trigger multiple affect signals.",
+        { tone: "info", title: "Model-inferred affect:" }
       )}
 
       ${tallyRow}
 
-      ${deck("Interactive sentiment timeline (generated months)", {
-        subtitle: "Hover across Jan to Nov 2025 to scrub exact polarity counts or filter curves; posts were generated sequentially by issue domain every 2 days",
-        body: interactiveSplineAreaChart(data.monthly || [], { chartId: "sent-main-spline" }),
+      ${deck("Interactive sentiment timeline", {
+        subtitle: `Hover across ${dateSpan} to scrub exact predicted polarity counts by comment month or isolate individual curves`,
+        body: interactiveSplineAreaChart(monthly, { chartId: "sent-main-spline" }),
       })}
 
       <div class="studio-grid-2">
         ${deck("Predicted sentiment polarity", {
-          subtitle: "Mutually exclusive single-label classification (n = 1,280); click any polarity to filter discussions",
+          subtitle: `Mutually exclusive single-label classification (n = ${num(totalComments)}); click any polarity to filter discussions`,
           body: `
             ${stackedCompositionBar(sentimentSegments, { total: totalComments, unit: "comments", ariaLabel: "Overall predicted sentiment mix" })}
             <div class="spacer-md"></div>
@@ -162,16 +167,16 @@ export async function renderSentiment(container, ctx) {
           `,
         })}
         ${deck("Predicted emotion prevalence", {
-          subtitle: `Multi-label co-occurring affect (${num(totalEmotionAssignments)} assignments across ${num(totalComments)} comments; bars sum above 100%)`,
+          subtitle: `Multi-label co-occurring affect (${num(totalEmotionAssignments)} assignments across ${num(totalComments)} comments)`,
           body: `
             ${horizontalBarChart(emotionRows, { total: totalComments, maxCount: totalComments, unit: "comments", showShare: true })}
-            <p class="chart-footnote">In the synthetic generator, positive comments commonly co-occur with <code>hope</code> and <code>gratitude</code> (or <code>confidence</code>), while negative comments co-occur with <code>stress</code> and <code>frustration</code>.</p>
+            <p class="chart-footnote">Multi-label predictions allow a comment to express mixed affect (for example, <code>curiosity</code> paired with <code>stress</code> during waitlist movement or admission decisions).</p>
           `,
         })}
       </div>
 
       ${deck("Predicted sentiment by issue domain", {
-        subtitle: "100% normalized polarity mix per scenario issue category; click any sentiment count to filter discussions",
+        subtitle: "100% normalized polarity mix per community issue category; click any sentiment count to filter discussions",
         action: `
           <div class="filter-pills" role="group" aria-label="Sort issues by sentiment share">
             <button type="button" class="pill-btn ${sentState.issueSort === "negative_share" ? "is-active" : ""}" data-sent-sort="negative_share">Highest negative</button>

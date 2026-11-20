@@ -8,6 +8,7 @@ _PROVIDER_EXPORTS = {
     "RSSProvider": ("rss", "RSSProvider"),
     "HermesProvider": ("hermes", "HermesProvider"),
     "DecodoProvider": ("decodo", "DecodoProvider"),
+    "RedditOAuthProvider": ("reddit_oauth", "RedditOAuthProvider"),
 }
 
 __all__ = list(_PROVIDER_EXPORTS)

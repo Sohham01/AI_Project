@@ -22,6 +22,32 @@ backend/venv
 backend/.env
 backend/.env.*
 
-# Documentation screenshots & scratch files
+# Local raw/pilot exports, human annotation sheets, and experimental/GPU checkpoints
+# Keep ONLY the sanitized live_corpus bundle & preserved archive artifacts in container
+data/raw
+data/interim
+data/processed
+data/exports
+data/annotations/*pilot*
+ml/artifacts/real_*
+ml/artifacts/model_upgrade_benchmark
+ml/artifacts/robustness_benchmark
+ml/artifacts/expanded_data_benchmark
+ml/artifacts/registry.json
+ml/models/transformer/**/model
+ml/models/transformer/**/checkpoints
+backend/ml
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Documentation screenshots, backups, and scratch files
 docs/demo_screenshots
+*.bak
 *.log

@@ -146,16 +146,16 @@ export async function renderResolution(container, ctx, params = {}) {
             <td colspan="5">
               <div class="res-expand-grid">
                 <div class="res-expand-col">
-                  <h4>Scenario solution proposals (${proposals.length})</h4>
+                  <h4>Predicted solution proposals (${proposals.length})</h4>
                   ${proposals.length
                     ? proposals.map((s) => `<div class="res-quote-item"><span class="num res-quote-id">${esc(shortCommentLabel(s.comment_id))} <code>solution</code></span><p>${esc(s.text)}</p></div>`).join("")
-                    : `<p class="muted" style="font-size:var(--text-xs)">No scenario-labeled solution comments in this thread.</p>`}
+                    : `<p class="muted" style="font-size:var(--text-xs)">No predicted solution comments in this thread.</p>`}
                 </div>
                 <div class="res-expand-col">
-                  <h4>Scenario advice comments (${advices.length})</h4>
+                  <h4>Predicted advice comments (${advices.length})</h4>
                   ${advices.length
                     ? advices.map((a) => `<div class="res-quote-item"><span class="num res-quote-id">${esc(shortCommentLabel(a.comment_id))} <code>advice</code></span><p>${esc(a.text)}</p></div>`).join("")
-                    : `<p class="muted" style="font-size:var(--text-xs)">No scenario-labeled advice comments in this thread.</p>`}
+                    : `<p class="muted" style="font-size:var(--text-xs)">No predicted advice comments in this thread.</p>`}
                 </div>
                 <div class="res-expand-col">
                   <h4>Binary solution model output (${modelPos} / ${probs.length} positive)</h4>
@@ -221,26 +221,26 @@ export async function renderResolution(container, ctx, params = {}) {
         </div>
       `
       : emptyState({
-          title: "No synthetic threads match these evidence filters",
+          title: "No threads match these evidence filters",
           description: "Clear the search phrase or switch back to all 4 resolution states.",
           actionHtml: `<button type="button" class="btn btn-primary btn-sm" data-reset-res>Reset evidence filters</button>`,
         });
 
     container.innerHTML = `
       ${callout(
-        `<strong>${glossaryTip("proposal_vs_resolution", "Proposed solution is not demonstrated resolution.")}</strong> Across ${num(totalThreads)} synthetic threads, the corpus holds <strong>${num(totalProposedSolutions)}</strong> solution proposals, <strong>${num(totalAdviceComments)}</strong> advice comments, and <strong>${num(totalModelPositives)}</strong> positive binary solution-model predictions, yet only <strong>${num(countsByState.reported_success)} threads (${share(countsByState.reported_success, totalThreads)})</strong> contain an explicit generated success report.`,
-        { tone: "warning", title: "Research integrity guard:" }
+        `<strong>${glossaryTip("proposal_vs_resolution", "Proposed solution is not demonstrated resolution.")}</strong> Across ${num(totalThreads)} community threads, the corpus holds <strong>${num(totalProposedSolutions)}</strong> predicted solution proposals, <strong>${num(totalAdviceComments)}</strong> advice comments, and <strong>${num(totalModelPositives)}</strong> positive binary solution-model predictions, while <strong>${num(countsByState.reported_success)} threads (${share(countsByState.reported_success, totalThreads)})</strong> contain an explicit first-person resolution statement.`,
+        { tone: "info", title: "Research integrity guard:" }
       )}
 
       ${stateCards}
 
       <div class="studio-grid-2">
         ${deck("Corpus resolution funnel", {
-          subtitle: "Explicit first-person outcome reports compared against unconfirmed proposals (n = 160 threads)",
-          body: stackedCompositionBar(funnelSegments, { total: totalThreads, unit: "threads", ariaLabel: "Resolution states across 160 threads" }),
+          subtitle: `Explicit first-person outcome reports compared against unconfirmed proposals (n = ${num(totalThreads)} threads)`,
+          body: stackedCompositionBar(funnelSegments, { total: totalThreads, unit: "threads", ariaLabel: `Resolution states across ${totalThreads} threads` }),
         })}
         ${deck("Resolution states by issue domain", {
-          subtitle: "Synthetic generator balances 5 threads per outcome state within each 20-thread domain",
+          subtitle: "Observed distribution of explicit follow-up states across each community issue domain",
           body: stackedMatrixRows(issueMatrixRows, {
             legendItems: RESOLUTION_ORDER.map((k) => ({ label: RESOLUTION_META[k].label, color: RESOLUTION_META[k].color })),
             unit: "threads",
@@ -249,7 +249,7 @@ export async function renderResolution(container, ctx, params = {}) {
       </div>
 
       ${deck("Thread-level proposal & outcome audit", {
-        subtitle: "Expand any thread row to compare scenario solution proposals, advice comments, explicit evidence text, and binary model probabilities",
+        subtitle: "Expand any thread row to compare predicted solution proposals, advice comments, explicit evidence text, and binary model probabilities",
         action: resState.stateFilter !== "all" || resState.issueFilter !== "all" || resState.search
           ? `<button type="button" class="btn btn-quiet btn-sm" data-reset-res>Clear filters</button>`
           : "",
@@ -258,7 +258,7 @@ export async function renderResolution(container, ctx, params = {}) {
             <div class="filter-grid filter-grid-4">
               <div class="field">
                 <label for="res-search">Search titles, evidence, or proposals</label>
-                <input id="res-search" type="search" value="${esc(resState.search)}" placeholder="Search text or post ID (confirmed, pending, checklist)…">
+                <input id="res-search" type="search" value="${esc(resState.search)}" placeholder="Search text or post ID (converted, waitlist, resolved)…">
               </div>
               <div class="field">
                 <label for="res-state-sel">Evidence state</label>
@@ -270,7 +270,7 @@ export async function renderResolution(container, ctx, params = {}) {
               <div class="field">
                 <label for="res-issue-sel">Issue domain</label>
                 <select id="res-issue-sel">
-                  <option value="all" ${resState.issueFilter === "all" ? "selected" : ""}>All 8 issue domains</option>
+                  <option value="all" ${resState.issueFilter === "all" ? "selected" : ""}>All issue domains</option>
                   ${issueList.map((i) => `<option value="${esc(i.key)}" ${resState.issueFilter === i.key ? "selected" : ""}>${esc(i.label)}</option>`).join("")}
                 </select>
               </div>
@@ -285,7 +285,7 @@ export async function renderResolution(container, ctx, params = {}) {
             </div>
           </div>
           <div class="results-bar" style="margin-bottom:var(--space-sm)">
-            <span>Showing <strong class="num">${num(filtered.length)}</strong> of <strong class="num">${num(totalThreads)}</strong> synthetic threads</span>
+            <span>Showing <strong class="num">${num(filtered.length)}</strong> of <strong class="num">${num(totalThreads)}</strong> threads</span>
           </div>
           ${auditContent}
         `,

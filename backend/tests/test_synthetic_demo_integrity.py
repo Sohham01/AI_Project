@@ -64,7 +64,7 @@ def test_frozen_v1_artifacts_remain_untouched() -> None:
     assert set(v1_eval["tasks"]) == {"sentiment", "emotion", "issue", "response", "solution"}
 
 
-def test_training_artifacts_are_isolated_and_group_leakage_free() -> None:
+def test_training_artifacts_are_isolated_and_group_leakage_free(monkeypatch) -> None:
     evaluation = json.loads((ARTIFACTS_V2 / "evaluation.json").read_text(encoding="utf-8"))
     predictions = json.loads((ARTIFACTS_V2 / "predictions.json").read_text(encoding="utf-8"))["tasks"]
     assert evaluation["synthetic_only"] is True
@@ -103,8 +103,14 @@ def test_training_artifacts_are_isolated_and_group_leakage_free() -> None:
             predictions[task_name],
         )
 
-    for task in _data()["evaluation"].values():
-        assert Path(task["artifact_path"]).as_posix().startswith("ml/artifacts/demo_synthetic_v2/")
+    monkeypatch.setenv("RCI_DATA_MODE", "synthetic")
+    _data.cache_clear()
+    try:
+        for task in _data()["evaluation"].values():
+            assert Path(task["artifact_path"]).as_posix().startswith("ml/artifacts/demo_synthetic_v2/")
+    finally:
+        monkeypatch.delenv("RCI_DATA_MODE", raising=False)
+        _data.cache_clear()
 
 
 def test_solution_label_normalization_and_confusion_matrix_integrity() -> None:

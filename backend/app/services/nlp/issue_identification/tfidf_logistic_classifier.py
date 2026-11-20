@@ -37,6 +37,7 @@ import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.pipeline import FeatureUnion
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.utils.validation import check_is_fitted
 
@@ -98,6 +99,7 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
         self._vectorizer = self._build_vectorizer()
         self._binarizer: Optional[MultiLabelBinarizer] = None
         self._model: Optional[OneVsRestClassifier] = None
+        self._per_label_thresholds: Dict[str, float] = {}
         self._trained = False
         self._training_summary: Optional[IssueTrainingReport] = None
         self._warnings: List[str] = []
@@ -128,6 +130,11 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
     @property
     def threshold(self) -> float:
         return self._threshold
+
+    @property
+    def per_label_thresholds(self) -> Dict[str, float]:
+        """Optional validation-calibrated thresholds keyed by label."""
+        return dict(self._per_label_thresholds)
 
     @property
     def config(self) -> IssueModelConfig:
@@ -172,6 +179,7 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
         # Reset any previous fit so train() is safely repeatable.
         self._vectorizer = self._build_vectorizer()
         self._model = None
+        self._per_label_thresholds = {}
         self._trained = False
         self._warnings = []
 
@@ -215,7 +223,7 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
             n_labels=len(binarizer.classes_),
             labels=[str(label) for label in binarizer.classes_],
             positive_examples_per_label=positive_counts,
-            n_features=int(len(self._vectorizer.vocabulary_)),
+            n_features=int(X.shape[1]),
             n_documents_without_labels=sum(1 for labels in labels_seen if not labels),
             n_multi_label_documents=sum(1 for labels in labels_seen if len(labels) > 1),
             threshold=self._threshold,
@@ -311,7 +319,11 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
             predicted = sorted(
                 label
                 for label, probability in label_probabilities.items()
-                if probability > effective_threshold
+                if probability > (
+                    effective_threshold
+                    if threshold is not None
+                    else self._per_label_thresholds.get(label, effective_threshold)
+                )
             )
             confidence = round(max(label_probabilities.values()), 6) if label_probabilities else 0.0
             predictions.append(
@@ -395,12 +407,75 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
         )
         return evaluate_predictions(y_true, y_pred, self.labels)
 
+    def calibrate_thresholds(
+        self,
+        validation_annotations: Sequence[IssueAnnotation],
+        grid: Optional[Sequence[float]] = None,
+    ) -> Dict[str, float]:
+        """Tune per-label sigmoid thresholds on a held-out validation split.
+
+        Never call this on the test split. Each label independently selects the
+        threshold in ``grid`` maximizing validation F1 (breaking ties closest
+        to ``self._threshold``) when the validation split has positive support
+        for that label.
+        """
+        self._require_trained()
+        records = list(validation_annotations or [])
+        if not records or self._binarizer is None:
+            return dict(self._per_label_thresholds)
+
+        candidates = [
+            self._validate_threshold(value)
+            for value in (
+                grid
+                if grid is not None
+                else [round(0.15 + 0.05 * i, 2) for i in range(15)]
+            )
+        ]
+        known = set(self.labels)
+        gold: List[List[str]] = []
+        for annotation in records:
+            annotation.validate_labels()
+            gold.append(sorted({label for label in annotation.labels if label in known}))
+        y_true = self._binarizer.transform(gold)
+        docs = [annotation.to_issue_document() for annotation in records]
+        texts = [self._featurize_document(doc) for doc in docs]
+        X = self._vectorizer.transform(texts)
+        probabilities = self._model.predict_proba(X)
+
+        tuned: Dict[str, float] = {}
+        for col, label in enumerate(self.labels):
+            truth = y_true[:, col]
+            if int(truth.sum()) == 0:
+                tuned[label] = self._threshold
+                continue
+            probs = probabilities[:, col]
+            best_tau = self._threshold
+            best_f1 = -1.0
+            for tau in candidates:
+                pred = (probs > tau).astype(int)
+                tp = int(((truth == 1) & (pred == 1)).sum())
+                fp = int(((truth == 0) & (pred == 1)).sum())
+                fn = int(((truth == 1) & (pred == 0)).sum())
+                denom = 2 * tp + fp + fn
+                f1 = (2.0 * tp / denom) if denom > 0 else 0.0
+                if (f1 > best_f1 + 1e-12) or (
+                    abs(f1 - best_f1) <= 1e-12
+                    and abs(tau - self._threshold) < abs(best_tau - self._threshold)
+                ):
+                    best_f1 = f1
+                    best_tau = tau
+            tuned[label] = best_tau
+
+        self._per_label_thresholds = tuned
+        return dict(tuned)
+
     # ------------------------------------------------------------------
     # Internals
     # ------------------------------------------------------------------
 
-    def _build_vectorizer(self) -> TfidfVectorizer:
-        return TfidfVectorizer(
+    def _build_vectorizer(self) -> Any:
+        word_vectorizer = TfidfVectorizer(
             max_features=self._config.max_features,
             min_df=self._config.min_df,
             max_df=self._config.max_df,
@@ -413,6 +488,21 @@ class TfidfLogisticIssueClassifier(IssueIdentification):
             use_idf=self._config.use_idf,
             smooth_idf=self._config.smooth_idf,
         )
+        if not self._config.use_char_ngrams:
+            return word_vectorizer
+        char_vectorizer = TfidfVectorizer(
+            analyzer="char_wb",
+            ngram_range=tuple(self._config.char_ngram_range),
+            max_features=self._config.char_max_features,
+            min_df=self._config.min_df,
+            max_df=self._config.max_df,
+            lowercase=self._config.lowercase,
+            sublinear_tf=self._config.sublinear_tf,
+            norm=self._config.norm,
+            use_idf=self._config.use_idf,
+            smooth_idf=self._config.smooth_idf,
+        )
+        return FeatureUnion([("word", word_vectorizer), ("char", char_vectorizer)])
 
     def _featurize(self, annotation: IssueAnnotation) -> str:
         """Training-side view of a record (text plus optional topic features)."""
