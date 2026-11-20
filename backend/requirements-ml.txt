@@ -10,6 +10,6 @@
 # The ANN (NumPy MLP) and CNN baselines need only numpy/scipy/scikit-learn from
 # the base profile.
 
-torch==2.14.1
+torch==2.15.0
 transformers==5.19.0
 tokenizers==0.23.3
