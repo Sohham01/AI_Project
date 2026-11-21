@@ -312,6 +312,7 @@ def build_cross_model_insights(
     proposed_threads = sum(1 for p in posts if p.get("resolution_state") == "proposed_only")
     success_threads = sum(1 for p in posts if p.get("resolution_state") == "reported_success")
     pending_threads = sum(1 for p in posts if p.get("resolution_state") == "reported_pending")
+    sol_model_hits = sum(1 for r in rows if bool((r["predictions"].get("solution") or {}).get("is_solution")))
     actionable_replies = sum(
         1
         for r in rows
@@ -323,19 +324,19 @@ def build_cross_model_insights(
             "id": "proposal_resolution_gap",
             "category": "Resolution Gap",
             "tone": "info",
-            "headline": f"{actionable_replies:,} actionable replies, but only {success_threads} verified outcomes",
-            "metric": f"{proposed_threads} proposed-only · {pending_threads} pending · {success_threads} success",
+            "headline": f"{actionable_replies:,} advice/solution replies, but only {success_threads} verified outcomes",
+            "metric": f"{sol_model_hits:,} solution hits · {proposed_threads} proposed-only · {pending_threads} pending · {success_threads} success",
             "detail": (
-                f"{actionable_replies / n_comments * 100:.1f}% of replies offer advice or concrete solutions, "
-                f"yet {proposed_threads / n_posts * 100:.1f}% of threads have no follow-up confirmation — "
-                f"separating peer proposals from verified outcomes prevents overstating resolution rates."
+                f"{actionable_replies / n_comments * 100:.1f}% of replies ({sol_model_hits:,} binary solution hits plus "
+                f"broader advice roles) propose actions, yet {proposed_threads / n_posts * 100:.1f}% of threads have no "
+                f"follow-up confirmation — separating peer proposals from verified outcomes prevents overstating resolution rates."
             ),
             "href": "#/resolution",
             "cta": "Audit outcome evidence",
         }
     )
 
-    # Insight 3: Emotion -> Response Role Dynamics (Emotion x Response)
+    # Insight 3: Emotion -> Response Role Dynamics (Emotion x Response) — strictly data-driven comparison
     emo_to_resp: Dict[str, Counter] = defaultdict(Counter)
     for r in rows:
         resp_type = (r["predictions"].get("response") or {}).get("response_type")
@@ -345,49 +346,76 @@ def build_cross_model_insights(
             emo_to_resp[em][resp_type] += 1
     frust_total = sum(emo_to_resp["frustration"].values())
     frust_action = emo_to_resp["frustration"]["advice"] + emo_to_resp["frustration"]["solution"]
+    frust_pct = (frust_action / max(frust_total, 1)) * 100.0
     frust_top = emo_to_resp["frustration"].most_common(1)[0] if frust_total else ("opinion", 0)
     cur_total = sum(emo_to_resp["curiosity"].values())
     cur_action = emo_to_resp["curiosity"]["advice"] + emo_to_resp["curiosity"]["solution"]
+    cur_pct = (cur_action / max(cur_total, 1)) * 100.0
+    cur_top = emo_to_resp["curiosity"].most_common(1)[0] if cur_total else ("opinion", 0)
+
+    if cur_pct > frust_pct + 0.5:
+        emo_headline = f"Curiosity-tagged comments carry more actionable replies ({cur_pct:.1f}% vs. {frust_pct:.1f}% under frustration)"
+        emo_detail = (
+            f"Cross-referencing Emotion and Response models shows curiosity-tagged comments yield "
+            f"{cur_pct:.1f}% advice/solution replies (top role: '{cur_top[0].replace('_', ' ')}', {cur_top[1]}), "
+            f"compared to {frust_pct:.1f}% under frustration (top role: '{frust_top[0].replace('_', ' ')}', {frust_top[1]})."
+        )
+    elif frust_pct > cur_pct + 0.5:
+        emo_headline = f"Frustration-tagged comments include more advice/solutions ({frust_pct:.1f}% vs. {cur_pct:.1f}% under curiosity)"
+        emo_detail = (
+            f"Cross-referencing Emotion and Response models shows frustration-tagged comments contain "
+            f"{frust_pct:.1f}% advice/solution replies (top role: '{frust_top[0].replace('_', ' ')}', {frust_top[1]}), "
+            f"whereas curiosity-tagged comments are mainly '{cur_top[0].replace('_', ' ')}' ({cur_top[1]} replies, {cur_pct:.1f}% actionable)."
+        )
+    else:
+        emo_headline = f"Actionable reply rate is similar across curiosity ({cur_pct:.1f}%) and frustration ({frust_pct:.1f}%)"
+        emo_detail = (
+            f"Both curiosity ({cur_total} signals, top role '{cur_top[0].replace('_', ' ')}') and frustration "
+            f"({frust_total} signals, top role '{frust_top[0].replace('_', ' ')}') show comparable advice/solution density."
+        )
     cards.append(
         {
             "id": "emotion_response_dynamics",
             "category": "Emotion x Response",
             "tone": "accent",
-            "headline": f"Curiosity draws {cur_action / max(cur_total, 1) * 100:.0f}% actionable help vs. {frust_action / max(frust_total, 1) * 100:.0f}% under frustration",
+            "headline": emo_headline,
             "metric": f"{cur_total} curiosity · {frust_total} frustration signals",
-            "detail": (
-                f"Cross-referencing Emotion and Response classifiers shows frustrated comments predominantly "
-                f"surface '{frust_top[0].replace('_', ' ')}' ({frust_top[1]} replies), whereas curiosity-tagged "
-                f"comments receive denser peer advice and procedural guidance."
-            ),
+            "detail": emo_detail,
             "href": "#/responses",
             "cta": "Explore response roles",
         }
     )
 
-    # Insight 4: Multilingual / Hinglish Signal & Why Transformer Wins (Language x Architecture)
-    non_en_or_mix = sum(1 for r in rows if r.get("language") != "en" or r.get("is_code_mixed"))
+    # Insight 4: Multilingual / Hinglish Signal & Real Held-Out 4-Model Comparison
+    hinglish_or_hi = sum(
+        1 for r in rows if r.get("language") in {"hi", "hi-en"} or bool(r.get("is_code_mixed"))
+    )
     arch_agg = (evaluation.get("architecture_comparison") or {}).get("aggregate") or {}
-    t_f1 = (arch_agg.get("transformer_muril_dapt_v3") or {}).get("mean_probe_macro_f1")
-    lr_f1 = (arch_agg.get("logistic_regression") or {}).get("mean_probe_macro_f1")
-    cnn_f1 = (arch_agg.get("cnn_textcnn") or {}).get("mean_probe_macro_f1")
-    if t_f1 is not None and lr_f1 is not None:
-        gain_lr = (float(t_f1) - float(lr_f1)) * 100.0
-        gain_cnn = (float(t_f1) - float(cnn_f1 or 0.0)) * 100.0
+    t_test = (arch_agg.get("transformer_muril_dapt_v3") or {}).get("mean_test_macro_f1")
+    lr_test = (arch_agg.get("logistic_regression") or {}).get("mean_test_macro_f1")
+    ann_test = (arch_agg.get("ann_mlp") or {}).get("mean_test_macro_f1")
+    cnn_test = (arch_agg.get("cnn_textcnn") or {}).get("mean_test_macro_f1")
+    if t_test is not None and lr_test is not None:
+        best_base = max(float(lr_test), float(ann_test or 0.0), float(cnn_test or 0.0))
+        gain_best = (float(t_test) - best_base) * 100.0
+        gain_sign = "+" if gain_best >= 0 else ""
         cards.append(
             {
                 "id": "why_transformer_insight",
-                "category": "Cross-Model Advantage",
-                "tone": "positive",
-                "headline": f"MuRIL-DAPT v3 beats LogReg by +{gain_lr:.1f} pp and CNN by +{gain_cnn:.1f} pp OOD",
-                "metric": f"{float(t_f1) * 100:.1f}% unseen 54-probe F1 · {non_en_or_mix} code-mixed/non-EN comments",
+                "category": "4-Model Benchmark",
+                "tone": "positive" if gain_best >= 0 else "info",
+                "headline": (
+                    f"MuRIL-DAPT v3 reaches {float(t_test) * 100:.1f}% real held-out F1 "
+                    f"({gain_sign}{gain_best:.1f} pp vs. best non-transformer)"
+                ),
+                "metric": f"LogReg {float(lr_test) * 100:.1f}% · ANN {float(ann_test or 0.0) * 100:.1f}% · CNN {float(cnn_test or 0.0) * 100:.1f}% · {hinglish_or_hi} Hinglish/HI",
                 "detail": (
-                    f"Across {non_en_or_mix} Hinglish/non-English comments ({non_en_or_mix / n_comments * 100:.1f}% of corpus) "
-                    f"and unseen paraphrases, domain-adapted multilingual self-attention dramatically outperforms "
-                    f"bag-of-words LogReg, ANN (MLP), and 1D TextCNN."
+                    f"Evaluated on unseen thread-grouped real Reddit comments (including {hinglish_or_hi} "
+                    f"Hinglish/Hindi comments, {hinglish_or_hi / n_comments * 100:.1f}% of corpus), comparing "
+                    f"domain-adapted MuRIL against Logistic Regression, 2-Layer ANN, and 1D TextCNN."
                 ),
                 "href": "#/models",
-                "cta": "Inspect 4-model proof",
+                "cta": "Inspect 4-model benchmark",
             }
         )
 
@@ -415,6 +443,6 @@ def build_cross_model_insights(
         "emotion_response_matrix": {
             em: dict(cnt) for em, cnt in sorted(emo_to_resp.items())
         },
-        "multilingual_share": round(non_en_or_mix / n_comments, 4),
-        "multilingual_count": non_en_or_mix,
+        "multilingual_share": round(hinglish_or_hi / n_comments, 4),
+        "multilingual_count": hinglish_or_hi,
     }

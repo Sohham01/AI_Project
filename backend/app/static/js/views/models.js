@@ -114,11 +114,12 @@ function renderVerificationBanner(verification) {
     <details class="verify-banner ${allOk ? "verify-ok" : "verify-warn"} anim-enter">
       <summary class="verify-summary">
         <div class="verify-summary-left">
-          <span class="tag ${allOk ? "tag-positive" : "tag-warning"}">${allOk ? "BENCHMARKS VERIFIED" : "AUDIT ATTENTION"}</span>
-          <strong>${passed} / ${total} independent benchmark, anti-leakage, calibration &amp; zero-PII checks passed</strong>
+          <span class="tag ${allOk ? "tag-positive" : "tag-warning"}">${allOk ? "PIPELINE INTEGRITY OK" : "AUDIT ATTENTION"}</span>
+          <strong>${passed} / ${total} automated split-isolation, real-data provenance, calibration-bound (T &ge; 1.0) &amp; zero-PII checks passed</strong>
         </div>
-        <span class="num muted" style="font-size:var(--text-xs)">Verified ${dateTimeText(verification.verified_at)} · Inspect audit</span>
+        <span class="num muted" style="font-size:var(--text-xs)">Checked ${dateTimeText(verification.verified_at)} · Inspect audit</span>
       </summary>
+      ${verification.scope_note ? `<p class="muted" style="font-size:var(--text-xs);padding:0 var(--space-md) var(--space-sm)">${esc(verification.scope_note)}</p>` : ""}
       <div class="verify-checks-grid">${rows}</div>
     </details>
   `;
@@ -162,36 +163,41 @@ function renderArchitectureSection(archComp) {
     </div>
   `).join("");
 
-  return deck("Why we chose Transformer: 4-architecture empirical proof", {
+  const fmtDelta = (val) => {
+    const n = Number(val || 0);
+    return `${n >= 0 ? "+" : ""}${n.toFixed(1)} pp`;
+  };
+
+  return deck("4-Architecture Benchmark on Real Held-Out Reddit Comments", {
     id: "why-transformer-deck",
-    subtitle: "Apples-to-apples comparison of Logistic Regression, ANN (MLP), 1D TextCNN, and MuRIL-DAPT v3 Transformer on identical thread-grouped splits and the untouched 54-probe unseen 8-category stress benchmark",
+    subtitle: "Apples-to-apples comparison of Logistic Regression, ANN (MLP), 1D TextCNN, and MuRIL-DAPT v3 Transformer on identical post_id-grouped splits of 459 curated real Reddit comments (0 synthetic rows) plus auxiliary 54-probe stress diagnostic",
     action: `
       <div class="segmented" role="group" aria-label="Architecture chart split toggle">
-        <button type="button" class="seg-btn is-active" data-arch-mode="probe">54-Probe Unseen OOD</button>
-        <button type="button" class="seg-btn" data-arch-mode="test">Held-out Test Split</button>
+        <button type="button" class="seg-btn is-active" data-arch-mode="test">Real Held-out Test (Primary)</button>
+        <button type="button" class="seg-btn" data-arch-mode="probe">54-Probe Stress (Aux)</button>
       </div>
     `,
     body: `
       ${why.gain_vs_logreg_pp !== undefined ? `
         <div class="arch-callout-strip">
-          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. LogReg</span><strong class="num">+${Number(why.gain_vs_logreg_pp).toFixed(1)} pp OOD</strong></div>
-          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. ANN (MLP)</span><strong class="num">+${Number(why.gain_vs_ann_pp).toFixed(1)} pp OOD</strong></div>
-          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. 1D CNN</span><strong class="num">+${Number(why.gain_vs_cnn_pp).toFixed(1)} pp OOD</strong></div>
-          <div class="arch-delta-pill arch-delta-accent"><span>Production Hybrid Mean OOD</span><strong class="num">${percent(why.mean_ood_f1_hybrid)}</strong></div>
+          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. LogReg</span><strong class="num">${fmtDelta(why.gain_vs_logreg_pp)} real test</strong></div>
+          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. ANN (MLP)</span><strong class="num">${fmtDelta(why.gain_vs_ann_pp)} real test</strong></div>
+          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. 1D CNN</span><strong class="num">${fmtDelta(why.gain_vs_cnn_pp)} real test</strong></div>
+          <div class="arch-delta-pill arch-delta-accent"><span>Production Hybrid Real Test</span><strong class="num">${percent(why.mean_test_f1_hybrid ?? why.mean_ood_f1_hybrid)}</strong></div>
         </div>
       ` : ""}
-      <div id="arch-chart-slot">${architectureComparisonChart(archComp, "probe")}</div>
+      <div id="arch-chart-slot">${architectureComparisonChart(archComp, "test")}</div>
       <div class="spacer-md"></div>
-      <h3 class="subpanel-title">Architecture tradeoff ledger (5-task aggregate: accuracy, generalization gap, calibration &amp; compute)</h3>
+      <h3 class="subpanel-title">Architecture tradeoff ledger (5-task mean on real held-out test, auxiliary 54-probe diagnostic, 5-bin ECE &amp; compute)</h3>
       <div class="table-scroll">
         <table class="data-table" aria-label="4-architecture aggregate comparison">
           <thead>
             <tr>
               <th scope="col">Architecture</th>
-              <th scope="col" class="num">Held-out F1</th>
-              <th scope="col" class="num">54-Probe OOD F1</th>
-              <th scope="col" class="num">OOD Drop</th>
-              <th scope="col" class="num">Mean ECE</th>
+              <th scope="col" class="num">Real Test F1 (Primary)</th>
+              <th scope="col" class="num">54-Probe Aux F1</th>
+              <th scope="col" class="num">Shift Delta</th>
+              <th scope="col" class="num">Mean 5-Bin ECE</th>
               <th scope="col" class="num">Params</th>
               <th scope="col" class="num">Train (5 tasks)</th>
               <th scope="col" class="num">Latency / text</th>
@@ -201,7 +207,7 @@ function renderArchitectureSection(archComp) {
         </table>
       </div>
       <div class="spacer-md"></div>
-      <h3 class="subpanel-title">Where Transformer wins: 8 unseen robustness stress categories (mean 5-task F1)</h3>
+      <h3 class="subpanel-title">Auxiliary 54-probe stress diagnostic by linguistic shift category (observational only)</h3>
       ${robustnessCategoryHeatmap(archComp)}
       ${reasonCards ? `<div class="spacer-md"></div><div class="why-grid">${reasonCards}</div>` : ""}
     `,
@@ -217,13 +223,13 @@ function renderHowItWorksSection(dapt, errorAnalysis, confSummary) {
     body: `
       <div class="studio-grid-2">
         <div class="how-panel">
-          <h3 class="subpanel-title">1. Unsupervised domain adaptation (DAPT / MLM)</h3>
-          <p class="how-explain">Before any supervised fine-tuning, MuRIL masks 15% of tokens across <strong>${num(dapt?.unlabeled_documents || 0)}</strong> unlabeled anonymized Reddit texts to learn CAT/CAP/SAP/WL/LPA slang and Hinglish phrasing without fabricating labels.</p>
+          <h3 class="subpanel-title">1. Unsupervised domain adaptation (DAPT / MLM — held-out val perplexity)</h3>
+          <p class="how-explain">Before supervised fine-tuning, MuRIL adapts via Masked Language Modeling on <strong>${num(dapt?.train_documents || dapt?.unlabeled_documents || 0)}</strong> unlabeled Reddit texts and is evaluated on a disjoint held-out validation split of <strong>${num(dapt?.val_documents || 0)}</strong> unseen texts (Epoch 0 pre-DAPT baseline &rarr; Epoch ${num(dapt?.epochs || 4)}).</p>
           ${daptConvergenceChart(dapt)}
         </div>
         <div class="how-panel">
-          <h3 class="subpanel-title">2. Temperature scaling &amp; reliability calibration</h3>
-          <p class="how-explain">Validation-only scalar temperature scaling (<code>T = ${esc(calTask?.temperature ?? "—")}</code>) aligns predicted probabilities with empirical accuracy so high-confidence scores can be trusted and uncertain replies route to human review.</p>
+          <h3 class="subpanel-title">2. Non-sharpening temperature scaling (T &ge; 1.0) &amp; 5-bin reliability</h3>
+          <p class="how-explain">Validation-only scalar temperature scaling strictly clamped to <code>T &ge; 1.0</code> (<code>T = ${esc(calTask?.temperature ?? "—")}</code>) softens overconfident logits and is evaluated across 5 reliability bins on <code>n = ${num(calTask?.n_samples || 92)}</code> held-out real Reddit comments.</p>
           ${calTask ? calibrationReliabilityChart(calTask) : `<div class="chart-empty">Calibration bins unavailable.</div>`}
         </div>
       </div>
@@ -314,26 +320,26 @@ function renderErrorAnalysisBody(taskKey, errTask) {
 
   return `
     <div class="err-kpi-row">
-      <div class="eval-cell"><span>54-Probe Error Rate</span><strong class="num">${percent(probeCm.error_rate)}</strong><small class="num">${num(probeCm.error_count)} / ${num(probeCm.n_samples)} probes</small></div>
+      <div class="eval-cell"><span>Real Held-out Error Rate</span><strong class="num">${percent(probeCm.error_rate)}</strong><small class="num">${num(probeCm.error_count)} / ${num(probeCm.n_samples)} unseen real comments</small></div>
       <div class="eval-cell"><span>Transformer Beat Majority Baselines</span><strong class="num">${num(agree.transformer_beats_majority_baselines || 0)}</strong><small>${num(agree.transformer_only_win || 0)} where ALL 3 baselines failed</small></div>
-      <div class="eval-cell"><span>Calibrated ECE / Brier</span><strong class="num">${Number(cal.calibrated_ece ?? 0).toFixed(3)}</strong><small class="num">Raw T=1.0: ${Number(cal.uncalibrated_ece ?? 0).toFixed(3)} · Brier ${Number(cal.brier_score ?? 0).toFixed(3)}</small></div>
-      <div class="eval-cell"><span>All 4 Architectures Failed</span><strong class="num">${num(agree.all_failed || 0)}</strong><small>Inherently ambiguous / review probes</small></div>
+      <div class="eval-cell"><span>Calibrated 5-Bin ECE / Brier</span><strong class="num">${Number(cal.calibrated_ece ?? 0).toFixed(3)}</strong><small class="num">Raw T=1.0: ${Number(cal.uncalibrated_ece ?? 0).toFixed(3)} · Brier ${Number(cal.brier_score ?? 0).toFixed(3)}</small></div>
+      <div class="eval-cell"><span>All 4 Architectures Failed</span><strong class="num">${num(agree.all_failed || 0)}</strong><small>Hardest ambiguous real comments</small></div>
     </div>
 
     <div class="studio-grid-2" style="margin-top:var(--space-md)">
       <div>
-        <h3 class="subpanel-title">Top confused class pairs (54 unseen probes)</h3>
+        <h3 class="subpanel-title">Top confused class pairs (empirical error audit, n = ${num(probeCm.n_samples)} real test comments)</h3>
         <div class="confusion-pair-list">${topPairsHtml}</div>
         ${!probeCm.multilabel && probeCm.matrix ? `<div class="spacer-sm"></div>${confusionMatrixTable(probeCm.matrix, probeCm.labels)}` : ""}
       </div>
       <div>
-        <h3 class="subpanel-title">Error rate by prediction confidence tier</h3>
+        <h3 class="subpanel-title">Empirical accuracy by prediction confidence tier (n = ${num(cal.n_samples || probeCm.n_samples)} real test)</h3>
         <div class="table-scroll">
           <table class="data-table" aria-label="${esc(pretty(taskKey))} accuracy by confidence tier">
             <thead>
               <tr>
                 <th scope="col">Confidence tier</th>
-                <th scope="col" class="num">Probes</th>
+                <th scope="col" class="num">Comments</th>
                 <th scope="col" class="num">Share</th>
                 <th scope="col" class="num">Accuracy</th>
                 <th scope="col" class="num">Error rate</th>
@@ -349,11 +355,11 @@ function renderErrorAnalysisBody(taskKey, errTask) {
 
     <div class="studio-grid-2" style="margin-top:var(--space-lg)">
       <div>
-        <h3 class="subpanel-title">Where Transformer beat LogReg / ANN / CNN (real probe recoveries)</h3>
+        <h3 class="subpanel-title">Where Transformer beat LogReg / ANN / CNN (real held-out recoveries)</h3>
         <div class="err-case-stack">${winsHtml}</div>
       </div>
       <div>
-        <h3 class="subpanel-title">Hardest residual errors &amp; root-cause taxonomy</h3>
+        <h3 class="subpanel-title">Hardest residual errors (data-driven sample diagnostics)</h3>
         <div class="err-case-stack">${residualHtml}</div>
       </div>
     </div>

@@ -48,7 +48,15 @@ from app.services.nlp.response_classification.models.labels import RESPONSE_TYPE
 from app.services.nlp.solution_detection.models.labels import TARGET_LABELS
 
 
-DEFAULT_LOCAL_HF_CACHE = Path("D:/AI_Project_Transformer_Temp/hf_home")
+DEFAULT_LOCAL_HF_CACHE = (
+    Path(
+        os.environ.get(
+            "RCI_MODEL_CACHE_DIR",
+            str(Path(__file__).resolve().parents[3] / ".cache" / "models"),
+        )
+    )
+    / "hf_home"
+)
 
 
 def resolve_local_muril_path(model_id: str = "google/muril-base-cased") -> Tuple[str, bool]:
@@ -261,10 +269,13 @@ def _validation_nll(logits: np.ndarray, y_val: np.ndarray, multilabel: bool, tem
 
 
 def _calibrate_temperature(logits: np.ndarray, y_val: np.ndarray, multilabel: bool) -> float:
-    """Find scalar temperature T minimizing NLL strictly on held-out validation logits."""
+    """Find scalar temperature T >= 1.0 minimizing NLL strictly on held-out validation logits.
+
+    Clamping T >= 1.0 prevents calibration from artificially sharpening overconfident logits.
+    """
     if len(logits) == 0:
         return 1.0
-    coarse = [round(0.5 + 0.1 * i, 2) for i in range(31)]  # 0.5 .. 3.5
+    coarse = [round(1.0 + 0.1 * i, 2) for i in range(31)]  # 1.0 .. 4.0
     best_t = 1.0
     best_nll = _validation_nll(logits, y_val, multilabel, 1.0)
     for t in coarse:
@@ -272,14 +283,14 @@ def _calibrate_temperature(logits: np.ndarray, y_val: np.ndarray, multilabel: bo
         if nll < best_nll - 1e-6:
             best_nll = nll
             best_t = t
-    # Local refinement around best_t
-    fine = [round(max(0.35, best_t - 0.10 + 0.02 * i), 3) for i in range(11)]
+    # Local refinement around best_t, strictly clamped to >= 1.0
+    fine = [round(max(1.0, best_t - 0.10 + 0.02 * i), 3) for i in range(11)]
     for t in fine:
         nll = _validation_nll(logits, y_val, multilabel, t)
         if nll < best_nll - 1e-6:
             best_nll = nll
             best_t = t
-    return float(best_t)
+    return float(max(1.0, best_t))
 
 
 _LAYER_RE = re.compile(r"\.layer\.(\d+)\.")
@@ -631,12 +642,12 @@ class MuRILTaskClassifier:
                 val_probs = _logits_to_probs(val_logits, multilabel=self._multilabel, temperature=1.0)
                 val_loss = _validation_nll(val_logits, y_val, self._multilabel, temperature=1.0)
                 if self._multilabel:
-                    tuned = _calibrate_multilabel_thresholds(
-                        y_val, val_probs, self._labels, self._config.threshold
-                    )
+                    # Evaluate multi-label checkpoint quality using fixed 0.5 threshold & validation BCE loss
+                    # (never select epochs by per-epoch threshold overfitting on small validation splits)
                     val_macro, _ = _macro_f1_multilabel(
-                        y_val, val_probs, [tuned[lbl] for lbl in self._labels]
+                        y_val, val_probs, [self._config.threshold for _ in self._labels]
                     )
+                    tuned = dict(self._per_label_thresholds)
                 else:
                     val_pred = np.argmax(val_probs, axis=1)
                     val_macro = _macro_f1_single(y_val, val_pred, len(self._labels))
@@ -644,9 +655,14 @@ class MuRILTaskClassifier:
 
                 epoch_info["val_macro_f1"] = round(val_macro, 6)
                 epoch_info["val_loss"] = round(val_loss, 6)
-                is_better = (val_macro > best_val_score + 1e-6) or (
-                    abs(val_macro - best_val_score) <= 1e-6 and val_loss < best_val_loss - 1e-6
-                )
+                if self._multilabel:
+                    is_better = (val_loss < best_val_loss - 1e-4) or (
+                        abs(val_loss - best_val_loss) <= 1e-4 and val_macro > best_val_score + 1e-6
+                    )
+                else:
+                    is_better = (val_macro > best_val_score + 1e-6) or (
+                        abs(val_macro - best_val_score) <= 1e-6 and val_loss < best_val_loss - 1e-6
+                    )
                 if is_better:
                     best_val_score = val_macro
                     best_val_loss = val_loss

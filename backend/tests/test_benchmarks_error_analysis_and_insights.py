@@ -52,14 +52,19 @@ def test_calibration_and_confusion_single_and_multilabel() -> None:
     cal = compute_calibration_metrics(y_true, probs, labels, multilabel=False)
     assert 0.0 <= cal["ece"] <= 1.0
     assert 0.0 <= cal["brier_score"] <= 2.0
-    assert len(cal["bins"]) == 8
+    assert len(cal["bins"]) == 5
     assert cal["confidence_tiers"]["high"]["count"] == 3
 
     y_pred = [labels[int(np.argmax(r))] for r in probs]
-    cm = compute_confusion_and_top_pairs(y_true, y_pred, labels, multilabel=False)
+    cm = compute_confusion_and_top_pairs(
+        y_true, y_pred, labels, multilabel=False,
+        texts=["loved it", "bad food", "info ok", "actually decent hostel", "terrible mess", "fees listed"],
+        probs=probs,
+    )
     assert cm["error_count"] == 1
     assert cm["top_confusions"][0]["true_label"] == "positive"
     assert cm["top_confusions"][0]["predicted_label"] == "negative"
+    assert "n=1 misclassified samples" in cm["top_confusions"][0]["diagnosis"]
 
     # Multi-label path
     ml_labels = ["a", "b", "c"]
@@ -144,18 +149,76 @@ def test_benchmark_verifier_catches_leakage_and_passes_valid_live_artifacts() ->
         rep = verify_benchmark_artifact(ev_raw)
         assert rep["verified"] is True, rep
 
-    # Inject synthetic leakage -> verifier must fail zero_split_leakage
+    # Inject leakage, sharpening temperature T<1.0, and raw Reddit ID -> verifier must reject all three
     bad = {
+        "synthetic_only": True,
+        "labeled_data_provenance": {"labeled_real_comments": 0, "synthetic_training_rows": 500},
         "tasks": {
-            "sentiment": {"leakage_report": {"leakage_detected": True}, "split": {"group_by": "random"}}
+            "sentiment": {
+                "leakage_report": {"leakage_detected": True},
+                "split": {"group_by": "random"},
+                "temperature": 0.40,
+            }
         },
-        "contamination_audit": {"exact_probe_overlaps": 1},
+        "dapt_summary": {"val_documents": 0},
     }
-    bad_rep = verify_benchmark_artifact(bad)
+    bad_corpus = {"posts": [{"reddit_id": "1xnu5zk", "title": "test", "url": "https://reddit.com/r/x/comments/1xnu5zk", "comments": []}]}
+    bad_rep = verify_benchmark_artifact(bad, corpus=bad_corpus)
     assert bad_rep["verified"] is False
     failed_ids = {c["id"] for c in bad_rep["checks"] if not c["passed"]}
     assert "zero_split_leakage" in failed_ids
-    assert "zero_probe_contamination" in failed_ids
+    assert "real_labeled_provenance" in failed_ids
+    assert "calibration_and_probability_bounds" in failed_ids
+    assert "dapt_heldout_perplexity_check" in failed_ids
+    assert "zero_pii_and_pseudonymized_ids" in failed_ids
+
+
+def test_cross_model_insight_card_never_contradicts_percentages() -> None:
+    # Construct case where frustration has HIGHER actionable share than curiosity (50% vs 0%)
+    posts = [
+        {
+            "reddit_id": "post_0001",
+            "title": "Placement thread",
+            "subreddit": "MBAIndia",
+            "issue_key": "placements",
+            "issue_category": "Placements",
+            "resolution_state": "proposed_only",
+        }
+    ]
+    rows = [
+        {
+            "post_id": "post_0001",
+            "document_id": "comment-cmt_00001",
+            "issue_key": "placements",
+            "language": "en",
+            "is_code_mixed": False,
+            "predictions": {
+                "sentiment": {"sentiment": "negative", "confidence": 0.85},
+                "emotion": {"emotions": ["frustration"], "confidence": 0.8},
+                "response": {"response_type": "solution", "confidence": 0.8},
+                "solution": {"is_solution": True, "solution_probability": 0.8},
+                "issue": {"predicted_issue_labels": ["placements"], "confidence": 0.9},
+            },
+        },
+        {
+            "post_id": "post_0001",
+            "document_id": "comment-cmt_00002",
+            "issue_key": "placements",
+            "language": "hi-en",
+            "is_code_mixed": True,
+            "predictions": {
+                "sentiment": {"sentiment": "neutral", "confidence": 0.8},
+                "emotion": {"emotions": ["curiosity"], "confidence": 0.8},
+                "response": {"response_type": "opinion", "confidence": 0.8},
+                "solution": {"is_solution": False, "solution_probability": 0.1},
+                "issue": {"predicted_issue_labels": ["placements"], "confidence": 0.9},
+            },
+        },
+    ]
+    res = build_cross_model_insights(posts, rows, {}, [], [])
+    emo_card = next(c for c in res["cards"] if c["id"] == "emotion_response_dynamics")
+    assert "Frustration-tagged comments include more advice/solutions" in emo_card["headline"]
+    assert res["multilingual_count"] == 1
 
 
 def test_live_api_confidence_insights_and_error_analysis_endpoints() -> None:

@@ -52,13 +52,13 @@
         <rect x="48" y="204" width="32" height="12" rx="2" fill="none" stroke="#919bb8" stroke-width="0.8" stroke-opacity="0.48"/>
         <text x="64" y="213" fill="#919bb8" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">DATA</text>
         <text x="118" y="234" fill="#f3f2ee" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Sanitized Corpus</text>
-        <text x="118" y="250" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">366 threads · 3,562</text>
+        <text x="118" y="250" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">365 threads · 3,557</text>
         <rect x="272" y="84" width="164" height="68" rx="6" fill="#171924"/>
         <rect x="272" y="84" width="164" height="68" rx="6" fill="#222638" stroke="#e2e6f3" stroke-width="1"/>
         <rect x="280" y="92" width="28" height="12" rx="2" fill="none" stroke="#f3f2ee" stroke-width="0.8" stroke-opacity="0.34"/>
         <text x="294" y="101" fill="#f3f2ee" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">MLM</text>
         <text x="354" y="122" fill="#f3f2ee" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">MuRIL-DAPT MLM</text>
-        <text x="354" y="138" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">3,271 texts · PPL 14.9</text>
+        <text x="354" y="138" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">val PPL 94.3 -> 20.1</text>
         <rect x="272" y="196" width="164" height="68" rx="6" fill="#171924"/>
         <rect x="272" y="196" width="164" height="68" rx="6" fill="#222638" stroke="#e2e6f3" stroke-width="1"/>
         <rect x="280" y="204" width="28" height="12" rx="2" fill="none" stroke="#f3f2ee" stroke-width="0.8" stroke-opacity="0.34"/>
@@ -70,19 +70,19 @@
         <rect x="524" y="92" width="28" height="12" rx="2" fill="none" stroke="#f3f2ee" stroke-width="0.8" stroke-opacity="0.34"/>
         <text x="538" y="101" fill="#f3f2ee" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GPU</text>
         <text x="602" y="122" fill="#f3f2ee" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">MuRIL v3 Pooled</text>
-        <text x="602" y="138" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">CLS+Mean+Max · LLRD</text>
+        <text x="602" y="138" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">459 real · CLS+Mean</text>
         <rect x="516" y="196" width="172" height="68" rx="6" fill="#171924"/>
         <rect x="516" y="196" width="172" height="68" rx="6" fill="#959cff" stroke="#959cff" stroke-width="1" fill-opacity="0.12"/>
         <rect x="524" y="204" width="28" height="12" rx="2" fill="none" stroke="#959cff" stroke-width="0.8" stroke-opacity="0.52"/>
         <text x="538" y="213" fill="#959cff" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">ENS</text>
         <text x="602" y="234" fill="#f3f2ee" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Hybrid Calibrator</text>
-        <text x="602" y="250" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">val-only alpha · temp</text>
+        <text x="602" y="250" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">val-only · T >= 1.0</text>
         <rect x="516" y="316" width="172" height="68" rx="6" fill="#171924"/>
         <rect x="516" y="316" width="172" height="68" rx="6" fill="#2d3247" stroke="#919bb8" stroke-width="1"/>
         <rect x="524" y="324" width="28" height="12" rx="2" fill="none" stroke="#b7bed4" stroke-width="0.8" stroke-opacity="0.46"/>
         <text x="538" y="333" fill="#b7bed4" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">NMF</text>
         <text x="602" y="354" fill="#f3f2ee" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">NMF Topic Model</text>
-        <text x="602" y="370" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">10 clusters · 4,542</text>
+        <text x="602" y="370" fill="#b7bed4" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">10 clusters · 8,000</text>
         <rect x="764" y="196" width="156" height="68" rx="6" fill="#171924"/>
         <rect x="764" y="196" width="156" height="68" rx="6" fill="#2d3247" stroke="#919bb8" stroke-width="1"/>
         <rect x="772" y="204" width="28" height="12" rx="2" fill="none" stroke="#b7bed4" stroke-width="0.8" stroke-opacity="0.46"/>

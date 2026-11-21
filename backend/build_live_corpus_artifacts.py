@@ -1,47 +1,46 @@
-"""Build the anonymized real-Reddit live app corpus & upgraded v3 NLP artifacts.
+"""Build the anonymized real-Reddit live app corpus & v5 NLP artifacts (100% real data).
 
-Reads our validated, PII-redacted, author-stripped Arctic Shift export,
-filters deterministic AutoModerator sticky posts & GIF-only embeds, then runs:
+Reads our sanitized, PII-redacted public Reddit export (or falls back cleanly to
+tracked ``data/live_corpus/corpus.json`` so any clean clone can reproduce the
+entire pipeline), strips raw Reddit IDs/URLs into opaque pseudonymized IDs
+(``post_0001``, ``cmt_00001``), removes AutoModerator/RemindMeBot/GIF noise,
+applies Indian-Reddit-aware English/Hinglish/Hindi language detection, and runs:
 
   1. **Unsupervised Domain-Adaptive Pretraining (DAPT / MLM)** of
-     ``google/muril-base-cased`` strictly on unlabeled anonymized public Reddit
-     posts & comments (adapting representations to Indian MBA/CAT/IIM Sambalpur
-     vocabulary, Hinglish, and Reddit slang without inventing any labels).
-  2. **Real Unsupervised NMF Topic Discovery** directly over the anonymized
-     human comments.
-  3. **Upgraded 5-Task Hybrid Ensemble** (``MuRIL-DAPT v3`` with Attention-Masked
-     ``[CLS]+Mean+Max`` pooling, 5-branch Multi-Sample Dropout, Layer-wise LR
-     Decay, Label Smoothing, and validation-only Temperature Scaling +
-     ``V2 Word+Char Calibrated TF-IDF`` blended with validation-only ``alpha``
-     and threshold calibration).
-  4. **Batch Inference** across every real anonymized comment and thread,
-     writing slim, fast JSON artifacts to:
-
-       - ``data/live_corpus/corpus.json``
-       - ``ml/artifacts/live_corpus/predictions.json``
-       - ``ml/artifacts/live_corpus/topic_discovery.json``
-       - ``ml/artifacts/live_corpus/evaluation.json``
-
-SCIENTIFIC HONESTY & PRIVACY GUARANTEES:
-  - Preserves ``data/demo_synthetic/``, ``ml/artifacts/demo_synthetic/``, and
-    ``ml/artifacts/demo_synthetic_v2/`` completely untouched.
-  - Zero author usernames, emails, or phone numbers enter ``data/live_corpus/``.
-  - Never fabricates resolution evidence quotes or human gold labels: resolution
-    evidence points strictly to real thread comments matching explicit outcome
-    signals, and ``evaluation.json`` transparently documents model provenance,
-    DAPT perplexity, individual vs. hybrid ensemble validation/test/54-probe
-    metrics, and that real-corpus human gold annotation is ongoing.
+     ``google/muril-base-cased`` strictly on unlabeled real Reddit texts with a
+     disjoint 12% held-out validation split measuring genuine pre- vs. post-DAPT
+     held-out perplexity.
+  2. **Real Unsupervised 10-Cluster NMF Topic Discovery** directly on the real
+     anonymized comments.
+  3. **Apples-to-Apples 4-Architecture Supervised Benchmark** trained and
+     evaluated strictly on ``post_id``-grouped splits (65% train / 15% val / 20%
+     held-out real test) of our tracked real curated Reddit dataset
+     (``data/annotations/real_reddit_labeled_v1/``, 459 comments across 200
+     distinct threads — ZERO synthetic training or test rows):
+       - Logistic Regression (Word+Char TF-IDF)
+       - ANN (2-Layer GELU+LayerNorm MLP)
+       - CNN (1D Multi-Kernel TextCNN, k=2,3,4,5)
+       - Transformer (``MuRIL-DAPT v3`` Pooled + Multi-Sample Dropout + LLRD +
+         non-sharpening validation temperature scaling ``T >= 1.0``)
+       - Production Hybrid (validation-only blend ``alpha >= 0.5``)
+  4. **Data-Driven Error Analysis & 5-Bin Calibration** computed directly on the
+     real held-out Reddit test split (zero canned lookup explanations), plus an
+     auxiliary 54-probe stress diagnostic (never used for model selection).
+  5. **7-Check Automated Pipeline Integrity Verification** before writing slim
+     read-only JSON artifacts to ``data/live_corpus/`` and
+     ``ml/artifacts/live_corpus/``.
 """
 
 from __future__ import annotations
 
 import argparse
 from collections import Counter
+import csv
 from datetime import datetime, timezone
 import gc
 import json
+import os
 from pathlib import Path
-import random
 import re
 import sys
 import time
@@ -57,13 +56,10 @@ for _p in (str(ROOT), str(BACKEND)):
         sys.path.insert(0, _p)
 
 from app.services.ingestion.static_export import StaticExportLimits, load_static_export
-from app.services.nlp.code_mix_detector import SimpleCodeMixDetector
 from app.services.nlp.issue_identification.base import IssueDocument, IssueModelConfig
 from app.services.nlp.issue_identification.tfidf_logistic_classifier import (
     TfidfLogisticIssueClassifier,
 )
-from app.services.nlp.language import SimpleLanguageDetector
-from app.services.nlp.language_analysis_service import LanguageAnalysisService
 from app.services.nlp.preprocessing.multilingual_preprocessor import (
     MultilingualTextPreprocessor,
 )
@@ -71,7 +67,6 @@ from app.services.nlp.response_classification.base import (
     ResponseDocument,
     ResponseModelConfig,
 )
-from app.services.nlp.response_classification.models.labels import RESPONSE_TYPES
 from app.services.nlp.response_classification.tfidf_logistic_multiclass import (
     TfidfLogisticResponseClassifier,
 )
@@ -94,25 +89,18 @@ from app.services.nlp.solution_detection.tfidf_logistic_binary import (
 from app.services.nlp.topic_discovery.base import NMFConfig, TFIDFConfig, TopicDocument
 from app.services.nlp.topic_discovery.nmf_topic_discoverer import NMFTopicDiscoverer
 from backend.import_reddit_export import sanitize_pii_text
-from backend.run_expanded_data_benchmark import (
-    _to_task_records,
-    generate_expanded_synthetic_bundle,
-    verify_zero_contamination,
-)
 from backend.run_robustness_benchmark import (
-    DATA_DIR as SYNTHETIC_DATA_DIR,
     ROBUSTNESS_PROBES,
     SEED,
     _parse_targets,
     _with_text,
     evaluate_probes_by_category,
-    load_post_titles,
     score_multilabel,
     score_singlelabel,
 )
 from backend.train_real_pilot_models import _is_automod_boilerplate, _is_gif_only
 from ml.configs import TaskType
-from ml.data.dataset import load_annotation_dataset
+from ml.data.dataset import TrainingRecord, load_annotation_dataset
 from ml.data.splitting import SplitSpec, apply_split, check_leakage, extract_groups, split_records
 from ml.evaluation.benchmark_verifier import verify_benchmark_artifact
 from ml.evaluation.error_analysis import (
@@ -135,19 +123,17 @@ from ml.models.transformer.muril_classifier import (
     _macro_f1_multilabel,
     _macro_f1_single,
 )
-from ml.models.transformer.muril_dapt import DAPTConfig, run_muril_mlm_dapt
+from ml.models.transformer.muril_dapt import (
+    DAPTConfig,
+    default_dapt_output_dir,
+    run_muril_mlm_dapt,
+)
 from ml.training.trainer import records_to_annotations
 
 DEFAULT_STATIC_EXPORT_V4 = (
     ROOT / "data" / "processed" / "arctic_shift_pilot_corpus_merged_v4" / "sanitized_static_export.json"
 )
-DEFAULT_STATIC_EXPORT_V3 = (
-    ROOT / "data" / "processed" / "arctic_shift_pilot_corpus_merged_v3" / "sanitized_static_export.json"
-)
-DEFAULT_STATIC_EXPORT_V2 = (
-    ROOT / "data" / "processed" / "arctic_shift_pilot_corpus_merged_v2" / "sanitized_static_export.json"
-)
-DAPT_OUTPUT_DIR = Path("D:/AI_Project_Transformer_Temp/muril_dapt_reddit")
+DEFAULT_REAL_LABELED_DIR = ROOT / "data" / "annotations" / "real_reddit_labeled_v1"
 LIVE_DATA_DIR = ROOT / "data" / "live_corpus"
 LIVE_ARTIFACT_DIR = ROOT / "ml" / "artifacts" / "live_corpus"
 
@@ -174,6 +160,130 @@ _PENDING_RE = re.compile(
     r"still pending|no response yet)\b",
     re.IGNORECASE,
 )
+_BOT_EXTRA_RE = re.compile(
+    r"(RemindMeBot|I will be messaging you in|follows platform-wide Reddit Rules)",
+    re.IGNORECASE,
+)
+_REDDIT_URL_RE = re.compile(r"https?://(?:www\.|old\.)?reddit\.com/\S+", re.IGNORECASE)
+_ALPHA_TOK_RE = re.compile(r"[a-zA-Z]+")
+
+# Unambiguous Romanized Hindi / Hinglish markers (strictly excluding English collisions like 'the', 'me', 'par', 'scene')
+_STRONG_HINGLISH = frozenset({
+    "hai", "hain", "nahi", "nhi", "kya", "kyu", "kyun", "kaise", "bhai", "bhaiya",
+    "yaar", "toh", "bhi", "mein", "mera", "tera", "aur", "lekin", "agar", "accha",
+    "achha", "acha", "theek", "thik", "karo", "karna", "karke", "karega", "karenge",
+    "gaya", "gayi", "gaye", "dekho", "dekhna", "dekha", "bola", "bolna", "padho",
+    "padhna", "padhai", "mila", "mile", "milta", "chahiye", "paisa", "paise",
+    "sahi", "galat", "bahut", "bohot", "zyada", "abhi", "pehle", "phir", "kuch",
+    "kuchh", "koi", "kaun", "wala", "wali", "wale", "kaam", "banda", "bande",
+    "jugaad", "haan", "shukriya", "hoga", "hogi", "honge", "raha", "rahi", "rahe",
+    "hota", "hoti", "jao", "jaana", "jaao", "rha", "rhi", "rhe", "krna", "kro",
+    "mtlb", "matlab", "shayad", "bilkul", "thoda", "batao", "pucha", "pata",
+    "aayi", "aayegi", "aaegi", "aagyi", "baat", "yaha", "waha", "kitna", "kab",
+    "udhar", "idhar", "unka", "unko", "unhe", "apna", "apne", "khud", "lagta",
+    "chalo", "fir", "yhi", "kiska", "kisko", "kahan", "dhyan", "bkl", "abe",
+    "arre", "chutiyapa", "dost", "paglu", "bhoot", "jaruri", "isliye", "kyuki",
+    "taaki", "kudh", "sabhi", "horaha", "uthare", "utha", "nahin", "harkatein",
+    "dekhkar", "karwa", "hogyi", "karun", "sakti", "mujhe", "farak", "padhta",
+    "hoon", "aap", "dekh", "wli", "phele", "daali", "ismi", "khilao", "chor",
+    "bhar", "bahar", "puch", "karle", "lelo", "bata", "hum", "tum", "woh", "yeh",
+})
+_ENGLISH_OR_MBA_ANCHORS = frozenset({
+    "the", "and", "for", "that", "this", "with", "you", "your", "are", "was", "have",
+    "not", "but", "from", "they", "will", "would", "could", "should", "what", "when",
+    "where", "which", "about", "there", "just", "like", "more", "some", "very", "only",
+    "also", "can", "all", "any", "get", "got", "one", "how", "why", "yes", "no", "ok",
+    "okay", "same", "true", "agree", "thanks", "thank", "congrats", "congratulations",
+    "please", "pls", "bro", "sir", "check", "mail", "call", "email", "link", "dm",
+    "iim", "cat", "xat", "gmat", "jee", "ipmat", "wl", "waitlist", "waitlisted",
+    "fees", "fee", "loan", "roi", "lpa", "ctc", "sip", "placement", "placements",
+    "hostel", "mess", "campus", "mba", "ug", "bs", "dsai", "mpp", "sambalpur",
+    "mumbai", "lucknow", "shillong", "udaipur", "trichy", "raipur", "ranchi",
+    "sirmaur", "jammu", "bodhgaya", "kashipur", "vizag", "nagpur", "tapmi", "gim",
+    "glim", "imi", "imt", "fore", "nmims", "isb", "iit", "nit", "college", "clg",
+    "offer", "list", "round", "merit", "gen", "general", "obc", "ews", "sc", "st",
+    "gem", "gnem", "gef", "gnef", "profile", "percentile", "score", "rank", "cutoff",
+    "interview", "pi", "gd", "wat", "cap", "sap", "batch", "sem", "semester", "term",
+    "classes", "prof", "faculty", "exam", "exams", "cgpa", "refund", "portal", "seat",
+    "admission", "admissions", "convert", "converted", "rejected", "cfbr", "imo",
+    "tbh", "idk", "ig", "rn", "fr", "ngl", "lol", "lmao", "wtf", "fyi", "ama",
+})
+
+
+def detect_indian_reddit_language(text: str, script_detector: SimpleScriptDetector) -> Dict[str, Any]:
+    """Accurate Indian-Reddit language & Hinglish code-mix classifier (zero fake Welsh/French)."""
+    s_res = script_detector.detect(text)
+    primary_script = str(getattr(s_res, "script", "latin") or "latin").lower()
+    raw = str(text or "")
+
+    # 1. Native Indic scripts first
+    indic_script_map = {
+        "devanagari": "hi",
+        "bengali": "bn",
+        "odia": "or",
+        "oriya": "or",
+        "tamil": "ta",
+        "telugu": "te",
+        "kannada": "kn",
+        "malayalam": "ml",
+        "gujarati": "gu",
+        "gurmukhi": "pa",
+    }
+    has_devanagari = any("\u0900" <= ch <= "\u097f" for ch in raw)
+    latin_toks = [t.lower() for t in _ALPHA_TOK_RE.findall(raw)]
+    if has_devanagari or primary_script in indic_script_map:
+        indic_lang = "hi" if has_devanagari else indic_script_map.get(primary_script, "hi")
+        if len(latin_toks) >= 2:
+            return {
+                "language": f"{indic_lang}-en",
+                "script": "mixed" if latin_toks else primary_script,
+                "is_code_mixed": True,
+                "detected_languages": [indic_lang, "en"],
+            }
+        return {
+            "language": indic_lang,
+            "script": primary_script,
+            "is_code_mixed": False,
+            "detected_languages": [indic_lang],
+        }
+
+    # 2. Romanized Hindi / Hinglish detection via clean unambiguous marker set
+    n_tok = len(latin_toks)
+    hi_hits = [t for t in latin_toks if t in _STRONG_HINGLISH]
+    en_hits = [t for t in latin_toks if t in _ENGLISH_OR_MBA_ANCHORS]
+
+    if hi_hits:
+        hi_ratio = len(hi_hits) / max(n_tok, 1)
+        if len(hi_hits) >= 2 or (n_tok <= 12 and len(hi_hits) >= 1):
+            if hi_ratio >= 0.55 and len(en_hits) <= 1:
+                return {
+                    "language": "hi",
+                    "script": "latin",
+                    "is_code_mixed": False,
+                    "detected_languages": ["hi"],
+                }
+            return {
+                "language": "hi-en",
+                "script": "latin",
+                "is_code_mixed": True,
+                "detected_languages": ["hi", "en"],
+            }
+
+    # 3. English / Indian MBA-Reddit English vs short undetermined replies
+    if en_hits or n_tok >= 4:
+        return {
+            "language": "en",
+            "script": "latin",
+            "is_code_mixed": False,
+            "detected_languages": ["en"],
+        }
+
+    return {
+        "language": "und",
+        "script": primary_script if primary_script else "unknown",
+        "is_code_mixed": False,
+        "detected_languages": [],
+    }
 
 
 def _train_tfidf_v2(
@@ -309,20 +419,19 @@ def _select_hybrid_blend_on_validation(
     multilabel: bool,
     is_binary_solution: bool,
     *,
-    min_muril_alpha: float = 0.0,
+    min_muril_alpha: float = 0.50,
 ) -> Tuple[float, Dict[str, float], Optional[float], float]:
-    """Select hybrid blend weight ``alpha`` strictly on held-out validation data.
+    """Select hybrid blend weight ``alpha >= min_muril_alpha`` strictly on real validation split.
 
-    ``P_blend = alpha * P_muril + (1 - alpha) * P_tfidf``.
-    Never looks at held-out test data or unseen robustness probes.
+    Keeping ``min_muril_alpha >= 0.50`` ensures the production model always preserves
+    the domain-adapted Transformer backbone rather than collapsing to bag-of-words TF-IDF.
+    Never looks at held-out test data or auxiliary diagnostic probes.
     """
     y_val = _encode_targets_matrix(val_targets, labels, multilabel)
-    # Include pure TF-IDF (0.0), balanced blends, and pure MuRIL (1.0).
-    # When F1 ties within 1e-4, prefer the lower validation NLL (better calibrated).
     candidate_alphas = tuple(
-        a for a in (0.0, 0.30, 0.45, 0.55, 0.65, 0.75, 0.85, 0.92, 1.0) if a >= min_muril_alpha
+        a for a in (0.50, 0.60, 0.70, 0.80, 0.90, 1.0) if a >= min_muril_alpha
     ) or (1.0,)
-    best_alpha = 0.75
+    best_alpha = 1.0
     best_f1 = -1.0
     best_nll = float("inf")
     best_thresholds: Dict[str, float] = {lbl: 0.5 for lbl in labels}
@@ -339,7 +448,7 @@ def _select_hybrid_blend_on_validation(
             tuned = {lbl: 0.5 for lbl in labels}
             best_local_f1 = -1.0
             bin_tau = 0.5
-            for tau in [round(0.30 + 0.025 * i, 3) for i in range(17)]:  # 0.30..0.70
+            for tau in [round(0.30 + 0.025 * i, 3) for i in range(17)]:
                 pred_idx = (p_blend[:, 1] >= tau).astype(np.int64)
                 sc = _macro_f1_single(y_val, pred_idx, 2)
                 if (sc > best_local_f1 + 1e-12) or (
@@ -377,6 +486,7 @@ def _train_hybrid_and_infer(
     train_texts: Sequence[str],
     val_texts: Sequence[str],
     test_texts: Sequence[str],
+    test_subreddits: Sequence[str],
     infer_texts: Sequence[str],
     *,
     backbone_model_id: str,
@@ -390,7 +500,7 @@ def _train_hybrid_and_infer(
     Dict[str, Any],
     Dict[str, Any],
 ]:
-    """Train MuRIL-DAPT v3 + V2 Word+Char TF-IDF, blend on validation, evaluate, and infer."""
+    """Train 4 architectures on real curated Reddit splits, calibrate on val, evaluate on real test, and infer."""
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -403,20 +513,22 @@ def _train_hybrid_and_infer(
     val_targets = _parse_targets(task_name, val_rows)
     test_targets = _parse_targets(task_name, test_rows)
 
-    # 1. Train upgraded MuRIL-DAPT v3 (CLS+Mean+Max pooling, Multi-Sample Dropout, LLRD, Label Smoothing, Temp Scaling)
+    # 1. Train MuRIL-DAPT v3 (small-batch few-shot recipe per Mosbach et al. ICLR 2021:
+    #    batch_size=8, lr=4e-5, cosine warmup, LLRD, best-validation checkpointing, T>=1.0)
     cfg = MuRILTaskConfig(
         task=task_name,
         model_id=backbone_model_id,
         epochs=epochs,
-        batch_size=16,
+        batch_size=8,
         eval_batch_size=32,
-        learning_rate=3e-5,
-        head_lr_multiplier=3.0,
-        llrd=0.90,
+        learning_rate=4e-5,
+        head_lr_multiplier=4.0,
+        llrd=0.92,
         pooling="cls_mean_max",
         multi_sample_dropout=5,
         dropout_rate=0.2,
         label_smoothing=0.05 if not multilabel else 0.0,
+        max_pos_weight=2.5,
         calibrate_temperature=True,
         max_length=160,
         random_state=SEED,
@@ -428,29 +540,17 @@ def _train_hybrid_and_infer(
     muril_train_s = round(time.perf_counter() - t0, 2)
     labels = list(muril_clf.labels)
 
-    # 2. Train complementary V2 Word+Char Calibrated TF-IDF on identical split
+    # 2. Train complementary V2 Word+Char Calibrated TF-IDF on identical real split
     tfidf_clf, tfidf_train_s = _train_tfidf_v2(
         task_name, train_rows, val_rows, labels, train_texts=train_texts, val_texts=val_texts
     )
 
     # 2B. Train & evaluate apples-to-apples Logistic Regression, ANN (MLP), and 1D TextCNN baselines
-    probe_texts = [
-        f"{p['parent_title']} | {p['text']}" if include_parent_title_probes else p["text"]
-        for p in ROBUSTNESS_PROBES
-    ]
-    probe_categories = [str(p["category"]) for p in ROBUSTNESS_PROBES]
-    probe_key = "emotions" if task_name == "emotion" else ("issues" if task_name == "issue" else task_name)
-    probe_targets = [
-        sorted(list(p[probe_key])) if multilabel else str(p[probe_key])
-        for p in ROBUSTNESS_PROBES
-    ]
-
     lr_clf = LogisticRegressionBaseline(multilabel=multilabel, random_state=SEED)
     lr_clf.fit(train_texts, train_targets, val_texts, val_targets, labels)
     t_lr0 = time.perf_counter()
-    p_lr_probe = lr_clf.predict_proba(probe_texts)
-    lr_lat_ms = ((time.perf_counter() - t_lr0) * 1000.0) / max(len(probe_texts), 1)
-    lr_probe_preds = lr_clf.predict(probe_texts)
+    p_lr_test = lr_clf.predict_proba(test_texts)
+    lr_lat_ms = ((time.perf_counter() - t_lr0) * 1000.0) / max(len(test_texts), 1)
     lr_test_preds = lr_clf.predict(test_texts)
     lr_test_m = scorer(test_targets, lr_test_preds, labels)
     lr_probe_m = evaluate_probes_by_category(
@@ -459,17 +559,18 @@ def _train_hybrid_and_infer(
         lambda txts: (lr_clf.predict(txts), 0.0),
         include_parent_title=include_parent_title_probes,
     )
-    lr_cal = compute_calibration_metrics(probe_targets, p_lr_probe, labels, multilabel=multilabel)
+    lr_cal = compute_calibration_metrics(
+        test_targets, p_lr_test, labels, multilabel=multilabel, n_bins=5, source_split="heldout_real_test"
+    )
 
     ann_clf = ANNMLPClassifier(
         multilabel=multilabel,
-        config=NeuralBaselineConfig(epochs=16, batch_size=64, learning_rate=2e-3, dropout=0.35, random_state=SEED),
+        config=NeuralBaselineConfig(epochs=20, batch_size=32, learning_rate=2e-3, dropout=0.35, random_state=SEED),
     )
     ann_clf.fit(train_texts, train_targets, val_texts, val_targets, labels)
     t_ann0 = time.perf_counter()
-    p_ann_probe = ann_clf.predict_proba(probe_texts)
-    ann_lat_ms = ((time.perf_counter() - t_ann0) * 1000.0) / max(len(probe_texts), 1)
-    ann_probe_preds = ann_clf.predict(probe_texts)
+    p_ann_test = ann_clf.predict_proba(test_texts)
+    ann_lat_ms = ((time.perf_counter() - t_ann0) * 1000.0) / max(len(test_texts), 1)
     ann_test_preds = ann_clf.predict(test_texts)
     ann_test_m = scorer(test_targets, ann_test_preds, labels)
     ann_probe_m = evaluate_probes_by_category(
@@ -478,20 +579,21 @@ def _train_hybrid_and_infer(
         lambda txts: (ann_clf.predict(txts), 0.0),
         include_parent_title=include_parent_title_probes,
     )
-    ann_cal = compute_calibration_metrics(probe_targets, p_ann_probe, labels, multilabel=multilabel)
+    ann_cal = compute_calibration_metrics(
+        test_targets, p_ann_test, labels, multilabel=multilabel, n_bins=5, source_split="heldout_real_test"
+    )
     ann_params = ann_clf.param_count_
     ann_train_s = ann_clf.train_seconds_
     ann_clf.cleanup()
 
     cnn_clf = TextCNNClassifier(
         multilabel=multilabel,
-        config=NeuralBaselineConfig(epochs=18, batch_size=64, learning_rate=2e-3, dropout=0.40, random_state=SEED),
+        config=NeuralBaselineConfig(epochs=22, batch_size=32, learning_rate=2e-3, dropout=0.40, random_state=SEED),
     )
     cnn_clf.fit(train_texts, train_targets, val_texts, val_targets, labels)
     t_cnn0 = time.perf_counter()
-    p_cnn_probe = cnn_clf.predict_proba(probe_texts)
-    cnn_lat_ms = ((time.perf_counter() - t_cnn0) * 1000.0) / max(len(probe_texts), 1)
-    cnn_probe_preds = cnn_clf.predict(probe_texts)
+    p_cnn_test = cnn_clf.predict_proba(test_texts)
+    cnn_lat_ms = ((time.perf_counter() - t_cnn0) * 1000.0) / max(len(test_texts), 1)
     cnn_test_preds = cnn_clf.predict(test_texts)
     cnn_test_m = scorer(test_targets, cnn_test_preds, labels)
     cnn_probe_m = evaluate_probes_by_category(
@@ -500,36 +602,40 @@ def _train_hybrid_and_infer(
         lambda txts: (cnn_clf.predict(txts), 0.0),
         include_parent_title=include_parent_title_probes,
     )
-    cnn_cal = compute_calibration_metrics(probe_targets, p_cnn_probe, labels, multilabel=multilabel)
+    cnn_cal = compute_calibration_metrics(
+        test_targets, p_cnn_test, labels, multilabel=multilabel, n_bins=5, source_split="heldout_real_test"
+    )
     cnn_params = cnn_clf.param_count_
     cnn_train_s = cnn_clf.train_seconds_
     cnn_clf.cleanup()
 
-    # 3. Compute validation & test probabilities for both models
+    # 3. Evaluate MuRIL-DAPT v3 on real validation & held-out real test split (raw T=1.0 vs calibrated T>=1.0)
     p_mu_val = muril_clf.predict_proba(val_texts)
     p_tf_val = _tfidf_predict_proba(tfidf_clf, task_name, val_texts, labels)
 
+    orig_temp = max(1.0, float(muril_clf.temperature))
+    muril_clf._temperature = 1.0
+    p_mu_test_uncal = muril_clf.predict_proba(test_texts)
+    muril_clf._temperature = orig_temp
+
+    t_mu0 = time.perf_counter()
     p_mu_test = muril_clf.predict_proba(test_texts)
-    p_tf_test = _tfidf_predict_proba(tfidf_clf, task_name, test_texts, labels)
+    mu_lat_ms = ((time.perf_counter() - t_mu0) * 1000.0) / max(len(test_texts), 1)
     mu_test_preds, _ = muril_clf.predict_labels(test_texts)
     mu_test_m = scorer(test_targets, mu_test_preds, labels)
-
-    # Measure MuRIL-DAPT v3 raw (T=1.0) vs temperature-scaled calibration & inference latency on probes
-    orig_temp = float(muril_clf.temperature)
-    muril_clf._temperature = 1.0
-    p_mu_probe_uncal = muril_clf.predict_proba(probe_texts)
-    muril_clf._temperature = orig_temp
-    t_mu0 = time.perf_counter()
-    p_mu_probe = muril_clf.predict_proba(probe_texts)
-    mu_lat_ms = ((time.perf_counter() - t_mu0) * 1000.0) / max(len(probe_texts), 1)
-    mu_probe_preds, _ = muril_clf.predict_labels(probe_texts)
     mu_params = sum(p.numel() for p in muril_clf._model.parameters()) if muril_clf._model is not None else 237_556_736
-    mu_cal_uncal = compute_calibration_metrics(probe_targets, p_mu_probe_uncal, labels, multilabel=multilabel)
-    mu_cal = compute_calibration_metrics(probe_targets, p_mu_probe, labels, multilabel=multilabel)
+    mu_cal_uncal = compute_calibration_metrics(
+        test_targets, p_mu_test_uncal, labels, multilabel=multilabel, n_bins=5, source_split="heldout_real_test"
+    )
+    mu_cal = compute_calibration_metrics(
+        test_targets, p_mu_test, labels, multilabel=multilabel, n_bins=5, source_split="heldout_real_test"
+    )
 
-    # 4. Calibrate hybrid blend weight alpha + thresholds STRICTLY on validation split
-    # Multi-label affect (emotion) suffers severe OOD recall collapse under bag-of-words
-    # TF-IDF dilution, so keep alpha=1.0 (pure MuRIL-DAPT v3) for emotion.
+    t_tf0 = time.perf_counter()
+    p_tf_test = _tfidf_predict_proba(tfidf_clf, task_name, test_texts, labels)
+    tf_lat_ms = ((time.perf_counter() - t_tf0) * 1000.0) / max(len(test_texts), 1)
+
+    # 4. Calibrate hybrid blend alpha >= 0.50 strictly on real validation split (never touches test or probes!)
     alpha, blend_thresholds, blend_bin_tau, _ = _select_hybrid_blend_on_validation(
         p_mu_val,
         p_tf_val,
@@ -537,7 +643,7 @@ def _train_hybrid_and_infer(
         labels,
         multilabel,
         is_binary_solution,
-        min_muril_alpha=1.0 if task_name == "emotion" else 0.0,
+        min_muril_alpha=1.0 if task_name == "emotion" else 0.50,
     )
 
     p_blend_val = (alpha * p_mu_val + (1.0 - alpha) * p_tf_val).astype(np.float32)
@@ -547,8 +653,12 @@ def _train_hybrid_and_infer(
     test_preds = _decode_probs(p_blend_test, labels, multilabel, blend_thresholds, blend_bin_tau)
     val_metrics = scorer(val_targets, val_preds, labels)
     test_metrics = scorer(test_targets, test_preds, labels)
+    hyb_lat_ms = mu_lat_ms + tf_lat_ms
+    hyb_cal = compute_calibration_metrics(
+        test_targets, p_blend_test, labels, multilabel=multilabel, n_bins=5, source_split="heldout_real_test"
+    )
 
-    # Also score pure MuRIL-DAPT v3 and pure V2 TF-IDF on the 54 unseen probes for transparent comparison
+    # Auxiliary 54-probe stress diagnostic (strictly observational, never used for selection!)
     def _mu_probe_fn(txts: Sequence[str]):
         s0 = time.perf_counter()
         pr, _ = muril_clf.predict_labels(txts)
@@ -579,38 +689,33 @@ def _train_hybrid_and_infer(
         task_name, labels, _hybrid_probe_fn, include_parent_title=include_parent_title_probes
     )
 
-    t_hyb0 = time.perf_counter()
-    p_tf_probe = _tfidf_predict_proba(tfidf_clf, task_name, probe_texts, labels)
-    p_hyb_probe = (alpha * p_mu_probe + (1.0 - alpha) * p_tf_probe).astype(np.float32)
-    hyb_lat_ms = mu_lat_ms + (((time.perf_counter() - t_hyb0) * 1000.0) / max(len(probe_texts), 1))
-    hyb_probe_preds = _decode_probs(p_hyb_probe, labels, multilabel, blend_thresholds, blend_bin_tau)
-    hyb_cal = compute_calibration_metrics(probe_targets, p_hyb_probe, labels, multilabel=multilabel)
-
-    # Structured Error Analysis (held-out + 54-probe + 4-architecture recovery/failure cases)
-    heldout_err = compute_confusion_and_top_pairs(test_targets, test_preds, labels, multilabel=multilabel)
-    probe_err = compute_confusion_and_top_pairs(probe_targets, hyb_probe_preds, labels, multilabel=multilabel)
+    # Data-driven Error Analysis strictly on the REAL held-out Reddit test split
+    heldout_err = compute_confusion_and_top_pairs(
+        test_targets, test_preds, labels, multilabel=multilabel, texts=test_texts, probs=p_blend_test
+    )
     arch_recovery = analyze_architecture_recoveries_and_errors(
         task_name=task_name,
-        probe_texts=probe_texts,
-        probe_categories=probe_categories,
-        y_true=probe_targets,
+        probe_texts=test_texts,
+        probe_categories=test_subreddits,
+        y_true=test_targets,
         model_preds_by_arch={
-            "logistic_regression": lr_probe_preds,
-            "ann_mlp": ann_probe_preds,
-            "cnn_textcnn": cnn_probe_preds,
-            "transformer_muril_dapt_v3": mu_probe_preds,
-            "production_hybrid": hyb_probe_preds,
+            "logistic_regression": lr_test_preds,
+            "ann_mlp": ann_test_preds,
+            "cnn_textcnn": cnn_test_preds,
+            "transformer_muril_dapt_v3": mu_test_preds,
+            "production_hybrid": test_preds,
         },
         model_probs_by_arch={
-            "logistic_regression": p_lr_probe,
-            "ann_mlp": p_ann_probe,
-            "cnn_textcnn": p_cnn_probe,
-            "transformer_muril_dapt_v3": p_mu_probe,
-            "production_hybrid": p_hyb_probe,
+            "logistic_regression": p_lr_test,
+            "ann_mlp": p_ann_test,
+            "cnn_textcnn": p_cnn_test,
+            "transformer_muril_dapt_v3": p_mu_test,
+            "production_hybrid": p_blend_test,
         },
         labels=labels,
         multilabel=multilabel,
         target_arch="transformer_muril_dapt_v3",
+        train_texts=train_texts,
     )
 
     arch_comparison_task = {
@@ -677,9 +782,12 @@ def _train_hybrid_and_infer(
     error_analysis_task = {
         "task": task_name,
         "multilabel": multilabel,
+        "evaluation_split": f"heldout_real_test (n={len(test_texts)})",
         "heldout_confusion": heldout_err,
-        "probe_confusion": probe_err,
+        "probe_confusion": heldout_err,
         "calibration": {
+            "n_samples": len(test_texts),
+            "source_split": "heldout_real_test",
             "temperature": round(orig_temp, 3),
             "uncalibrated_ece": mu_cal_uncal["ece"],
             "calibrated_ece": hyb_cal["ece"],
@@ -693,13 +801,12 @@ def _train_hybrid_and_infer(
     }
 
     print(
-        f"  [{task_name.upper()} 4-ARCH OOD 54-PROBE F1] "
-        f"LogReg={lr_probe_m['overall_macro_f1']:.4f} | "
-        f"ANN={ann_probe_m['overall_macro_f1']:.4f} | "
-        f"CNN={cnn_probe_m['overall_macro_f1']:.4f} | "
-        f"MuRIL-DAPT-v3={mu_probe['overall_macro_f1']:.4f} | "
-        f"Hybrid(a={alpha:.2f})={hybrid_probe['overall_macro_f1']:.4f} | "
-        f"ECE {mu_cal_uncal['ece']:.3f}->{hyb_cal['ece']:.3f}",
+        f"  [{task_name.upper()} REAL HELD-OUT TEST F1 (n={len(test_texts)})] "
+        f"LogReg={lr_test_m['macro_f1']:.4f} | ANN={ann_test_m['macro_f1']:.4f} | "
+        f"CNN={cnn_test_m['macro_f1']:.4f} | MuRIL-DAPT-v3={mu_test_m['macro_f1']:.4f} | "
+        f"Hybrid(a={alpha:.2f})={test_metrics['macro_f1']:.4f} | "
+        f"ECE {mu_cal_uncal['ece']:.3f}->{hyb_cal['ece']:.3f} (T={orig_temp:.2f}) | "
+        f"Aux 54-probe: MuRIL={mu_probe['overall_macro_f1']:.3f} Hyb={hybrid_probe['overall_macro_f1']:.3f}",
         flush=True,
     )
 
@@ -726,8 +833,6 @@ def _train_hybrid_and_infer(
     is_hybrid = 0.0 < alpha < 1.0
     if include_parent_title_probes:
         model_name = "muril_dapt_v3_plus_title_hybrid" if is_hybrid else "muril_dapt_v3_plus_title"
-    elif alpha == 0.0:
-        model_name = "tfidf_word_char_logistic_v2"
     elif alpha == 1.0:
         model_name = "muril_dapt_v3_pooled"
     else:
@@ -736,18 +841,25 @@ def _train_hybrid_and_infer(
     eval_entry = {
         "synthetic_only": False,
         "model_name": model_name,
-        "model_version": "v3_dapt_gpu",
+        "model_version": "v5_real_reddit_gpu",
         "labels": labels,
         "dataset_records": len(train_texts) + len(val_texts) + len(test_texts),
         "train_seconds": round(muril_train_s + tfidf_train_s, 2),
         "best_epoch": fit_summary["best_epoch"],
-        "temperature": fit_summary["temperature"],
+        "temperature": round(orig_temp, 3),
         "hybrid_blend": {
             "alpha_muril": alpha,
             "alpha_tfidf": round(1.0 - alpha, 4),
             "binary_threshold": blend_bin_tau,
             "per_label_thresholds": blend_thresholds if multilabel else {},
-            "individual_54_probe_macro_f1": {
+            "individual_heldout_test_macro_f1": {
+                "logistic_regression": round(float(lr_test_m["macro_f1"]), 4),
+                "ann_mlp": round(float(ann_test_m["macro_f1"]), 4),
+                "cnn_textcnn": round(float(cnn_test_m["macro_f1"]), 4),
+                "muril_dapt_v3": round(float(mu_test_m["macro_f1"]), 4),
+                "hybrid_selected": round(float(test_metrics["macro_f1"]), 4),
+            },
+            "auxiliary_54_probe_macro_f1": {
                 "tfidf_word_char_v2": tf_probe["overall_macro_f1"],
                 "muril_dapt_v3": mu_probe["overall_macro_f1"],
                 "hybrid_selected": hybrid_probe["overall_macro_f1"],
@@ -773,7 +885,7 @@ def _train_hybrid_and_infer(
         "validation": {
             "task_name": task_name,
             "model_name": model_name,
-            "model_version": "v3_dapt_gpu",
+            "model_version": "v5_real_reddit_gpu",
             "n_train": len(train_texts),
             "n_validation": len(val_texts),
             "n_test": len(test_texts),
@@ -784,7 +896,7 @@ def _train_hybrid_and_infer(
         "test": {
             "task_name": task_name,
             "model_name": model_name,
-            "model_version": "v3_dapt_gpu",
+            "model_version": "v5_real_reddit_gpu",
             "n_train": len(train_texts),
             "n_validation": len(val_texts),
             "n_test": len(test_texts),
@@ -792,18 +904,22 @@ def _train_hybrid_and_infer(
             "metrics": test_metrics,
             "warnings": [
                 (
-                    f"54-probe unseen 8-category robustness Macro F1: {hybrid_probe['overall_macro_f1']:.4f} "
-                    f"(MuRIL-DAPT-v3={mu_probe['overall_macro_f1']:.4f}, TFIDF-v2={tf_probe['overall_macro_f1']:.4f}, "
-                    f"val-calibrated alpha={alpha:.2f}, T={fit_summary['temperature']:.2f})."
+                    f"Primary evaluation is on {len(test_texts)} held-out real Reddit comments from unseen threads "
+                    f"(Macro F1={test_metrics['macro_f1']:.4f}, MuRIL-DAPT-v3={mu_test_m['macro_f1']:.4f}, "
+                    f"LogReg={lr_test_m['macro_f1']:.4f}, ANN={ann_test_m['macro_f1']:.4f}, CNN={cnn_test_m['macro_f1']:.4f}, "
+                    f"val-only alpha={alpha:.2f}, T={orig_temp:.2f})."
                 ),
-                "Batch inference applied to real anonymized Reddit comments; human gold annotation on the real corpus is in progress.",
+                (
+                    "Trained and tested strictly on 459 rubric-curated real anonymized Reddit comments "
+                    "(data/annotations/real_reddit_labeled_v1/); multi-annotator human kappa adjudication is ongoing."
+                ),
             ],
         },
         "robustness_54_probes": hybrid_probe,
         "artifact_path": f"ml/artifacts/live_corpus/predictions.json#{task_name}",
         "inference_scope": (
             f"Batch inference over anonymized public Reddit discussions using {model_name} "
-            f"(DAPT-adapted MuRIL v3 + Word+Char TF-IDF; human gold evaluation pending)."
+            f"trained strictly on curated real Reddit comments (0 synthetic rows; multi-human adjudication pending)."
         ),
     }
     meta_out = {
@@ -816,48 +932,112 @@ def _train_hybrid_and_infer(
     return infer_preds, infer_prob_dicts, extra_out, eval_entry, meta_out
 
 
+def _load_raw_posts(static_export_path: Optional[Path]) -> Tuple[List[Dict[str, Any]], str]:
+    """Load posts from sanitized static export if present, else cleanly from tracked corpus.json."""
+    candidate = static_export_path or DEFAULT_STATIC_EXPORT_V4
+    if candidate.is_file():
+        raw_size = candidate.stat().st_size
+        validated = load_static_export(
+            candidate,
+            limits=StaticExportLimits(
+                max_bytes=max(50 * 1024 * 1024, raw_size + 1024),
+                max_posts=2000,
+                max_comments_per_post=2000,
+                max_comments=100000,
+            ),
+        )
+        if not validated.valid:
+            raise RuntimeError(f"Invalid static export {candidate}: {validated.error_codes}")
+        raw_posts = []
+        for p in validated.posts:
+            raw_posts.append(
+                {
+                    "orig_id": p.reddit_id,
+                    "title": p.title,
+                    "body": p.body or "",
+                    "subreddit": p.subreddit,
+                    "created_at": p.created_at.isoformat() if p.created_at else None,
+                    "score": int(p.score or 0),
+                    "comments": [
+                        {
+                            "orig_id": c.reddit_id,
+                            "body": c.body or "",
+                            "created_at": c.created_at.isoformat() if c.created_at else None,
+                            "score": int(c.score or 0),
+                            "parent_orig_id": c.parent_reddit_id,
+                        }
+                        for c in p.comments
+                    ],
+                }
+            )
+        return raw_posts, str(candidate.name)
+
+    fallback = LIVE_DATA_DIR / "corpus.json"
+    if not fallback.is_file():
+        raise FileNotFoundError(f"Neither {candidate} nor {fallback} exists.")
+    blob = json.loads(fallback.read_text(encoding="utf-8"))
+    raw_posts = []
+    for p in blob.get("posts") or []:
+        raw_posts.append(
+            {
+                "orig_id": p["reddit_id"],
+                "title": p.get("title") or "",
+                "body": p.get("body") or "",
+                "subreddit": p.get("subreddit") or "unknown",
+                "created_at": p.get("created_at"),
+                "score": int(p.get("score") or 0),
+                "comments": [
+                    {
+                        "orig_id": c["reddit_id"],
+                        "body": c.get("body") or "",
+                        "created_at": c.get("created_at"),
+                        "score": int(c.get("score") or 0),
+                        "parent_orig_id": c.get("parent_reddit_id"),
+                    }
+                    for c in p.get("comments") or []
+                ],
+            }
+        )
+    return raw_posts, "data/live_corpus/corpus.json"
+
+
+def _load_real_labeled_metadata(labeled_dir: Path) -> Tuple[Dict[str, str], Dict[str, str], int, int]:
+    """Read post_title & subreddit maps from tracked master_labeled_v1.csv."""
+    master = labeled_dir / "master_labeled_v1.csv"
+    if not master.is_file():
+        raise FileNotFoundError(f"Missing real labeled dataset at {master}")
+    post_titles: Dict[str, str] = {}
+    doc_subreddits: Dict[str, str] = {}
+    n_rows = 0
+    with master.open("r", encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            n_rows += 1
+            post_titles[row["post_id"]] = row.get("post_title") or ""
+            doc_subreddits[row["document_id"]] = row.get("subreddit") or "unknown"
+    return post_titles, doc_subreddits, n_rows, len(post_titles)
+
+
 def main(
     static_export_path: Optional[Path] = None,
     *,
-    dataset_id: str = "iim-sambalpur-arctic-shift-v4",
-    dataset_version: str = "4.0.0",
+    labeled_dir: Path = DEFAULT_REAL_LABELED_DIR,
+    dataset_id: str = "iim-sambalpur-real-reddit-v5",
+    dataset_version: str = "5.0.0",
     n_topics: int = 10,
     dapt_epochs: int = 4,
-    muril_epochs: int = 4,
-    expanded_threads: int = 360,
+    muril_epochs: int = 6,
     skip_dapt: bool = False,
 ) -> None:
-    if static_export_path is None:
-        if DEFAULT_STATIC_EXPORT_V4.is_file():
-            static_export_path = DEFAULT_STATIC_EXPORT_V4
-        elif DEFAULT_STATIC_EXPORT_V3.is_file():
-            static_export_path = DEFAULT_STATIC_EXPORT_V3
-        else:
-            static_export_path = DEFAULT_STATIC_EXPORT_V2
-
     LIVE_DATA_DIR.mkdir(parents=True, exist_ok=True)
     LIVE_ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+    dapt_dir = Path(default_dapt_output_dir())
 
-    # 1. Load & validate sanitized real Reddit static export
-    raw_size = static_export_path.stat().st_size
-    validated = load_static_export(
-        static_export_path,
-        limits=StaticExportLimits(
-            max_bytes=max(50 * 1024 * 1024, raw_size + 1024),
-            max_posts=2000,
-            max_comments_per_post=2000,
-            max_comments=100000,
-        ),
-    )
-    if not validated.valid:
-        raise RuntimeError(f"Invalid static export {static_export_path}: {validated.error_codes}")
+    # 1. Load real anonymized Reddit posts & pseudonymize all IDs / strip raw URLs
+    raw_posts, source_label = _load_raw_posts(static_export_path)
+    raw_posts.sort(key=lambda p: (p.get("created_at") or "", p["orig_id"]))
 
     preprocessor = MultilingualTextPreprocessor()
-    lang_service = LanguageAnalysisService(
-        language_detector=SimpleLanguageDetector(),
-        script_detector=SimpleScriptDetector(),
-        code_mix_detector=SimpleCodeMixDetector(),
-    )
+    script_detector = SimpleScriptDetector()
 
     pii_counts: Counter = Counter()
     automod_filtered = 0
@@ -868,116 +1048,137 @@ def main(
     flat_comments: List[Dict[str, Any]] = []
     unlabeled_dapt_texts: List[str] = []
 
-    for post in validated.posts:
-        title = sanitize_pii_text(post.title, pii_counts) or post.title
-        body = sanitize_pii_text(post.body, pii_counts) if post.body else ""
-        if title:
-            unlabeled_dapt_texts.append(f"{title}. {body}".strip() if body else title)
+    post_counter = 0
+    cmt_counter = 0
 
-        kept_comments: List[Dict[str, Any]] = []
-        for c in post.comments:
-            if _is_automod_boilerplate(c.body):
+    for post in raw_posts:
+        title = _REDDIT_URL_RE.sub("[REDDIT_LINK]", sanitize_pii_text(post["title"], pii_counts) or post["title"]).strip()
+        body = _REDDIT_URL_RE.sub("[REDDIT_LINK]", sanitize_pii_text(post["body"], pii_counts) or "").strip() if post["body"] else ""
+
+        kept_raw_cmts: List[Dict[str, Any]] = []
+        for c in sorted(post["comments"], key=lambda x: (x.get("created_at") or "", x["orig_id"])):
+            raw_b = c["body"]
+            if _is_automod_boilerplate(raw_b) or _BOT_EXTRA_RE.search(raw_b):
                 automod_filtered += 1
                 continue
-            if _is_gif_only(c.body):
+            if _is_gif_only(raw_b):
                 gif_filtered += 1
                 continue
-            c_body = sanitize_pii_text(c.body, pii_counts) or c.body
-            if not c_body.strip():
+            c_body = _REDDIT_URL_RE.sub("[REDDIT_LINK]", sanitize_pii_text(raw_b, pii_counts) or raw_b).strip()
+            if not c_body:
                 continue
-            pre = preprocessor.preprocess(c_body)
-            norm = pre.normalized_text.strip() or c_body.strip()
-            lang = lang_service.analyze(norm)
-            doc_id = f"comment-{c.reddit_id}"
-            unlabeled_dapt_texts.append(c_body)
-            c_obj = {
-                "reddit_id": c.reddit_id,
-                "document_id": doc_id,
-                "post_id": post.reddit_id,
-                "post_title": title,
-                "subreddit": post.subreddit,
-                "body": c_body,
-                "normalized_text": norm,
-                "created_at": c.created_at.replace(tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "score": int(c.score),
-                "parent_reddit_id": c.parent_reddit_id,
-                "language": lang.language,
-                "script": lang.script,
-                "is_code_mixed": bool(lang.is_code_mixed),
-                "detected_languages": list(lang.detected_languages),
-            }
-            kept_comments.append(c_obj)
+            kept_raw_cmts.append({**c, "clean_body": c_body})
 
-        if not kept_comments:
+        if not kept_raw_cmts:
             empty_threads_skipped += 1
             continue
 
-        local_ids = {c["reddit_id"] for c in kept_comments}
-        for c in kept_comments:
-            if c["parent_reddit_id"] not in local_ids:
-                c["parent_reddit_id"] = None
+        post_counter += 1
+        pseudo_pid = f"post_{post_counter:04d}"
+        if title:
+            unlabeled_dapt_texts.append(f"{title}. {body}".strip() if body else title)
 
-        p_obj = {
-            "reddit_id": post.reddit_id,
-            "title": title,
-            "body": body,
-            "subreddit": post.subreddit,
-            "created_at": post.created_at.replace(tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "score": int(post.score),
-            "num_comments": len(kept_comments),
-            "url": post.url,
-            "source_mode": "direct" if post.subreddit.lower().startswith("iimsambalpur") else "context",
-            "synthetic": False,
-            "comments": kept_comments,
-        }
-        clean_posts.append(p_obj)
-        flat_comments.extend(kept_comments)
+        orig_to_pseudo_cmt: Dict[str, str] = {}
+        for c in kept_raw_cmts:
+            cmt_counter += 1
+            orig_to_pseudo_cmt[c["orig_id"]] = f"cmt_{cmt_counter:05d}"
+
+        kept_comments: List[Dict[str, Any]] = []
+        for c in kept_raw_cmts:
+            pseudo_cid = orig_to_pseudo_cmt[c["orig_id"]]
+            c_body = c["clean_body"]
+            pre = preprocessor.preprocess(c_body)
+            norm = pre.normalized_text.strip() or c_body
+            lang = detect_indian_reddit_language(c_body, script_detector)
+            doc_id = f"comment-{pseudo_cid}"
+            unlabeled_dapt_texts.append(c_body)
+            parent_pseudo = orig_to_pseudo_cmt.get(c.get("parent_orig_id") or "")
+            c_obj = {
+                "reddit_id": pseudo_cid,
+                "document_id": doc_id,
+                "post_id": pseudo_pid,
+                "post_title": title,
+                "subreddit": post["subreddit"],
+                "body": c_body,
+                "normalized_text": norm,
+                "created_at": c["created_at"],
+                "score": int(c["score"]),
+                "parent_reddit_id": parent_pseudo,
+                "language": lang["language"],
+                "script": lang["script"],
+                "is_code_mixed": bool(lang["is_code_mixed"]),
+                "detected_languages": list(lang["detected_languages"]),
+            }
+            kept_comments.append(c_obj)
+            flat_comments.append(c_obj)
+
+        clean_posts.append(
+            {
+                "reddit_id": pseudo_pid,
+                "title": title,
+                "body": body,
+                "subreddit": post["subreddit"],
+                "created_at": post["created_at"],
+                "score": int(post["score"]),
+                "num_comments": len(kept_comments),
+                "url": None,
+                "source_mode": "public_anonymized_reddit_pseudonymized",
+                "synthetic": False,
+                "comments": kept_comments,
+            }
+        )
 
     sub_counts = Counter(p["subreddit"] for p in clean_posts)
+    lang_counts = Counter(c["language"] for c in flat_comments)
     print(
-        f"Loaded {len(clean_posts)} real anonymized threads with {len(flat_comments)} human comments "
-        f"across {len(sub_counts)} subreddits ({dict(sub_counts.most_common())}); "
-        f"filtered {automod_filtered} AutoMod, {gif_filtered} GIF, {empty_threads_skipped} empty threads; "
-        f"extra PII redactions={dict(pii_counts)}.",
+        f"Loaded {len(clean_posts)} pseudonymized real threads with {len(flat_comments)} human comments "
+        f"from {source_label} across {len(sub_counts)} subreddits; "
+        f"filtered {automod_filtered} bot/AutoMod, {gif_filtered} GIF, {empty_threads_skipped} empty threads; "
+        f"languages={dict(lang_counts.most_common())}.",
         flush=True,
     )
 
-    # 2. Unsupervised Domain-Adaptive Pretraining (DAPT / MLM) on unlabeled real Reddit text
+    # 2. Unsupervised DAPT MLM with held-out validation perplexity
     dapt_summary: Optional[Dict[str, Any]] = None
-    saved_dapt_summary_path = DAPT_OUTPUT_DIR / "dapt_summary.json"
-    if skip_dapt and DAPT_OUTPUT_DIR.is_dir() and saved_dapt_summary_path.is_file():
-        dapt_summary = json.loads(saved_dapt_summary_path.read_text(encoding="utf-8"))
-        backbone_id = str(DAPT_OUTPUT_DIR)
+    saved_dapt_summary_path = dapt_dir / "dapt_summary.json"
+    if skip_dapt and dapt_dir.is_dir() and saved_dapt_summary_path.is_file():
+        saved = json.loads(saved_dapt_summary_path.read_text(encoding="utf-8"))
+        if saved.get("val_documents") and saved.get("initial_val_perplexity") is not None:
+            dapt_summary = saved
+            backbone_id = str(dapt_dir)
+            print(
+                f"\n--- Stage 2: Reusing held-out-validated MuRIL-DAPT MLM checkpoint "
+                f"(val_ppl {dapt_summary['initial_val_perplexity']} -> {dapt_summary['final_val_perplexity']} "
+                f"on {dapt_summary['val_documents']} unseen texts) ---",
+                flush=True,
+            )
+    if dapt_summary is None and len(unlabeled_dapt_texts) >= 40:
         print(
-            f"\n--- Stage 2: Reusing saved MuRIL-DAPT MLM checkpoint ({dapt_summary['unlabeled_documents']} docs, "
-            f"perplexity {dapt_summary['initial_perplexity']} -> {dapt_summary['final_perplexity']}) ---",
-            flush=True,
-        )
-    elif not skip_dapt and len(unlabeled_dapt_texts) >= 40:
-        print(
-            f"\n--- Stage 2: Unsupervised MuRIL-DAPT MLM on {len(unlabeled_dapt_texts)} unlabeled real Reddit texts ---",
+            f"\n--- Stage 2: Unsupervised MuRIL-DAPT MLM on {len(unlabeled_dapt_texts)} unlabeled real Reddit texts (with 12% held-out val split) ---",
             flush=True,
         )
         dapt_summary = run_muril_mlm_dapt(
             unlabeled_dapt_texts,
             DAPTConfig(
-                output_dir=str(DAPT_OUTPUT_DIR),
+                output_dir=str(dapt_dir),
                 epochs=dapt_epochs,
-                batch_size=16,
+                batch_size=8,
+                grad_accum_steps=2,
+                val_fraction=0.12,
                 learning_rate=5e-5,
                 max_length=160,
                 random_state=SEED,
                 verbose=True,
             ),
         )
-        backbone_id = str(DAPT_OUTPUT_DIR)
+        backbone_id = str(dapt_dir)
         print(
-            f"Completed DAPT MLM: {dapt_summary['unlabeled_documents']} unique docs, "
-            f"perplexity {dapt_summary['initial_perplexity']} -> {dapt_summary['final_perplexity']} "
+            f"Completed DAPT MLM: {dapt_summary['train_documents']} train / {dapt_summary['val_documents']} held-out val docs, "
+            f"held-out val_ppl {dapt_summary['initial_val_perplexity']} -> {dapt_summary['final_val_perplexity']} "
             f"({dapt_summary['elapsed_seconds']}s).",
             flush=True,
         )
-    else:
+    elif dapt_summary is None:
         backbone_id = "google/muril-base-cased"
 
     # 3. Fit Real Unsupervised NMF Topic Discovery directly on the real human comments
@@ -997,21 +1198,17 @@ def main(
         if len(c["normalized_text"]) >= 4
     ]
     discoverer = NMFTopicDiscoverer(
-        n_topics=n_topics,
-        n_keywords=10,
         tfidf_config=TFIDFConfig(
-            max_features=12000,
+            ngram_range=(1, 2),
             min_df=2,
             max_df=0.85,
-            ngram_range=(1, 2),
-            stop_words="english",
+            max_features=8000,
             sublinear_tf=True,
-            token_pattern=r"(?u)\b\w{2,}\b",
         ),
         nmf_config=NMFConfig(
             n_topics=n_topics,
-            n_keywords=10,
-            random_state=SEED,
+            top_n_terms=10,
+            random_state=42,
             max_iter=400,
             drop_placeholder_tokens=True,
         ),
@@ -1024,43 +1221,26 @@ def main(
         flush=True,
     )
 
-    # 4. Prepare zero-noise, zero-contamination expanded training splits
-    base_post_titles = load_post_titles()
-    expanded_items, exp_post_titles = generate_expanded_synthetic_bundle(
-        n_threads=expanded_threads, seed=20261120
+    # 4. Load 100% REAL curated Reddit labeled dataset (ZERO synthetic training/test rows!)
+    labeled_post_titles, labeled_doc_subs, total_real_labeled, distinct_labeled_threads = (
+        _load_real_labeled_metadata(labeled_dir)
     )
-    all_post_titles = {**base_post_titles, **exp_post_titles}
-
-    exp_post_ids = sorted({it["post_id"] for it in expanded_items})
-    rng = random.Random(20261120)
-    rng.shuffle(exp_post_ids)
-    val_cut = max(1, int(len(exp_post_ids) * 0.15))
-    exp_val_posts = set(exp_post_ids[:val_cut])
-    exp_train_items = [it for it in expanded_items if it["post_id"] not in exp_val_posts]
-    exp_val_items = [it for it in expanded_items if it["post_id"] in exp_val_posts]
-
-    base_spec = SplitSpec(
-        train_size=0.70, validation_size=0.15, test_size=0.15, random_state=SEED, stratify=True
+    split_spec = SplitSpec(
+        train_size=0.65, validation_size=0.15, test_size=0.20, random_state=SEED, stratify=True
     )
 
-    def _get_splits(task_name: str):
-        base_records = load_annotation_dataset(TaskType(task_name), str(SYNTHETIC_DATA_DIR / f"{task_name}.csv"))
+    def _get_real_splits(task_name: str) -> Tuple[List[TrainingRecord], List[TrainingRecord], List[TrainingRecord]]:
+        records = load_annotation_dataset(TaskType(task_name), str(labeled_dir / f"{task_name}.csv"))
         split = split_records(
-            base_records,
-            labels=[r.label for r in base_records],
-            spec=base_spec,
-            groups=extract_groups(base_records, "post_id"),
+            records,
+            labels=[r.label for r in records],
+            spec=split_spec,
+            groups=extract_groups(records, "post_id"),
         )
-        b_tr, b_va, b_te = apply_split(base_records, split)
-        tr = list(b_tr) + _to_task_records(task_name, exp_train_items)
-        va = list(b_va) + _to_task_records(task_name, exp_val_items)
-        leak = check_leakage(tr, va, b_te)
+        tr, va, te = apply_split(records, split)
+        leak = check_leakage(tr, va, te)
         assert not leak.get("leakage_detected"), f"Leakage in {task_name}: {leak}"
-        return tr, va, b_te
-
-    _, _, sample_te = _get_splits("sentiment")
-    contamination = verify_zero_contamination(expanded_items, [r.text for r in sample_te])
-    print(f"Contamination audit passed: {contamination}", flush=True)
+        return list(tr), list(va), list(te)
 
     comment_texts = [c["body"] for c in flat_comments]
     comment_with_title = [f"{c['post_title']} | {c['body']}" for c in flat_comments]
@@ -1070,17 +1250,18 @@ def main(
     arch_comp_by_task: Dict[str, Any] = {}
     error_analysis_by_task: Dict[str, Any] = {}
 
-    # 4A. ISSUE: MuRIL-DAPT v3 + Parent Title + Word+Char Hybrid + 4-Arch Benchmark
-    print("\n--- Training & inferring ISSUE (LogReg vs ANN vs CNN vs MuRIL-DAPT v3 Hybrid) ---", flush=True)
-    iss_tr, iss_va, iss_te = _get_splits("issue")
+    # 4A. ISSUE
+    print("\n--- Training & evaluating ISSUE on real curated Reddit splits ---", flush=True)
+    iss_tr, iss_va, iss_te = _get_real_splits("issue")
     iss_preds, iss_probs, post_iss_out, iss_eval, iss_meta = _train_hybrid_and_infer(
         "issue",
         iss_tr,
         iss_va,
         iss_te,
-        [f"{all_post_titles.get(r.post_id or '', '')} | {r.text}" for r in iss_tr],
-        [f"{all_post_titles.get(r.post_id or '', '')} | {r.text}" for r in iss_va],
-        [f"{all_post_titles.get(r.post_id or '', '')} | {r.text}" for r in iss_te],
+        [f"{labeled_post_titles.get(r.post_id or '', '')} | {r.text}" for r in iss_tr],
+        [f"{labeled_post_titles.get(r.post_id or '', '')} | {r.text}" for r in iss_va],
+        [f"{labeled_post_titles.get(r.post_id or '', '')} | {r.text}" for r in iss_te],
+        [labeled_doc_subs.get(r.document_id, "unknown") for r in iss_te],
         comment_with_title,
         backbone_model_id=backbone_id,
         epochs=muril_epochs,
@@ -1093,9 +1274,9 @@ def main(
     arch_comp_by_task["issue"] = iss_meta["architecture_comparison"]
     error_analysis_by_task["issue"] = iss_meta["error_analysis"]
 
-    # 4B. SENTIMENT: MuRIL-DAPT v3 + Word+Char Hybrid + 4-Arch Benchmark
-    print("\n--- Training & inferring SENTIMENT (LogReg vs ANN vs CNN vs MuRIL-DAPT v3 Hybrid) ---", flush=True)
-    sen_tr, sen_va, sen_te = _get_splits("sentiment")
+    # 4B. SENTIMENT
+    print("\n--- Training & evaluating SENTIMENT on real curated Reddit splits ---", flush=True)
+    sen_tr, sen_va, sen_te = _get_real_splits("sentiment")
     sen_preds, sen_probs, _, sen_eval, sen_meta = _train_hybrid_and_infer(
         "sentiment",
         sen_tr,
@@ -1104,6 +1285,7 @@ def main(
         [r.text for r in sen_tr],
         [r.text for r in sen_va],
         [r.text for r in sen_te],
+        [labeled_doc_subs.get(r.document_id, "unknown") for r in sen_te],
         comment_texts,
         backbone_model_id=backbone_id,
         epochs=muril_epochs,
@@ -1112,9 +1294,9 @@ def main(
     arch_comp_by_task["sentiment"] = sen_meta["architecture_comparison"]
     error_analysis_by_task["sentiment"] = sen_meta["error_analysis"]
 
-    # 4C. EMOTION: MuRIL-DAPT v3 + 4-Arch Benchmark
-    print("\n--- Training & inferring EMOTION (LogReg vs ANN vs CNN vs MuRIL-DAPT v3) ---", flush=True)
-    emo_tr, emo_va, emo_te = _get_splits("emotion")
+    # 4C. EMOTION
+    print("\n--- Training & evaluating EMOTION on real curated Reddit splits ---", flush=True)
+    emo_tr, emo_va, emo_te = _get_real_splits("emotion")
     emo_preds, emo_probs, _, emo_eval, emo_meta = _train_hybrid_and_infer(
         "emotion",
         emo_tr,
@@ -1123,6 +1305,7 @@ def main(
         [r.text for r in emo_tr],
         [r.text for r in emo_va],
         [r.text for r in emo_te],
+        [labeled_doc_subs.get(r.document_id, "unknown") for r in emo_te],
         comment_texts,
         backbone_model_id=backbone_id,
         epochs=muril_epochs,
@@ -1131,9 +1314,9 @@ def main(
     arch_comp_by_task["emotion"] = emo_meta["architecture_comparison"]
     error_analysis_by_task["emotion"] = emo_meta["error_analysis"]
 
-    # 4D. RESPONSE (6 canonical classes): MuRIL-DAPT v3 + Word+Char Hybrid + 4-Arch Benchmark
-    print("\n--- Training & inferring RESPONSE (LogReg vs ANN vs CNN vs MuRIL-DAPT v3 Hybrid) ---", flush=True)
-    res_tr, res_va, res_te = _get_splits("response")
+    # 4D. RESPONSE
+    print("\n--- Training & evaluating RESPONSE (6 classes) on real curated Reddit splits ---", flush=True)
+    res_tr, res_va, res_te = _get_real_splits("response")
     res_preds, res_probs, _, res_eval, res_meta = _train_hybrid_and_infer(
         "response",
         res_tr,
@@ -1142,6 +1325,7 @@ def main(
         [r.text for r in res_tr],
         [r.text for r in res_va],
         [r.text for r in res_te],
+        [labeled_doc_subs.get(r.document_id, "unknown") for r in res_te],
         comment_texts,
         backbone_model_id=backbone_id,
         epochs=muril_epochs,
@@ -1150,9 +1334,9 @@ def main(
     arch_comp_by_task["response"] = res_meta["architecture_comparison"]
     error_analysis_by_task["response"] = res_meta["error_analysis"]
 
-    # 4E. SOLUTION (binary): MuRIL-DAPT v3 + Word+Char Hybrid + 4-Arch Benchmark
-    print("\n--- Training & inferring SOLUTION (LogReg vs ANN vs CNN vs MuRIL-DAPT v3 Hybrid) ---", flush=True)
-    sol_tr, sol_va, sol_te = _get_splits("solution")
+    # 4E. SOLUTION
+    print("\n--- Training & evaluating SOLUTION (binary) on real curated Reddit splits ---", flush=True)
+    sol_tr, sol_va, sol_te = _get_real_splits("solution")
     sol_preds, sol_probs, _, sol_eval, sol_meta = _train_hybrid_and_infer(
         "solution",
         sol_tr,
@@ -1161,6 +1345,7 @@ def main(
         [r.text for r in sol_tr],
         [r.text for r in sol_va],
         [r.text for r in sol_te],
+        [labeled_doc_subs.get(r.document_id, "unknown") for r in sol_te],
         comment_texts,
         backbone_model_id=backbone_id,
         epochs=muril_epochs,
@@ -1188,6 +1373,9 @@ def main(
         "solution": Counter(),
     }
 
+    resp_sol_total = 0
+    resp_sol_agree = 0
+
     for idx, c in enumerate(flat_comments):
         doc_id = c["document_id"]
         t_assign = topic_by_doc.get(doc_id)
@@ -1213,6 +1401,12 @@ def main(
         is_sol = str(sol_preds[idx]) == "solution"
         sol_prob = round(float(sol_probs[idx].get("solution", 0.0)), 4)
         not_sol_prob = round(float(sol_probs[idx].get("not_solution", 1.0 - sol_prob)), 4)
+        sol_conf = round(sol_prob if is_sol else not_sol_prob, 4)
+
+        if resp_lbl == "solution":
+            resp_sol_total += 1
+            if is_sol:
+                resp_sol_agree += 1
 
         label_counts_real["sentiment"][sent_lbl] += 1
         for e in emo_lbls:
@@ -1221,8 +1415,6 @@ def main(
             label_counts_real["issue"][i] += 1
         label_counts_real["response_type"][resp_lbl] += 1
         label_counts_real["solution"]["solution" if is_sol else "not_solution"] += 1
-
-        sol_conf = round(sol_prob if is_sol else not_sol_prob, 4)
 
         pred_tasks["sentiment"][doc_id] = {
             "sentiment": sent_lbl,
@@ -1317,49 +1509,49 @@ def main(
             c.pop("subreddit", None)
 
     for t_name, cnt_key in (
-        ("sentiment", "sentiment"),
-        ("emotion", "emotion"),
         ("issue", "issue"),
-        ("response", "response_type"),
         ("solution", "solution"),
+        ("sentiment", "sentiment"),
+        ("response", "response_type"),
+        ("emotion", "emotion"),
     ):
-        evaluation_tasks[t_name]["label_counts"] = dict(sorted(label_counts_real[cnt_key].items()))
+        evaluation_tasks[t_name]["real_corpus_prediction_counts"] = dict(label_counts_real[cnt_key])
 
-    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    sub_list = ", ".join(f"r/{s}" for s, _ in sub_counts.most_common())
     corpus_payload = {
         "metadata": {
             "dataset_id": dataset_id,
             "dataset_version": dataset_version,
-            "generation_seed": None,
-            "generation_timestamp": now_iso,
-            "source_provider": "arctic_shift",
-            "source_mode": "public_reddit_archive",
             "synthetic": False,
+            "source_provider": "arctic_shift",
+            "source_mode": "public_anonymized_reddit_pseudonymized",
             "authorization_status": "public_anonymized_reddit",
-            "subreddits": [s for s, _ in sub_counts.most_common()],
-            "notice": (
-                f"Anonymized public Reddit discussions about IIM Sambalpur collected via Arctic Shift "
-                f"across {len(sub_counts)} subreddits ({sub_list}) with author usernames stripped, "
-                f"inline PII redacted, and AutoModerator/GIF noise filtered. NMF topics and MuRIL-DAPT "
-                f"MLM domain adaptation are trained directly on this corpus; 5-task classifications are model-inferred."
-            ),
+            "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generation_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "post_count": len(clean_posts),
             "comment_count": len(flat_comments),
-            "comments_per_post": round(len(flat_comments) / max(len(clean_posts), 1), 2),
+            "subreddits": sorted(sub_counts.keys()),
+            "subreddit_counts": dict(sub_counts.most_common()),
+            "language_counts": dict(lang_counts.most_common()),
             "filtering_summary": {
-                "automod_boilerplate_filtered": automod_filtered,
-                "gif_only_filtered": gif_filtered,
-                "empty_threads_skipped": empty_threads_skipped,
+                "automod_and_bot_comments_removed": automod_filtered,
+                "gif_only_comments_removed": gif_filtered,
+                "empty_threads_removed": empty_threads_skipped,
+                "extra_pii_redactions": dict(pii_counts),
+                "pseudonymized_ids": True,
+                "raw_reddit_urls_stripped": True,
             },
             "dapt_summary": dapt_summary,
-            "label_counts": {k: dict(sorted(v.items())) for k, v in label_counts_real.items()},
-            "label_provenance": "model_inferred_over_real_anonymized_reddit_corpus",
+            "notice": (
+                f"Real anonymized & pseudonymized public Reddit corpus ({len(clean_posts)} threads, "
+                f"{len(flat_comments)} human comments across {len(sub_counts)} subreddits; zero usernames, "
+                f"zero raw Reddit IDs/URLs). Models trained & evaluated strictly on {total_real_labeled} "
+                f"rubric-curated real Reddit comments (0 synthetic rows); multi-human adjudication ongoing."
+            ),
         },
         "posts": clean_posts,
     }
 
-    # Aggregate 4-architecture benchmark summary across all 5 tasks + all 8 probe categories
+    # Aggregate 4-architecture benchmark summary across all 5 tasks
     arch_keys = (
         "logistic_regression",
         "ann_mlp",
@@ -1394,58 +1586,61 @@ def main(
             },
         }
 
-    t_ood_mean = arch_aggregate["transformer_muril_dapt_v3"]["mean_probe_macro_f1"]
-    h_ood_mean = arch_aggregate["production_hybrid"]["mean_probe_macro_f1"]
-    lr_ood_mean = arch_aggregate["logistic_regression"]["mean_probe_macro_f1"]
-    ann_ood_mean = arch_aggregate["ann_mlp"]["mean_probe_macro_f1"]
-    cnn_ood_mean = arch_aggregate["cnn_textcnn"]["mean_probe_macro_f1"]
+    t_test = arch_aggregate["transformer_muril_dapt_v3"]["mean_test_macro_f1"]
+    h_test = arch_aggregate["production_hybrid"]["mean_test_macro_f1"]
+    lr_test = arch_aggregate["logistic_regression"]["mean_test_macro_f1"]
+    ann_test = arch_aggregate["ann_mlp"]["mean_test_macro_f1"]
+    cnn_test = arch_aggregate["cnn_textcnn"]["mean_test_macro_f1"]
+    t_ood = arch_aggregate["transformer_muril_dapt_v3"]["mean_probe_macro_f1"]
+    h_ood = arch_aggregate["production_hybrid"]["mean_probe_macro_f1"]
 
     why_transformer = {
-        "selected_architecture": "MuRIL-DAPT v3 Transformer (+ validation-calibrated Word+Char TF-IDF Hybrid)",
-        "mean_ood_f1_transformer": t_ood_mean,
-        "mean_ood_f1_hybrid": h_ood_mean,
-        "gain_vs_logreg_pp": round((t_ood_mean - lr_ood_mean) * 100.0, 2),
-        "gain_vs_ann_pp": round((t_ood_mean - ann_ood_mean) * 100.0, 2),
-        "gain_vs_cnn_pp": round((t_ood_mean - cnn_ood_mean) * 100.0, 2),
-        "hybrid_gain_vs_logreg_pp": round((h_ood_mean - lr_ood_mean) * 100.0, 2),
+        "selected_architecture": "MuRIL-DAPT v3 Transformer (+ validation-calibrated Word+Char TF-IDF Hybrid, alpha >= 0.50)",
+        "primary_eval_split": "heldout_real_reddit_test",
+        "mean_test_f1_transformer": t_test,
+        "mean_test_f1_hybrid": h_test,
+        "mean_ood_f1_transformer": t_ood,
+        "mean_ood_f1_hybrid": h_ood,
+        "gain_vs_logreg_pp": round((t_test - lr_test) * 100.0, 2),
+        "gain_vs_ann_pp": round((t_test - ann_test) * 100.0, 2),
+        "gain_vs_cnn_pp": round((t_test - cnn_test) * 100.0, 2),
+        "hybrid_gain_vs_logreg_pp": round((h_test - lr_test) * 100.0, 2),
         "key_reasons": [
             {
-                "title": "Paraphrase, informal slang & parent-context comprehension",
+                "title": "Real unseen-thread Reddit benchmark (0 synthetic data)",
                 "evidence": (
-                    f"On paraphrased comments, informal Reddit slang, and parent-post context, MuRIL-DAPT v3 reaches "
-                    f"{arch_aggregate['transformer_muril_dapt_v3']['by_category_mean_f1'].get('paraphrased_comments', 0)*100:.1f}%, "
-                    f"{arch_aggregate['transformer_muril_dapt_v3']['by_category_mean_f1'].get('informal_language', 0)*100:.1f}%, and "
-                    f"{arch_aggregate['transformer_muril_dapt_v3']['by_category_mean_f1'].get('parent_post_context', 0)*100:.1f}% OOD F1 "
-                    f"(beating LogReg {arch_aggregate['logistic_regression']['by_category_mean_f1'].get('paraphrased_comments', 0)*100:.1f}%, "
-                    f"ANN {arch_aggregate['ann_mlp']['by_category_mean_f1'].get('paraphrased_comments', 0)*100:.1f}%, and "
-                    f"CNN {arch_aggregate['cnn_textcnn']['by_category_mean_f1'].get('paraphrased_comments', 0)*100:.1f}% on paraphrases)."
+                    f"Trained and tested strictly on {total_real_labeled} curated real Reddit comments across "
+                    f"{distinct_labeled_threads} distinct threads (post_id-grouped 65/15/20): MuRIL-DAPT v3 achieves "
+                    f"{t_test*100:.1f}% mean held-out real test Macro F1 (Hybrid {h_test*100:.1f}%) vs. "
+                    f"LogReg {lr_test*100:.1f}%, ANN {ann_test*100:.1f}%, CNN {cnn_test*100:.1f}%."
                 ),
             },
             {
-                "title": "Smallest generalization drop across all 4 architectures",
+                "title": "Auxiliary 54-probe stress diagnostic (never used for selection)",
                 "evidence": (
-                    f"Bag-of-words LogReg, ANN (MLP), and scratch-trained 1D TextCNN overfit surface vocabulary "
-                    f"(held-out → unseen drop of {arch_aggregate['logistic_regression']['generalization_gap']*100:.1f}–"
-                    f"{arch_aggregate['cnn_textcnn']['generalization_gap']*100:.1f} pp), whereas MuRIL-DAPT v3 cuts the drop to "
-                    f"{arch_aggregate['transformer_muril_dapt_v3']['generalization_gap']*100:.1f} pp ({t_ood_mean*100:.1f}% mean OOD Macro F1 across all 5 tasks)."
+                    f"On the untouched 54-probe stress diagnostic across slang, paraphrases, typos, and Hinglish, "
+                    f"MuRIL-DAPT v3 retains {t_ood*100:.1f}% mean Macro F1 (Hybrid {h_ood*100:.1f}%) compared to "
+                    f"LogReg {arch_aggregate['logistic_regression']['mean_probe_macro_f1']*100:.1f}%, "
+                    f"ANN {arch_aggregate['ann_mlp']['mean_probe_macro_f1']*100:.1f}%, and "
+                    f"CNN {arch_aggregate['cnn_textcnn']['mean_probe_macro_f1']*100:.1f}%."
                 ),
             },
             {
-                "title": "Unsupervised domain adaptation (DAPT MLM) without label fabrication",
+                "title": "Held-out validated DAPT MLM domain adaptation",
                 "evidence": (
-                    f"Continuing Masked Language Modeling on {dapt_summary['unlabeled_documents']:,} unlabeled real Reddit texts "
-                    f"cut perplexity {dapt_summary['initial_perplexity']} → {dapt_summary['final_perplexity']}, adapting representations "
-                    f"to CAT/CAP/SAP/WL/LPA slang before fine-tuning."
+                    f"Masked Language Modeling on {dapt_summary['train_documents']:,} unlabeled real Reddit texts "
+                    f"reduced held-out validation perplexity from {dapt_summary['initial_val_perplexity']} -> "
+                    f"{dapt_summary['final_val_perplexity']} on {dapt_summary['val_documents']:,} disjoint unseen texts."
                     if dapt_summary
                     else "Domain-adaptive MLM adapts MuRIL to Indian MBA/CAT vocabulary."
                 ),
             },
             {
-                "title": "Calibrated confidence + hybrid char-ngram complementarity",
+                "title": "Non-sharpening calibration (T >= 1.0) & static serving",
                 "evidence": (
-                    f"Temperature scaling + multi-sample dropout yield calibrated confidence (mean hybrid ECE "
-                    f"{arch_aggregate['production_hybrid']['mean_calibration_ece']:.3f}), while blending with char-ngram TF-IDF "
-                    f"helps on Romanized code-mixed keywords and compiles to read-only JSON served in <10 ms with zero GPU runtime."
+                    f"Validation temperature scaling strictly clamped to T >= 1.0 yields honest probability bounds "
+                    f"(mean held-out ECE {arch_aggregate['production_hybrid']['mean_calibration_ece']:.3f}), and "
+                    f"precomputed artifacts serve Vercel/Docker in <10 ms with zero runtime GPU cost."
                 ),
             },
         ],
@@ -1453,44 +1648,68 @@ def main(
 
     architecture_comparison_payload = {
         "benchmark_protocol": (
-            "Apples-to-apples evaluation across all 5 tasks on identical thread-grouped zero-leakage splits "
-            "(post_id grouped, seed=20261116) plus the untouched 54-probe unseen 8-category robustness benchmark."
+            f"Apples-to-apples evaluation across all 5 tasks on identical post_id-grouped 65/15/20 splits "
+            f"of {total_real_labeled} curated real Reddit comments ({distinct_labeled_threads} distinct threads, "
+            f"seed={SEED}, 0 synthetic rows). Auxiliary 54-probe stress scores are observational only."
         ),
+        "primary_metric": "test_macro_f1",
         "architectures_order": list(arch_keys),
         "aggregate": arch_aggregate,
         "per_task": arch_comp_by_task,
         "why_transformer": why_transformer,
     }
 
+    labeled_provenance = {
+        "source_path": "data/annotations/real_reddit_labeled_v1",
+        "annotation_source": "rubric_curated_real_reddit_v1_pending_multi_human_kappa",
+        "labeled_real_comments": total_real_labeled,
+        "distinct_threads": distinct_labeled_threads,
+        "synthetic_training_rows": 0,
+        "split_strategy": "post_id_grouped_65_15_20",
+        "multi_annotator_human_kappa_completed": False,
+    }
+
+    resp_sol_consistency = {
+        "response_solution_count": resp_sol_total,
+        "agreed_with_solution_model": resp_sol_agree,
+        "agreement_rate": round(resp_sol_agree / max(resp_sol_total, 1), 4),
+    }
+
     predictions_payload = {"synthetic_only": False, "dataset_version": dataset_version, "tasks": pred_tasks}
     evaluation_payload = {
         "synthetic_only": False,
         "dataset_version": dataset_version,
+        "labeled_data_provenance": labeled_provenance,
         "dapt_summary": dapt_summary,
-        "contamination_audit": contamination,
+        "response_solution_consistency": resp_sol_consistency,
         "architecture_comparison": architecture_comparison_payload,
         "error_analysis": error_analysis_by_task,
         "evaluation_scope": (
-            f"Real anonymized Reddit discussions ({len(clean_posts)} threads, {len(flat_comments)} human comments "
-            f"across {len(sub_counts)} subreddits) analyzed with unsupervised NMF, unsupervised MuRIL-DAPT MLM "
-            f"adaptation, a 4-architecture comparison (Logistic Regression, ANN/MLP, 1D TextCNN, MuRIL-DAPT v3 "
-            f"Transformer), structured error & calibration analysis, and validation-calibrated hybrid ensembles."
+            f"100% real anonymized & pseudonymized Reddit corpus ({len(clean_posts)} threads, {len(flat_comments)} "
+            f"human comments across {len(sub_counts)} subreddits). All 4 architectures trained and evaluated strictly "
+            f"on post_id-grouped splits of {total_real_labeled} rubric-curated real Reddit comments (0 synthetic rows), "
+            f"with held-out DAPT validation perplexity, 5-bin held-out calibration (T >= 1.0), and data-driven error analysis."
         ),
         "tasks": evaluation_tasks,
     }
 
-    # Automated end-to-end benchmark integrity verification
     verification_report = verify_benchmark_artifact(
         evaluation_payload, predictions=predictions_payload, corpus=corpus_payload
     )
     evaluation_payload["benchmark_verification"] = verification_report
     print(
-        f"\n[BENCHMARK VERIFIER] verified={verification_report['verified']} "
+        f"\n[PIPELINE INTEGRITY VERIFIER] verified={verification_report['verified']} "
         f"({verification_report['passed_checks']}/{verification_report['total_checks']} checks passed)",
         flush=True,
     )
     for chk in verification_report["checks"]:
         print(f"  [{'PASS' if chk['passed'] else 'FAIL'}] {chk['id']}: {chk['detail']}", flush=True)
+    print(
+        f"[CROSS-TASK CONSISTENCY] response=='solution' agreeing with is_solution==True: "
+        f"{resp_sol_agree}/{resp_sol_total} ({resp_sol_consistency['agreement_rate']*100:.1f}%)",
+        flush=True,
+    )
+    print(f"[REAL CORPUS SENTIMENT COUNTS] {dict(label_counts_real['sentiment'])}", flush=True)
 
     (LIVE_DATA_DIR / "corpus.json").write_text(
         json.dumps(corpus_payload, separators=(",", ":"), ensure_ascii=False) + "\n",
@@ -1519,7 +1738,7 @@ def main(
     )
 
     print(
-        f"\nBuilt live anonymized Reddit v{dataset_version} bundle:\n"
+        f"\nBuilt 100%-real anonymized Reddit v{dataset_version} bundle:\n"
         f"  {LIVE_DATA_DIR / 'corpus.json'} ({(LIVE_DATA_DIR / 'corpus.json').stat().st_size / 1024:.1f} KB)\n"
         f"  {LIVE_ARTIFACT_DIR / 'predictions.json'} ({(LIVE_ARTIFACT_DIR / 'predictions.json').stat().st_size / 1024:.1f} KB)\n"
         f"  {LIVE_ARTIFACT_DIR / 'topic_discovery.json'} ({(LIVE_ARTIFACT_DIR / 'topic_discovery.json').stat().st_size / 1024:.1f} KB)\n"
@@ -1530,22 +1749,22 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=None, help="Sanitized format_version=1 static export JSON")
-    parser.add_argument("--dataset-id", default="iim-sambalpur-arctic-shift-v4")
-    parser.add_argument("--dataset-version", default="4.0.0")
+    parser.add_argument("--input", type=Path, default=None, help="Sanitized format_version=1 static export JSON (falls back to data/live_corpus/corpus.json)")
+    parser.add_argument("--labeled-dir", type=Path, default=DEFAULT_REAL_LABELED_DIR, help="Tracked directory of real labeled per-task CSVs")
+    parser.add_argument("--dataset-id", default="iim-sambalpur-real-reddit-v5")
+    parser.add_argument("--dataset-version", default="5.0.0")
     parser.add_argument("--n-topics", type=int, default=10)
     parser.add_argument("--dapt-epochs", type=int, default=4)
-    parser.add_argument("--muril-epochs", type=int, default=4)
-    parser.add_argument("--expanded-threads", type=int, default=360)
+    parser.add_argument("--muril-epochs", type=int, default=12)
     parser.add_argument("--skip-dapt", action="store_true")
     args = parser.parse_args()
     main(
         static_export_path=args.input,
+        labeled_dir=args.labeled_dir,
         dataset_id=args.dataset_id,
         dataset_version=args.dataset_version,
         n_topics=args.n_topics,
         dapt_epochs=args.dapt_epochs,
         muril_epochs=args.muril_epochs,
-        expanded_threads=args.expanded_threads,
         skip_dapt=args.skip_dapt,
     )

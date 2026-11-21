@@ -312,7 +312,7 @@ def _summary_data() -> dict[str, Any]:
     return {
         "synthetic_only": synthetic_only,
         "dataset_version": data["metadata"]["dataset_version"],
-        "generated_at": data["metadata"]["generation_timestamp"],
+        "generated_at": data["metadata"].get("generation_timestamp") or data["metadata"].get("generated_at", ""),
         "provenance": {
             key: data["metadata"].get(key)
             for key in (

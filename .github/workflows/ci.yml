@@ -91,6 +91,9 @@ jobs:
           raw = Path("data/live_corpus/corpus.json").read_text(encoding="utf-8")
           assert not re.search(r"(?<![A-Za-z0-9_])/?u/[A-Za-z0-9_-]{3,24}\b", raw)
           assert not re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", raw)
+          assert not re.search(r"https?://(?:www\.|old\.)?reddit\.com/r/", raw, re.I)
+          assert not Path("data/demo_synthetic").exists()
+          assert Path("data/annotations/real_reddit_labeled_v1/master_labeled_v1.csv").is_file()
 
           # Reject orphaned gitlinks (160000 mode without .gitmodules)
           tree = subprocess.check_output(["git", "ls-tree", "HEAD"], text=True)

@@ -21,8 +21,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-rci}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rci}
       POSTGRES_DB: ${POSTGRES_DB:-rci_db}
+    # Bound strictly to loopback so Postgres is never exposed on LAN interfaces
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - rci_postgres_data:/var/lib/postgresql/data
     healthcheck:

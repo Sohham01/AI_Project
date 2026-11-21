@@ -912,8 +912,8 @@ export function architectureComparisonChart(archComp, mode = "probe") {
 
   const field = mode === "test" ? "test_macro_f1" : "probe_macro_f1";
   const subtitle = mode === "test"
-    ? "Held-out thread-grouped test Macro F1 (%) — all 4 architectures memorize in-distribution data"
-    : "Unseen 54-probe 8-category OOD Macro F1 (%) — distribution shift reveals why Transformer wins";
+    ? "Real held-out Reddit test Macro F1 (%) — n = 92 unseen-thread comments (0 synthetic rows)"
+    : "Auxiliary 54-probe stress diagnostic Macro F1 (%) — observational only, never used for model selection";
 
   const W = 940;
   const H = 304;
@@ -1099,15 +1099,20 @@ export function daptConvergenceChart(daptSummary) {
       </circle>
       <rect x="${(x - pillW / 2).toFixed(1)}" y="${(labelY - 10).toFixed(1)}" width="${pillW.toFixed(1)}" height="13" rx="3" fill="var(--color-surface-solid)" fill-opacity="0.92"/>
       <text x="${x.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="10.5" font-weight="600" font-family="var(--font-body)">${pplTxt}</text>
-      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">Epoch ${h.epoch}</text>
+      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${Number(h.epoch) === 0 ? "Pre-DAPT" : `Epoch ${h.epoch}`}</text>
     `;
   }).join("");
 
+  const isHeldout = daptSummary?.perplexity_split === "heldout_validation";
+  const pplCaption = isHeldout
+    ? `Held-out val perplexity (n=${num(daptSummary.val_documents || 0)} unseen texts)`
+    : "Perplexity (lower = better domain fit)";
+
   return `
     <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Unsupervised MuRIL-DAPT masked language modeling perplexity and loss curve">
-        <text x="${pad.left}" y="15" fill="var(--color-accent)" font-size="10.5" font-weight="600" font-family="var(--font-body)">Perplexity (lower = better domain fit)</text>
-        <text x="${W - pad.right}" y="15" text-anchor="end" fill="var(--color-info)" font-size="10.5" font-family="var(--font-body)">MLM Loss</text>
+      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Unsupervised MuRIL-DAPT masked language modeling held-out validation perplexity and loss curve">
+        <text x="${pad.left}" y="15" fill="var(--color-accent)" font-size="10.5" font-weight="600" font-family="var(--font-body)">${esc(pplCaption)}</text>
+        <text x="${W - pad.right}" y="15" text-anchor="end" fill="var(--color-info)" font-size="10.5" font-family="var(--font-body)">Val MLM Loss</text>
         ${grid}
         <polygon points="${areaPts}" fill="var(--color-accent)" opacity="0.10"/>
         <polyline points="${pplPts}" fill="none" stroke="var(--color-accent)" stroke-width="2.4" stroke-linejoin="round"/>
@@ -1115,8 +1120,8 @@ export function daptConvergenceChart(daptSummary) {
         ${dots}
       </svg>
       <div class="chart-legend" style="margin-top:var(--space-xs)">
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Perplexity (${esc(daptSummary.initial_perplexity)} → ${esc(daptSummary.final_perplexity)})</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-info)"></span><span>MLM cross-entropy loss</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>${isHeldout ? "Held-out val perplexity" : "Perplexity"} (${esc(daptSummary.initial_perplexity)} → ${esc(daptSummary.final_perplexity)})</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-info)"></span><span>Held-out MLM cross-entropy loss</span></span>
       </div>
     </div>
   `;
@@ -1380,7 +1385,7 @@ export function issueFrictionQuadrantChart(matrix) {
         <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">Unconfirmed resolution % (Y, zoomed ${Math.round(yMin * 100)}–100%) vs. negative sentiment % (X, sqrt scale)</text>
         ${yGrid}
         ${xGrid}
-        <text x="${(W - pad.right - 4).toFixed(1)}" y="${(pad.top + 14).toFixed(1)}" text-anchor="end" fill="var(--color-negative)" font-size="9.5" font-weight="600" font-family="var(--font-body)" opacity="0.85">HIGH FRICTION ZONE</text>
+        <text x="${(W - pad.right).toFixed(1)}" y="15" text-anchor="end" fill="var(--color-negative)" font-size="9.5" font-weight="600" font-family="var(--font-body)" opacity="0.9">TOP-RIGHT = HIGHEST FRICTION</text>
         ${bubbles}
         ${labels}
       </svg>

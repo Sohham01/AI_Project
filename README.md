@@ -3,13 +3,13 @@
 [![CI — Backend Tests & Vercel Entrypoint Audit](https://github.com/Sohham01/AI_Project/actions/workflows/ci.yml/badge.svg)](https://github.com/Sohham01/AI_Project/actions/workflows/ci.yml)
 ![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab?style=flat&labelColor=1e2235)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688?style=flat&labelColor=1e2235)
-![Corpus v4.0.0](https://img.shields.io/badge/corpus-v4.0.0%20%C2%B7%20366%20threads%20%C2%B7%203%2C562%20comments-4338ca?style=flat&labelColor=1e2235)
-![Benchmarks Verified 7/7](https://img.shields.io/badge/benchmarks-verified%207%2F7-15803d?style=flat&labelColor=1e2235)
+![Corpus v5.0.0](https://img.shields.io/badge/corpus-v5.0.0%20%C2%B7%20365%20threads%20%C2%B7%203%2C557%20comments-4338ca?style=flat&labelColor=1e2235)
+![Pipeline Integrity 7/7](https://img.shields.io/badge/pipeline%20integrity-7%2F7%20checks-15803d?style=flat&labelColor=1e2235)
 ![License MIT](https://img.shields.io/badge/license-MIT-4a526e?style=flat&labelColor=1e2235)
 
-**Multilingual research studio for anonymized public Reddit discussions** around **IIM Sambalpur** and Indian MBA/CAT communities. Combines unsupervised domain-adaptive pretraining (**MuRIL-DAPT v3**), apples-to-apples **4-architecture benchmarking** (Logistic Regression, ANN/MLP, 1D TextCNN, Transformer), **calibrated prediction confidence**, a structured **Error Analysis Studio**, a **Cross-Model Insight Engine**, **10-cluster NMF topic discovery**, **6 canonical community response roles**, and **explicit resolution-evidence tracking** — served exclusively on real anonymized Reddit data via a zero-build FastAPI studio on both **Vercel** and **Docker Compose**.
+**Multilingual research studio for anonymized & pseudonymized public Reddit discussions** around **IIM Sambalpur** and Indian MBA/CAT communities. Trained and evaluated **100% on real curated Reddit comments** (`0` synthetic rows) with unsupervised domain-adaptive pretraining (**MuRIL-DAPT v3** validated on held-out unseen texts), apples-to-apples **4-architecture benchmarking** (Logistic Regression, ANN/MLP, 1D TextCNN, Transformer), **non-sharpening calibrated confidence (`T ≥ 1.0`)**, **data-driven Error Analysis**, a **Cross-Model Insight Engine**, **10-cluster NMF topic discovery**, and **explicit resolution-evidence tracking** — served via a zero-build FastAPI studio on both **Vercel** and **Docker Compose**.
 
-[Live Studio (Vercel)](https://rci-ten.vercel.app/app/) · [System Architecture](#system-architecture) · [ML Pipeline](#multilingual-nlp-pipeline) · [4-Architecture Benchmarks](#4-architecture-benchmarks-why-transformer) · [Deployment & Security](#deployment--security) · [Quickstart](#quickstart)
+[Live Studio (Vercel)](https://rci-ten.vercel.app/app/) · [System Architecture](#system-architecture) · [ML Pipeline](#multilingual-nlp-pipeline) · [4-Architecture Real-Data Benchmarks](#4-architecture-benchmarks-on-real-held-out-reddit-comments) · [Deployment & Security](#deployment--security) · [Quickstart](#quickstart)
 
 ![Reddit Community Intelligence Studio Overview](docs/demo_screenshots/overview-v3-desktop.png)
 
@@ -17,20 +17,20 @@
 
 ## At a Glance
 
-| Dimension | Current Production State (`v4.0.0`) |
+| Dimension | Current Production State (`v5.0.0`) |
 |---|---|
-| **Real Anonymized Corpus** | `iim-sambalpur-arctic-shift-v4` — **366 anonymized threads**, **3,562 human comments** across **8 active subreddits** (`r/IIMSambalpurUG`, `r/MBAIndia`, `r/IIMCATPreparation`, `r/iim_CAT`, `r/CATPrep`, `r/CATStudyRoom`, `r/CATpreparation`, `r/Indian_Academia`); synthetic demo bundles fully retired |
-| **Noise & Privacy Filtering** | Author usernames stripped, inline emails/phones/`u/` mentions redacted, `360` AutoModerator stickies + `8` GIF-only embeds + `118` empty threads removed deterministically |
-| **Supervised Tasks (5)** | 8-label **Issue**, binary **Solution**, 3-class **Sentiment**, 6-class **Response**, 6-label **Emotion** |
-| **Unsupervised Topics & DAPT** | **10-cluster NMF** (`4,542` vocabulary terms) + unsupervised **MuRIL-DAPT MLM** on `3,271` unique unlabeled Reddit texts (**perplexity `37.19 → 14.86`**) |
-| **Confidence & Cross-Model Engine** | Temperature-calibrated confidence scores (`59.6%` corpus mean; `high ≥ 80%`, `medium 55–79%`, `low < 55%` human-review queue), Issue Friction & Priority Quadrant, and 5 synthesized cross-model briefings |
-| **Automated Verification** | **2,192 offline tests** (`973` subtests) + **7/7 automated benchmark integrity checks** + 15 Vercel route checks + HTTP security headers + zero-PII/secret/gitlink CI gates |
+| **Real Pseudonymized Corpus** | `iim-sambalpur-real-reddit-v5` — **365 pseudonymized threads (`post_0001`..`post_0365`)**, **3,557 human comments (`cmt_00001`..`cmt_03557`)** across **8 active subreddits** (`r/IIMSambalpurUG`, `r/MBAIndia`, `r/IIMCATPreparation`, `r/iim_CAT`, `r/CATPrep`, `r/CATStudyRoom`, `r/CATpreparation`, `r/Indian_Academia`); all raw Reddit IDs, URLs, and usernames stripped |
+| **Noise, Privacy & Language Tagging** | `365` AutoMod/RemindMeBot stickies + `8` GIF-only embeds + `119` empty threads removed; Indian-Reddit language tagging identifies `2,914` English, `324` Hinglish/Hindi (`9.1%`), and `319` terse/undetermined comments (`0` bogus European language tags) |
+| **100% Real Labeled Training & Test Set** | Tracked [data/annotations/real_reddit_labeled_v1/](data/annotations/real_reddit_labeled_v1/master_labeled_v1.csv) — **459 rubric-curated real Reddit comments across 200 distinct threads** (`298` train / `69` val / `92` held-out real test, strictly `post_id`-grouped, `0` synthetic rows; multi-human κ adjudication pending via local Annotation Studio) |
+| **Unsupervised DAPT MLM & NMF** | **MuRIL-DAPT MLM** trained on `2,780` unlabeled Reddit texts reduced **held-out validation perplexity `94.35 → 20.12`** on `379` disjoint unseen texts; **10-cluster NMF** (`8,000`-term vocab) fit directly on real comments |
+| **Calibration & Cross-Model Engine** | Validation-only non-sharpening temperature scaling (`T ≥ 1.0`) achieving **`0.065` mean 5-bin ECE** across all 5 tasks (`70.8%` live mean confidence; `861` high / `2,410` medium / `286` low), Issue Friction & Priority Quadrant, and 5 dynamically consistent cross-model briefings |
+| **Automated Verification** | **2,193 offline tests** (`973` subtests) + **7/7 automated Pipeline Integrity Checks** + 15 Vercel route checks + HTTP security headers + zero-PII/URL/secret/gitlink CI gates |
 
 ---
 
 ## System Architecture
 
-Public Reddit threads enter through keyless Arctic Shift or static-archive ingestion, pass deterministic PII redaction and bot/GIF filtering, and feed both the **MuRIL-DAPT v3 + NMF** pipeline and optional PostgreSQL storage. Precomputed read-only JSON artifacts power the Vercel and Docker studio with zero outbound Reddit calls at request time, while a local loopback-only **Annotation Studio** (`127.0.0.1:8765`) collects human gold labels to retrain future iterations.
+Public Reddit threads enter through keyless Arctic Shift or static-archive ingestion, pass deterministic PII redaction, bot/GIF removal, and opaque ID pseudonymization, and feed both the **MuRIL-DAPT v3 + NMF** pipeline and optional PostgreSQL storage. Precomputed read-only JSON artifacts power the Vercel and Docker studio with zero outbound Reddit calls at request time, while a local loopback-only **Annotation Studio** (`127.0.0.1:8765`) supports multi-annotator human review.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/rci-architecture-dark.svg">
@@ -42,16 +42,15 @@ Public Reddit threads enter through keyless Arctic Shift or static-archive inges
 
 ### Research Integrity & Epistemic Boundaries
 
+- **100% Reproducible From Tracked Real Files:** Legacy synthetic bundles (`data/demo_synthetic/`, `ml/artifacts/demo_synthetic*`) are retired; running `python backend/build_live_corpus_artifacts.py` reproduces the entire `v5.0.0` pipeline directly from tracked `data/live_corpus/corpus.json` and `data/annotations/real_reddit_labeled_v1/` with zero synthetic rows and zero hardcoded absolute paths.
+- **Transparent Label Provenance:** The `459` labeled real comments were individually curated comment-by-comment against [docs/ANNOTATION_GUIDELINES.md](docs/ANNOTATION_GUIDELINES.md) to eliminate synthetic training/testing data; multi-annotator human κ adjudication remains tracked as pending via the local Annotation Studio.
 - **6 Canonical Response Classes (fixed order):** `agreement`, `personal_experience`, `opinion`, `advice`, `solution`, `counterargument`.
-- **Proposal vs. Resolution Separation:** Predicted `advice` / `solution` comments are tracked independently from explicit first-person resolution outcomes (`reported_success`, `reported_pending`, `proposed_only`, `insufficient_evidence`).
-- **Model-Inferred & Confidence Transparency:** Real-corpus predictions shown in the studio carry calibrated per-comment and per-thread confidence badges (`high` / `medium` / `low` / `review`) and are explicitly surfaced as model-inferred outputs while human gold annotation proceeds via the local Annotation Studio.
-- **Zero Synthetic Showcase Data:** Retired legacy `data/demo_synthetic/` and `ml/artifacts/demo_synthetic*` bundles; the studio, API, Docker image, and Vercel deployment exclusively serve verified anonymized real Reddit threads (`data/live_corpus/`).
+- **Proposal vs. Resolution Separation:** Predicted `advice` / `solution` comments (`69.9%` cross-task agreement between `response=="solution"` and `is_solution==True`) are tracked independently from explicit first-person follow-up resolution signals (`reported_success`, `reported_pending`, `proposed_only`, `insufficient_evidence`).
+- **Pipeline Integrity Scope:** The 7 automated checks in [benchmark_verifier.py](ml/evaluation/benchmark_verifier.py) verify split isolation, real-data provenance, 4-architecture coverage, confusion-matrix reconciliation, non-sharpening `T ≥ 1.0` bounds, held-out DAPT perplexity reduction, and pseudonymized zero-PII/URL hygiene — they do not claim multi-human gold certification.
 
 ---
 
 ## Multilingual NLP Pipeline
-
-To handle noisy Indian student Reddit discourse (abbreviations, spelling variants, Hinglish code-mixing, and short thread replies) without leaking test targets, RCI pairs unsupervised domain adaptation with multi-architecture evaluation, structured error analysis, and validation-only calibration:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/rci-ml-pipeline-dark.svg">
@@ -59,39 +58,39 @@ To handle noisy Indian student Reddit discourse (abbreviations, spelling variant
   <img alt="Domain-adaptive MuRIL v3 and calibrated hybrid NLP pipeline" src="docs/diagrams/rci-ml-pipeline.svg">
 </picture>
 
-1. **Unsupervised Domain-Adaptive Pretraining ([muril_dapt.py](ml/models/transformer/muril_dapt.py)):** Continued masked language modeling of `google/muril-base-cased` strictly on `3,271` unique unlabeled anonymized Reddit texts (**perplexity `37.19 → 14.86`** across 4 epochs without fabricating any labels).
-2. **MuRIL v3 Pooled Classifier ([muril_classifier.py](ml/models/transformer/muril_classifier.py)):** Attention-masked `[CLS] + Mean + Max` pooling, LayerNorm, 5-branch Multi-Sample Dropout, Layer-wise Learning Rate Decay (`LLRD = 0.90`), single-label smoothing (`0.05`), and validation-only scalar temperature scaling.
-3. **4-Architecture Comparative Suite ([neural_baselines.py](ml/models/neural_baselines.py)):** Apples-to-apples evaluation of **Logistic Regression** (Word+Char TF-IDF), **ANN** (2-Layer GELU+LayerNorm MLP), **CNN** (1D Multi-Kernel TextCNN, `k=2,3,4,5`), and **MuRIL-DAPT v3 Transformer** (+ validation-calibrated Hybrid) on identical `post_id`-grouped splits and 54 unseen probes.
-4. **Error Analysis, Calibration & Automated Benchmark Verifier ([error_analysis.py](ml/evaluation/error_analysis.py), [benchmark_verifier.py](ml/evaluation/benchmark_verifier.py)):** Generates confusion matrices, ranked top confused class pairs, raw vs. calibrated reliability curves (ECE/Brier), High/Medium/Low confidence-tier accuracy, Transformer win recoveries, residual error taxonomy, and 7 automated integrity assertions.
-5. **Cross-Model Insight Engine ([cross_model_insights.py](backend/app/services/nlp/cross_model_insights.py)):** Synthesizes all 5 supervised models, 10 NMF topics (`4,542` vocabulary terms), resolution evidence, calibrated confidence, and OOD benchmarks into the Issue Friction & Priority Quadrant and actionable studio briefings.
+1. **Held-Out Validated DAPT MLM ([muril_dapt.py](ml/models/transformer/muril_dapt.py)):** Continued masked language modeling of `google/muril-base-cased` on `2,780` unlabeled Reddit texts, evaluated against `379` disjoint unseen Reddit texts (**pre-DAPT Epoch 0 `94.35` → Epoch 4 `20.12` held-out validation perplexity**).
+2. **MuRIL v3 Pooled Classifier ([muril_classifier.py](ml/models/transformer/muril_classifier.py)):** Attention-masked `[CLS] + Mean + Max` pooling, LayerNorm, 5-branch Multi-Sample Dropout, LLRD (`0.92`), multi-label `val_loss` early stopping, and validation-only **non-sharpening temperature scaling (`T ≥ 1.0`)**.
+3. **4-Architecture Comparative Suite ([neural_baselines.py](ml/models/neural_baselines.py)):** Apples-to-apples evaluation of **Logistic Regression** (Word+Char TF-IDF), **ANN** (2-Layer GELU+LayerNorm MLP), **CNN** (1D Multi-Kernel TextCNN `k=2..5`), and **MuRIL-DAPT v3 Transformer** (+ validation-calibrated Hybrid with `α ≥ 0.50`) on identical `post_id`-grouped real Reddit splits (`298 / 69 / 92`).
+4. **Data-Driven Error Analysis & Integrity Verifier ([error_analysis.py](ml/evaluation/error_analysis.py), [benchmark_verifier.py](ml/evaluation/benchmark_verifier.py)):** Computes confusion matrices, strictly empirical sample diagnostics for every confused class pair (actual word lengths, OOV rates, Hinglish cues, confidence margins, and quoted examples — zero canned lookup text), 5-bin calibration reliability curves on the `n = 92` real test split, and 7 pipeline integrity assertions.
+5. **Cross-Model Insight Engine ([cross_model_insights.py](backend/app/services/nlp/cross_model_insights.py)):** Synthesizes all 5 supervised models, 10 NMF topics (`8,000` terms), resolution evidence, calibrated confidence, and real benchmarks into the Issue Friction & Priority Quadrant and 5 dynamically consistent briefings.
 
 ---
 
-## 4-Architecture Benchmarks: Why Transformer?
+## 4-Architecture Benchmarks on Real Held-Out Reddit Comments
 
-Evaluated across all 5 tasks on identical `post_id`-grouped zero-leakage splits (`seed = 20261116`) and the untouched **54-probe unseen 8-category stress benchmark** (verified **`0` exact / 5-gram / 6-gram probe contamination**; **7/7 automated benchmark verification checks passing**):
+Primary evaluation is strictly on **`n = 92` held-out real Reddit comments from unseen threads** (`post_id`-grouped `65/15/20` split of `459` real comments across `200` threads; `0` synthetic rows; auxiliary 54-probe stress diagnostic is observational only and never used for model selection):
 
-### Aggregate Comparison (Mean across All 5 Tasks)
+### Aggregate Comparison (5-Task Mean on Real Held-Out Reddit Test, `n = 92`)
 
-| Architecture | Held-out Test Macro F1 | Unseen 54-Probe OOD F1 | Generalization Drop | Mean Calib. ECE | Latency / Comment | Parameters |
-|---|---:|---:|---:|---:|---:|---:|
-| **Logistic Regression** *(Word+Char TF-IDF)* | `95.04%` | `57.11%` | `-37.94 pp` | `0.109` | `0.12 ms` | `181K` |
-| **ANN** *(2-Layer MLP · GELU + LayerNorm)* | `95.18%` | `52.56%` | `-42.62 pp` | `0.300` | `0.13 ms` | `821K` |
-| **CNN** *(1D Multi-Kernel TextCNN `k=2..5`)* | `96.59%` | `49.31%` | `-47.29 pp` | `0.238` | `0.04 ms` | `381K` |
-| **Transformer (`MuRIL-DAPT v3`)** | **`97.28%`** | **`68.58%`** | **`-28.70 pp`** | `0.210` | `0.54 ms` | `237.6M` |
-| **Production Hybrid** *(MuRIL + TF-IDF)* | **`97.57%`** | `64.50%` | `-33.07 pp` | `0.142` | `0.66 ms` | `237.8M` |
+| Architecture | Real Held-Out Test F1 *(Primary)* | Auxiliary 54-Probe F1 *(Obs.)* | Mean 5-Bin ECE | Latency / Comment | Parameters |
+|---|---:|---:|---:|---:|---:|
+| **Logistic Regression** *(Word+Char TF-IDF)* | `47.52%` | `34.48%` | `0.094` | `0.14 ms` | `91K` |
+| **ANN** *(2-Layer MLP · GELU + LayerNorm)* | `43.48%` | `43.22%` | `0.109` | `0.13 ms` | `821K` |
+| **CNN** *(1D Multi-Kernel TextCNN `k=2..5`)* | `42.29%` | `25.34%` | `0.069` | `0.03 ms` | `306K` |
+| **Transformer (`MuRIL-DAPT v3`)** | **`59.55%`** | **`51.51%`** | `0.076` | `1.28 ms` | `237.6M` |
+| **Production Hybrid** *(MuRIL + TF-IDF, `α ≥ 0.5`)* | **`59.48%`** | `51.10%` | **`0.065`** | `1.45 ms` | `237.7M` |
 
-### Per-Task Unseen 54-Probe OOD Macro F1
+### Per-Task Real Held-Out Test Macro F1 (`n = 92` Unseen-Thread Real Comments)
 
-| Task | LogReg | ANN (MLP) | 1D TextCNN | **MuRIL-DAPT v3** | Production Hybrid | Why Transformer Wins |
-|---|---:|---:|---:|---:|---:|---|
-| **Issue** *(8-label + title)* | `92.63%` | `84.93%` | `75.25%` | **`93.36%`** | **`94.90%`** *(`α=0.65`)* | Handles paraphrased domain phrasing & parent context |
-| **Solution** *(binary)* | `69.90%` | `69.71%` | `59.03%` | **`75.00%`** | **`75.00%`** *(`α=1.00`)* | Distinguishes actionable steps from passive opinions |
-| **Sentiment** *(3-class)* | `40.54%` | `39.27%` | `44.26%` | **`64.12%`** | `36.85%` *(`α=0.00`)* | `+19.9` to `+24.9 pp` over baselines on slang & subtle polarity |
-| **Response** *(6 classes)* | `52.26%` | `38.86%` | `46.69%` | **`58.29%`** | **`63.64%`** *(`α=0.30`)* | Captures discourse stance; hybrid cuts ECE `0.286 → 0.116` |
-| **Emotion** *(6-label)* | `30.20%` | `30.05%` | `21.30%` | **`52.11%`** | **`52.11%`** *(`α=1.00`)* | `+21.9` to `+30.8 pp` over bag-of-words/scratch neural models |
+| Task | LogReg | ANN (MLP) | 1D TextCNN | **MuRIL-DAPT v3** | Production Hybrid | Temp (`T ≥ 1`) | Calib. ECE |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **Issue** *(8-label + title)* | `41.51%` | `34.28%` | `35.01%` | **`45.72%`** | **`45.72%`** *(`α=1.0`)* | `1.00` | `0.060` |
+| **Solution** *(binary)* | `62.09%` | `56.27%` | `59.33%` | **`75.00%`** | **`76.10%`** *(`α=0.8`)* | `1.12` | `0.021` |
+| **Sentiment** *(3-class)* | `58.50%` | `51.64%` | `51.61%` | **`59.50%`** | **`59.50%`** *(`α=1.0`)* | `1.70` | `0.143` |
+| **Response** *(6 classes)* | `36.98%` | `36.18%` | `32.46%` | **`55.20%`** | **`53.79%`** *(`α=0.9`)* | `1.56` | `0.072` |
+| **Emotion** *(6-label)* | `38.53%` | `39.02%` | `33.03%` | **`62.31%`** | **`62.31%`** *(`α=1.0`)* | `1.06` | `0.028` |
 
-> **Why we chose Transformer (`MuRIL-DAPT v3`):** On held-out in-domain splits, all four architectures look deceptively close (`95.0–97.3%`). Under real unseen language shift (**54 unseen stress probes**), bag-of-words Logistic Regression, ANN, and scratch-trained 1D CNN drop **`37.9–47.3 pp`**, whereas **`MuRIL-DAPT v3` beats every non-transformer architecture on all 5 tasks (`+11.47 pp` over LogReg, `+16.02 pp` over ANN, `+19.27 pp` over CNN)** — driven by massive gains on **paraphrased comments (`77.0%` vs `35.0–52.9%`)**, **informal Reddit slang (`74.7%` vs `52.5–58.7%`)**, **unseen templates (`73.7%` vs `45.1–53.3%`)**, and **parent-post context (`70.4%` vs `40.4–54.6%`)**. Offline batch inference compiles predictions to read-only JSON so Vercel/Docker serve responses in `<10 ms` with zero runtime GPU cost.
+> **Why we chose Transformer (`MuRIL-DAPT v3`):** On genuine, messy, unseen-thread Indian student Reddit discussions (`n = 92` real held-out test comments), `MuRIL-DAPT v3` beats Logistic Regression, 2-layer ANN, and 1D TextCNN on **all 5 out of 5 tasks** — lifting mean Macro F1 by **`+12.03 pp` over LogReg, `+16.07 pp` over ANN, and `+17.26 pp` over CNN**, with the largest gains on pragmatic 6-class **Response (`+18.2 pp`)**, multi-label **Emotion (`+23.3 pp`)**, and binary **Solution (`+14.0 pp`)**, while the calibrated hybrid achieves the **lowest mean 5-bin ECE (`0.065`)**. Offline batch inference compiles predictions to read-only JSON so Vercel/Docker serve responses in `<10 ms` with zero runtime GPU cost.
 
 ---
 
@@ -107,9 +106,9 @@ RCI separates public read-only analytics, self-hosted container persistence, and
 
 ### Security & Protection Controls
 
-- **Zero-PII Public Artifacts:** Usernames are never stored; emails, phone numbers, and `u/` handles are redacted and asserted on every push/PR in [.github/workflows/ci.yml](.github/workflows/ci.yml).
+- **Pseudonymized Zero-PII Public Artifacts:** Usernames, emails, phone numbers, `u/` handles, raw Reddit base36 IDs, and `reddit.com/r/...` URLs are stripped and replaced with opaque surrogate IDs (`post_0001`, `cmt_00001`), asserted on every push/PR in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 - **Defensive HTTP Security Headers:** Shared `SecurityHeadersMiddleware` ([security.py](backend/app/core/security.py)) and [vercel.json](vercel.json) enforce `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, and strict `Content-Security-Policy` (`frame-ancestors 'none'`, `object-src 'none'`).
-- **Hardened Container & Loopback Isolation:** [Dockerfile](Dockerfile) executes Uvicorn under non-root `appuser` with a `/health` probe; [docker-compose.yml](docker-compose.yml) parameterizes Postgres credentials; [run_annotation_studio.py](backend/run_annotation_studio.py) binds strictly to `127.0.0.1:8765` and renders corpus fields via pure DOM `textContent`.
+- **Hardened Container & Loopback Isolation:** [Dockerfile](Dockerfile) executes Uvicorn under non-root `appuser` with a `/health` probe; [docker-compose.yml](docker-compose.yml) binds PostgreSQL strictly to `127.0.0.1:5432` (never exposed on LAN); [run_annotation_studio.py](backend/run_annotation_studio.py) binds strictly to `127.0.0.1:8765`.
 - **Repository Protection:** `main` branch protection enforces the CI check (`strict: true`) and blocks force pushes/deletions; Dependabot vulnerability alerts, automated security fixes, and grouped weekly updates ([dependabot.yml](.github/dependabot.yml)) are active. See [SECURITY.md](SECURITY.md) for the full policy.
 
 ---
@@ -136,17 +135,17 @@ cd backend
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-### 3. Local Human Annotation Studio (`/annotate`)
+### 3. Reproducing the Full `v5.0.0` ML Pipeline (100% Real Data)
 
-Launch the local-only workbench (keyboard triage shortcuts, explicit `uncertain` / `abstain` workflow, atomic CSV writes, live class-quota readiness tracking):
+```bash
+# Optional: set RCI_MODEL_CACHE_DIR to store HuggingFace/DAPT weights outside the repo
+python backend/build_live_corpus_artifacts.py --dataset-version 5.0.0 --dapt-epochs 4 --muril-epochs 12
+```
+
+### 4. Local Human Annotation Studio (`/annotate`) & Offline Tests
 
 ```bash
 python backend/run_annotation_studio.py --host 127.0.0.1 --port 8765
-```
-
-### 4. Offline Verification Suite
-
-```bash
 pytest backend/ --ignore=backend/test_migrations_postgres.py -q
 ```
 
@@ -164,8 +163,8 @@ All studio analytics routes are read-only and serve identical contracts on Verce
 | `GET /api/demo/discussions` & `/{id}` | Paginated thread search, `?confidence=high\|medium\|low\|review` filtering, and threaded comment confidence audit |
 | `GET /api/demo/issues`, `/topics` | 8-label issue breakdown and 10-cluster NMF topic map |
 | `GET /api/demo/sentiment`, `/responses`, `/resolution` | Sentiment/emotion trends, 6 canonical response roles, and proposal vs. resolution audit |
-| `GET /api/demo/models` | 4-architecture benchmark comparison, DAPT perplexity convergence, 7/7 benchmark verification, and per-task evaluation |
-| `GET /api/demo/error-analysis` | Structured per-task confusion matrices, top confused pairs, calibration reliability bins (ECE/Brier), Transformer wins, and residual failure taxonomy |
+| `GET /api/demo/models` | 4-architecture real-test benchmark, held-out DAPT perplexity convergence, 7/7 Pipeline Integrity Checks, and per-task evaluation |
+| `GET /api/demo/error-analysis` | Data-driven per-task confusion matrices, empirical failure diagnostics, 5-bin reliability curves, Transformer recoveries, and residual errors |
 | `GET /api/demo/insights` | Cross-Model Insight Engine briefings, Issue Friction & Priority Quadrant data, and corpus confidence distribution |
 
 ---
@@ -179,18 +178,19 @@ backend/
     api/demo.py                        # Read-only Studio API (/api/demo/*)
     core/                              # Lazy DB engine/session proxies + HTTP SecurityHeadersMiddleware
     models/ & schemas/                 # SQLAlchemy 2.0 ORM + Pydantic v2 contracts
-    services/ingestion/                # Arctic Shift, Reddit OAuth, Static Export, Decodo providers
-    services/nlp/                      # Preprocessing, script detection, NMF, classical NLP, Cross-Model Insight Engine
+    services/ingestion/                # Arctic Shift, Reddit OAuth, Static Export providers
+    services/nlp/                      # Preprocessing, script/Hinglish detection, NMF, classical NLP, Cross-Model Insight Engine
     static/                            # Dusk / Daylight interactive studio & SVG visualizations (zero JS build step)
   alembic/                             # Linear PostgreSQL migration history
   annotation_studio_ui/                # Local loopback human annotation workbench UI
-  tests/                               # 2,192 unit, contract, benchmark, integrity, security, and PII tests
-  build_live_corpus_artifacts.py       # End-to-end DAPT MLM + 4-arch benchmark + calibration + error analysis builder
+  tests/                               # 2,193 unit, contract, benchmark, integrity, security, and PII tests
+  build_live_corpus_artifacts.py       # Reproducible 100%-real DAPT MLM + 4-arch benchmark + calibration + error analysis builder
 data/
-  live_corpus/                         # Sanitized real public Reddit corpus (corpus.json, v4.0.0)
+  annotations/real_reddit_labeled_v1/  # Tracked 459 curated real anonymized Reddit comments across 200 threads (0 synthetic rows)
+  live_corpus/                         # Pseudonymized public Reddit corpus (corpus.json, v5.0.0)
 ml/
-  artifacts/live_corpus/               # Precomputed v4 predictions, NMF topics, 4-arch benchmarks & error analysis
-  evaluation/                          # Error Analysis module & 7-check Benchmark Verifier
+  artifacts/live_corpus/               # Precomputed v5 predictions, NMF topics, real 4-arch benchmarks & data-driven error analysis
+  evaluation/                          # Data-driven Error Analysis module & 7-check Pipeline Integrity Verifier
   models/                              # LogReg / ANN (MLP) / 1D TextCNN baselines + MuRIL-DAPT v3 Transformer
 docs/
   diagrams/                            # Editorial Light/Dark SVGs + self-contained HTML sources

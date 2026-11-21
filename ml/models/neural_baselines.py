@@ -99,8 +99,8 @@ def _calibrate_temperature_np(
     y_idx: np.ndarray,
     multilabel: bool,
 ) -> float:
-    """Validation-only scalar temperature T minimizing NLL / BCE."""
-    grid = [0.6, 0.75, 0.9, 1.0, 1.15, 1.35, 1.6, 2.0, 2.5]
+    """Validation-only scalar temperature T >= 1.0 minimizing NLL / BCE (non-sharpening)."""
+    grid = [1.0, 1.15, 1.35, 1.6, 2.0, 2.5, 3.0]
     best_t = 1.0
     best_loss = float("inf")
     eps = 1e-7
