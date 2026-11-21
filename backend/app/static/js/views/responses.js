@@ -1,13 +1,13 @@
-/**
+﻿/**
  * View 7: Canonical Community Responses Studio
  * STRICTLY preserves the exact 6 canonical response categories and order:
  * 1. agreement  2. personal_experience  3. opinion  4. advice  5. solution  6. counterargument
  * Features an interactive animated 6-segment radial wheel + 3-example interactive switcher per role.
  */
-import { api } from "../api.js";
-import { bindWheelInteractions, horizontalBarChart, radialResponseWheel } from "../charts.js";
-import { badge, callout, deck, tallyStrip } from "../components.js";
-import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, esc, num, percent, share } from "../format.js";
+import { api } from "../api.js?v=5.3";
+import { bindWheelInteractions, horizontalBarChart, radialResponseWheel } from "../charts.js?v=5.3";
+import { badge, callout, deck, tallyStrip } from "../components.js?v=5.3";
+import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, esc, num, percent, share } from "../format.js?v=5.3";
 
 export async function renderResponses(container, ctx) {
   const [res, summary] = await Promise.all([
@@ -120,7 +120,7 @@ export async function renderResponses(container, ctx) {
 
         <div class="preview-comment-item" data-ex-slot="${esc(item.key)}">
           ${activeEx
-            ? `<p>“${esc(activeEx.text)}”</p>
+            ? `<p>â€œ${esc(activeEx.text)}â€</p>
                <div class="topic-example-foot">
                  <a href="#/thread/${encodeURIComponent(activeEx.post_id)}">${esc(activeEx.post_title)}</a>
                  <span class="num muted">Confidence ${percent(activeEx.confidence)}</span>
@@ -133,7 +133,7 @@ export async function renderResponses(container, ctx) {
           <div class="preview-comment-list" style="margin-top:var(--space-xs)">
             ${item.examples.map((ex) => `
               <div class="preview-comment-item">
-                <p>“${esc(ex.text)}”</p>
+                <p>â€œ${esc(ex.text)}â€</p>
                 <div class="topic-example-foot">
                   <a href="#/thread/${encodeURIComponent(ex.post_id)}">${esc(ex.post_title)}</a>
                   <span class="num muted">Confidence ${percent(ex.confidence)}</span>
@@ -187,7 +187,7 @@ export async function renderResponses(container, ctx) {
         const slot = card.querySelector(`[data-ex-slot="${CSS.escape(role)}"]`);
         if (slot) {
           slot.innerHTML = `
-            <p>“${esc(ex.text)}”</p>
+            <p>â€œ${esc(ex.text)}â€</p>
             <div class="topic-example-foot">
               <a href="#/thread/${encodeURIComponent(ex.post_id)}">${esc(ex.post_title)}</a>
               <span class="num muted">Confidence ${percent(ex.confidence)}</span>

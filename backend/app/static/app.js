@@ -4,19 +4,19 @@
  * mobile bottom dock, Ctrl+K Command Palette, Dusk Midnight <-> Daylight Bone theme switcher,
  * and automatic GPU-safe motion hydration.
  */
-import { api, clearApiCache } from "./js/api.js";
-import { errorState, skeletonView } from "./js/components.js";
-import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, dateText, esc, num, pretty } from "./js/format.js";
-import { hideVizTooltip, hydrateMotion } from "./js/motion.js";
-import { renderExplorer } from "./js/views/explorer.js";
-import { renderIssues } from "./js/views/issues.js";
-import { renderModels } from "./js/views/models.js";
-import { renderOverview } from "./js/views/overview.js";
-import { renderResolution } from "./js/views/resolution.js";
-import { renderResponses } from "./js/views/responses.js";
-import { renderSentiment } from "./js/views/sentiment.js";
-import { renderThread } from "./js/views/thread.js";
-import { renderTopics } from "./js/views/topics.js";
+import { api, clearApiCache } from "./js/api.js?v=5.3";
+import { errorState, skeletonView } from "./js/components.js?v=5.3";
+import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, dateText, esc, num, pretty } from "./js/format.js?v=5.3";
+import { hideVizTooltip, hydrateMotion } from "./js/motion.js?v=5.3";
+import { renderExplorer } from "./js/views/explorer.js?v=5.3";
+import { renderIssues } from "./js/views/issues.js?v=5.3";
+import { renderModels } from "./js/views/models.js?v=5.3";
+import { renderOverview } from "./js/views/overview.js?v=5.3";
+import { renderResolution } from "./js/views/resolution.js?v=5.3";
+import { renderResponses } from "./js/views/responses.js?v=5.3";
+import { renderSentiment } from "./js/views/sentiment.js?v=5.3";
+import { renderThread } from "./js/views/thread.js?v=5.3";
+import { renderTopics } from "./js/views/topics.js?v=5.3";
 
 const PAGE_META = {
   overview: {

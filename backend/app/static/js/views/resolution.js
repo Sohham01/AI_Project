@@ -1,11 +1,11 @@
-/**
+﻿/**
  * View 8: Solutions & Resolution Evidence Auditor
  * Separates proposed solutions/advice from explicit first-person resolution outcomes.
  * Unlocks expandable per-thread scenario proposals, advice comments, and binary model probabilities.
  */
-import { api } from "../api.js";
-import { stackedCompositionBar, stackedMatrixRows } from "../charts.js";
-import { badge, callout, copyIdChip, deck, emptyState, glossaryTip, resolutionBadge } from "../components.js";
+import { api } from "../api.js?v=5.3";
+import { stackedCompositionBar, stackedMatrixRows } from "../charts.js?v=5.3";
+import { badge, callout, copyIdChip, deck, emptyState, glossaryTip, resolutionBadge } from "../components.js?v=5.3";
 import {
   RESOLUTION_META,
   RESOLUTION_ORDER,
@@ -16,7 +16,7 @@ import {
   pretty,
   share,
   shortCommentLabel,
-} from "../format.js";
+} from "../format.js?v=5.3";
 
 const resState = {
   stateFilter: "all",
@@ -183,7 +183,7 @@ export async function renderResolution(container, ctx, params = {}) {
           <td>${resolutionBadge(row.state)}</td>
           <td class="evidence-quote-col">
             ${row.evidence_text
-              ? `<span class="table-evidence-quote">“${esc(row.evidence_text)}”</span>
+              ? `<span class="table-evidence-quote">â€œ${esc(row.evidence_text)}â€</span>
                  <span class="table-evidence-sub num">${esc(row.evidence_type || row.state)}, comment ${esc(shortCommentLabel(row.evidence_comment_id))}</span>`
               : `<span class="muted">No explicit outcome statement in thread (unconfirmed).</span>`}
           </td>
@@ -258,7 +258,7 @@ export async function renderResolution(container, ctx, params = {}) {
             <div class="filter-grid filter-grid-4">
               <div class="field">
                 <label for="res-search">Search titles, evidence, or proposals</label>
-                <input id="res-search" type="search" value="${esc(resState.search)}" placeholder="Search text or post ID (converted, waitlist, resolved)…">
+                <input id="res-search" type="search" value="${esc(resState.search)}" placeholder="Search text or post ID (converted, waitlist, resolved)â€¦">
               </div>
               <div class="field">
                 <label for="res-state-sel">Evidence state</label>

@@ -1,12 +1,12 @@
-/**
+﻿/**
  * View 5: Topic Constellation Studio (Interactive 8-Orb NMF Map + Live Term Inspector)
  * Showcases unsupervised NMF clusters, keyword_weights, corpus share ratios,
  * representative excerpts, and honest disclosure of Devanagari regex tokenization.
  */
-import { api } from "../api.js";
-import { horizontalBarChart, topicConstellationSvg } from "../charts.js";
-import { badge, callout, deck, emptyState, glossaryTip, tallyStrip } from "../components.js";
-import { esc, num, percent, share, truncate } from "../format.js";
+import { api } from "../api.js?v=5.3";
+import { horizontalBarChart, topicConstellationSvg } from "../charts.js?v=5.3";
+import { badge, callout, deck, emptyState, glossaryTip, tallyStrip } from "../components.js?v=5.3";
+import { esc, num, percent, share, truncate } from "../format.js?v=5.3";
 
 const topicState = {
   viewMode: "constellation",
@@ -80,7 +80,7 @@ function renderTopicCard(topic, totalDocs) {
 
   const examples = (topic.representative_examples || []).map((ex) => `
     <div class="topic-example-item">
-      <p>“${esc(truncate(ex.text, 220))}”</p>
+      <p>â€œ${esc(truncate(ex.text, 220))}â€</p>
       <div class="topic-example-foot">
         <a href="#/thread/${encodeURIComponent(ex.post_id)}">${esc(ex.post_title)}</a>
         <span class="num muted">Score ${ex.score !== undefined && ex.score !== null ? Number(ex.score).toFixed(2) : "None"}</span>
@@ -177,7 +177,7 @@ export async function renderTopics(container, ctx) {
         countTo: rawTopics.length,
         unit: "clusters",
         accent: true,
-        note: `TF-IDF (1–2 grams, AutoMod boilerplate filtered), ${num(termsPerTopic)} weighted terms per cluster`,
+        note: `TF-IDF (1â€“2 grams, AutoMod boilerplate filtered), ${num(termsPerTopic)} weighted terms per cluster`,
       },
       {
         label: "Assigned comments",
@@ -242,7 +242,7 @@ export async function renderTopics(container, ctx) {
     const distRows = [...rawTopics]
       .sort((a, b) => Number(b.document_count) - Number(a.document_count))
       .map((t) => ({
-        label: `Topic ${t.topic_id}: ${(t.keywords || []).slice(0, 3).join(" · ")}`,
+        label: `Topic ${t.topic_id}: ${(t.keywords || []).slice(0, 3).join(" Â· ")}`,
         sublabel: t.character.tag,
         count: Number(t.document_count || 0),
         color: t.character.script === "devanagari"
@@ -264,7 +264,7 @@ export async function renderTopics(container, ctx) {
         ${topicState.viewMode === "constellation" ? constellationSection : `
           <div class="field" style="max-width:420px;margin-bottom:var(--space-md)">
             <label for="topic-search">Search topic terms or representative comments</label>
-            <input id="topic-search" type="search" value="${esc(topicState.search)}" placeholder="Search keywords (sambalpur, waitlist, placement, cat, fees)…">
+            <input id="topic-search" type="search" value="${esc(topicState.search)}" placeholder="Search keywords (sambalpur, waitlist, placement, cat, fees)â€¦">
           </div>
           ${allCardsHtml}
         `}
