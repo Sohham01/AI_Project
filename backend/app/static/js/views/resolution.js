@@ -3,9 +3,9 @@
  * Separates proposed solutions/advice from explicit first-person resolution outcomes.
  * Unlocks expandable per-thread scenario proposals, advice comments, and binary model probabilities.
  */
-import { api } from "../api.js?v=5.6";
-import { stackedCompositionBar, stackedMatrixRows } from "../charts.js?v=5.6";
-import { badge, callout, copyIdChip, deck, emptyState, glossaryTip, resolutionBadge } from "../components.js?v=5.6";
+import { api } from "../api.js?v=5.7";
+import { stackedCompositionBar, stackedMatrixRows } from "../charts.js?v=5.7";
+import { badge, callout, copyIdChip, deck, emptyState, glossaryTip, resolutionBadge } from "../components.js?v=5.7";
 import {
   RESOLUTION_META,
   RESOLUTION_ORDER,
@@ -16,7 +16,7 @@ import {
   pretty,
   share,
   shortCommentLabel,
-} from "../format.js?v=5.6";
+} from "../format.js?v=5.7";
 
 const resState = {
   stateFilter: "all",

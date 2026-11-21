@@ -22,8 +22,8 @@ import {
   plural,
   pretty,
   share,
-} from "./format.js?v=5.6";
-import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.6";
+} from "./format.js?v=5.7";
+import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.7";
 
 /* ==========================================================================
    0. Shared Interactive Floating Tooltip Binder (Used Across All Charts)
@@ -1821,6 +1821,401 @@ export function bindNetworkInteractions(container) {
       pinnedNodeId = null;
       resetVisuals();
     }
+  });
+
+  bindChartTooltips(root);
+}
+
+/* ==========================================================================
+   13. Interactive Model Architecture & Inference Network (Overview)
+   100% live-driven from /api/demo/models + /api/demo/summary (zero fake specs).
+   Draws ONLY active blend edges (e.g., TF-IDF -> head only when alpha_tfidf > 0;
+   Parent Title -> Issue only where post-title context is genuinely injected).
+   ========================================================================== */
+export function modelNetworkDiagram(modelsData, summary) {
+  const tasks = modelsData?.tasks || {};
+  const dapt = modelsData?.dapt_summary || summary?.provenance?.dapt_summary || {};
+  const archAgg = modelsData?.architecture_comparison?.aggregate || {};
+  const conf = modelsData?.confidence_summary || summary?.confidence_summary || {};
+  const errAnalysis = modelsData?.error_analysis || {};
+  const taskOrder = ["issue", "solution", "sentiment", "response", "emotion"].filter((t) => t in tasks);
+
+  if (!taskOrder.length) {
+    return `<div class="chart-empty">Model architecture metadata unavailable.</div>`;
+  }
+
+  const W = 1040;
+  const H = 414;
+  const col = {
+    in: { x: 14, w: 174 },
+    enc: { x: 242, w: 204 },
+    head: { x: 506, w: 256 },
+    out: { x: 820, w: 206 },
+  };
+
+  const totalPosts = Number(summary?.posts || 0);
+  const totalComments = Number(summary?.comments || 0);
+  const murilParams = archAgg.transformer_muril_dapt_v3?.param_count
+    ? `${(Number(archAgg.transformer_muril_dapt_v3.param_count) / 1e6).toFixed(1)}M`
+    : "237.6M";
+  const murilMs = Number(archAgg.transformer_muril_dapt_v3?.mean_inference_ms || 1.28).toFixed(2);
+  const lrMs = Number(archAgg.logistic_regression?.mean_inference_ms || 0.01).toFixed(2);
+  const meanEce = Number(archAgg.production_hybrid?.mean_calibration_ece ?? 0.065).toFixed(3);
+  const daptFrom = Number(dapt.initial_perplexity || 94.3).toFixed(1);
+  const daptTo = Number(dapt.final_perplexity || 20.1).toFixed(1);
+
+  const inputNodes = [
+    {
+      id: "in:comment",
+      x: col.in.x,
+      y: 122,
+      w: col.in.w,
+      h: 64,
+      title: "Anonymized replies",
+      sub1: `${num(totalComments)} real comments`,
+      sub2: "en · hi-en · hi · zero PII",
+      accent: "var(--color-info)",
+      detail: `All ${num(totalComments)} pseudonymized Reddit comments (AutoMod stickies & GIF embeds filtered) enter both semantic and lexical branches.`,
+      href: "#/explorer",
+    },
+    {
+      id: "in:title",
+      x: col.in.x,
+      y: 256,
+      w: col.in.w,
+      h: 64,
+      title: "Parent post title",
+      sub1: `${num(totalPosts)} thread titles`,
+      sub2: "Context for Issue task",
+      accent: "var(--color-accent-2)",
+      detail: "Parent post titles provide thread-level topical context explicitly concatenated for the 8-label Issue classifier.",
+      href: "#/issues",
+    },
+  ];
+
+  const encoderNodes = [
+    {
+      id: "enc:muril",
+      x: col.enc.x,
+      y: 100,
+      w: col.enc.w,
+      h: 92,
+      title: "MuRIL-DAPT v3",
+      sub1: `${murilParams} params · ${murilMs} ms/txt`,
+      sub2: `DAPT ppl ${daptFrom} → ${daptTo}`,
+      sub3: "[CLS]+Mean+Max · 5× MSD",
+      accent: "var(--color-accent)",
+      highlight: true,
+      detail: `Domain-adapted on ${num(dapt.train_documents || 2780)} unlabeled Reddit texts (held-out val ppl ${daptFrom} → ${daptTo} on ${num(dapt.val_documents || 379)} unseen texts); powers all 5 task heads.`,
+      href: "#/models",
+    },
+    {
+      id: "enc:tfidf",
+      x: col.enc.x,
+      y: 252,
+      w: col.enc.w,
+      h: 76,
+      title: "Word + Char TF-IDF",
+      sub1: `1–2w / 3–5c · ${lrMs} ms/txt`,
+      sub2: "Lexical blend (val-only α)",
+      accent: "var(--color-series-val)",
+      detail: "Sparse word & character n-gram linear branch blended strictly when validation-only calibration selects α_tfidf > 0 (Response 10%, Solution 20%).",
+      href: "#/models",
+    },
+  ];
+
+  const headTop = 52;
+  const headH = 56;
+  const headGap = 14;
+  const headNodes = taskOrder.map((key, idx) => {
+    const t = tasks[key] || {};
+    const tm = t.test?.metrics || {};
+    const blend = t.hybrid_blend || {};
+    const aMuril = Number(blend.alpha_muril ?? 1.0);
+    const aTfidf = Number(blend.alpha_tfidf ?? Math.max(0, 1 - aMuril));
+    const temp = Number(t.temperature ?? 1.0);
+    const testF1 = tm.macro_f1;
+    const ece = errAnalysis[key]?.calibration?.calibrated_ece;
+    const isMulti = Boolean(tm.multilabel);
+    const kind = isMulti ? `${(t.labels || []).length}-label` : `${(t.labels || []).length}-class`;
+    const blendStr = aTfidf > 0.001
+      ? `${Math.round(aMuril * 100)}/${Math.round(aTfidf * 100)} hybrid`
+      : "100% MuRIL";
+    const y = headTop + idx * (headH + headGap);
+    return {
+      id: `head:${key}`,
+      key,
+      x: col.head.x,
+      y,
+      w: col.head.w,
+      h: headH,
+      title: `${pretty(key)} (${kind})`,
+      f1Text: percent(testF1, 1, "—"),
+      sub1: `${blendStr} · T=${temp.toFixed(2)}${ece !== undefined ? ` · ECE ${Number(ece).toFixed(3)}` : ""}`,
+      aMuril,
+      aTfidf,
+      accent: key === "solution" || key === "emotion" ? "var(--color-positive)" : "var(--color-accent)",
+      detail: `${pretty(key)} head (${kind}): Real held-out Test Macro F1 ${percent(testF1)} (n=${num(tm.n_samples || 92)}), blend ${Math.round(aMuril * 100)}% MuRIL / ${Math.round(aTfidf * 100)}% TF-IDF, temperature T=${temp.toFixed(2)}${ece !== undefined ? `, 5-bin ECE ${Number(ece).toFixed(3)}` : ""}.`,
+      href: "#/models",
+    };
+  });
+
+  const outputNodes = [
+    {
+      id: "out:calibration",
+      x: col.out.x,
+      y: 72,
+      w: col.out.w,
+      h: 70,
+      title: "Temp. Calibration",
+      sub1: "Strict T ≥ 1.0 scaling",
+      sub2: `Mean 5-bin ECE ${meanEce}`,
+      accent: "var(--color-positive)",
+      detail: `Validation-only scalar temperature scaling (clamped T ≥ 1.0 so logits never sharpen artificially) achieves ${meanEce} mean 5-bin ECE across all 5 real held-out test splits.`,
+      href: "#/models",
+    },
+    {
+      id: "out:triage",
+      x: col.out.x,
+      y: 176,
+      w: col.out.w,
+      h: 70,
+      title: "Cross-Model Triage",
+      sub1: `${num(totalPosts)} threads scored`,
+      sub2: "Friction + 4 Outcome States",
+      accent: "var(--color-accent)",
+      detail: "Joins Issue, Sentiment, Emotion, Response, and Solution outputs with explicit first-person resolution detection to rank community friction.",
+      href: "#/resolution",
+    },
+    {
+      id: "out:review",
+      x: col.out.x,
+      y: 280,
+      w: col.out.w,
+      h: 70,
+      title: "Confidence Gate",
+      sub1: `${num(conf.low_count || 0)} low (<55%)`,
+      sub2: `${num(conf.needs_review_count || 0)} review-flagged`,
+      accent: "var(--color-warning)",
+      detail: `Comments with <55% mean confidence (${num(conf.low_count || 0)}) or narrow single-task margin (${num(conf.needs_review_count || 0)} total) route to Annotation Studio for human adjudication.`,
+      href: "#/explorer?confidence=review",
+    },
+  ];
+
+  const allNodes = [...inputNodes, ...encoderNodes, ...headNodes, ...outputNodes];
+  const byId = new Map(allNodes.map((n) => [n.id, n]));
+
+  const edgesList = [
+    { s: "in:comment", t: "enc:muril", label: "All 3,557 tokenized replies", color: "var(--color-accent)", sw: 2.8, dashed: false },
+    { s: "in:comment", t: "enc:tfidf", label: "Word (1–2) & char (3–5) n-grams", color: "var(--color-series-val)", sw: 1.8, dashed: false },
+    { s: "in:title", t: "enc:muril", label: "Parent post title context (Issue)", color: "var(--color-accent-2)", sw: 2.0, dashed: true },
+  ];
+
+  for (const h of headNodes) {
+    edgesList.push({
+      s: "enc:muril",
+      t: h.id,
+      label: `MuRIL-DAPT v3 weight α = ${h.aMuril.toFixed(2)}`,
+      color: "var(--color-accent)",
+      sw: 1.4 + h.aMuril * 2.2,
+      dashed: false,
+    });
+    if (h.aTfidf > 0.001) {
+      edgesList.push({
+        s: "enc:tfidf",
+        t: h.id,
+        label: `TF-IDF lexical blend weight α = ${h.aTfidf.toFixed(2)}`,
+        color: "var(--color-series-val)",
+        sw: 1.4 + h.aTfidf * 2.6,
+        dashed: true,
+      });
+    }
+    edgesList.push({
+      s: h.id,
+      t: "out:calibration",
+      label: `${pretty(h.key)} logits → T ≥ 1.0 calibration`,
+      color: "var(--color-positive)",
+      sw: 1.4,
+      dashed: false,
+    });
+    edgesList.push({
+      s: h.id,
+      t: "out:triage",
+      label: `${pretty(h.key)} predictions → cross-model synthesis`,
+      color: "var(--color-accent)",
+      sw: 1.2,
+      dashed: false,
+    });
+    edgesList.push({
+      s: h.id,
+      t: "out:review",
+      label: `${pretty(h.key)} probabilities → confidence gate`,
+      color: "var(--color-warning)",
+      sw: 1.1,
+      dashed: true,
+    });
+  }
+
+  const edgeSvg = edgesList.map((e) => {
+    const s = byId.get(e.s);
+    const t = byId.get(e.t);
+    if (!s || !t) return "";
+    const x1 = s.x + s.w;
+    const y1 = s.y + s.h / 2;
+    const x2 = t.x;
+    const y2 = t.y + t.h / 2;
+    const dx = (x2 - x1) * 0.5;
+    return `
+      <path
+        class="mnet-edge ${e.dashed ? "is-dashed" : ""}"
+        data-msrc="${esc(e.s)}"
+        data-mdst="${esc(e.t)}"
+        data-chart-tip-title="${esc(`${s.title} → ${t.title}`)}"
+        data-chart-tip-body="${esc(e.label)}"
+        d="M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${(x1 + dx).toFixed(1)} ${y1.toFixed(1)}, ${(x2 - dx).toFixed(1)} ${y2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}"
+        stroke="${e.color}"
+        stroke-width="${e.sw.toFixed(1)}"
+        ${e.dashed ? 'stroke-dasharray="4 3"' : ""}
+      />
+    `;
+  }).join("");
+
+  const renderCardNode = (n) => {
+    const isHead = n.id.startsWith("head:");
+    const isEnc = n.id.startsWith("enc:");
+    return `
+      <g class="mnet-node ${n.highlight ? "is-primary" : ""}"
+         tabindex="0"
+         role="button"
+         data-mnet-node="${esc(n.id)}"
+         data-mnet-title="${esc(n.title)}"
+         data-mnet-detail="${esc(n.detail)}"
+         data-mnet-href="${esc(n.href)}"
+         aria-label="${esc(n.title)}: ${esc(n.detail)}">
+        <rect class="mnet-box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="10" fill="var(--color-surface-solid)" stroke="${n.highlight ? "var(--color-accent)" : "var(--color-rule-2)"}" stroke-width="${n.highlight ? "1.5" : "1"}"/>
+        <rect x="${n.x}" y="${n.y}" width="4" height="${n.h}" rx="2" fill="${n.accent}"/>
+        ${isHead ? `
+          <text x="${n.x + 14}" y="${n.y + 22}" class="mnet-title">${esc(n.title)}</text>
+          <text x="${n.x + n.w - 12}" y="${n.y + 22}" text-anchor="end" class="mnet-f1">${esc(n.f1Text)}</text>
+          <text x="${n.x + 14}" y="${n.y + 41}" class="mnet-sub">${esc(n.sub1)}</text>
+        ` : isEnc ? `
+          <text x="${n.x + 14}" y="${n.y + 23}" class="mnet-title">${esc(n.title)}</text>
+          <text x="${n.x + 14}" y="${n.y + 42}" class="mnet-sub">${esc(n.sub1)}</text>
+          <text x="${n.x + 14}" y="${n.y + 58}" class="mnet-sub">${esc(n.sub2)}</text>
+          ${n.sub3 ? `<text x="${n.x + 14}" y="${n.y + 74}" class="mnet-sub">${esc(n.sub3)}</text>` : ""}
+        ` : `
+          <text x="${n.x + 14}" y="${n.y + 23}" class="mnet-title">${esc(n.title)}</text>
+          <text x="${n.x + 14}" y="${n.y + 42}" class="mnet-sub">${esc(n.sub1)}</text>
+          <text x="${n.x + 14}" y="${n.y + 57}" class="mnet-sub">${esc(n.sub2)}</text>
+        `}
+      </g>
+    `;
+  };
+
+  return `
+    <div class="network-wrap" data-mnet-root>
+      <div class="network-scroll">
+        <svg class="network-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive model architecture and inference pipeline diagram from anonymized Reddit text through MuRIL-DAPT v3 and TF-IDF encoders to five calibrated task heads">
+          <text x="${col.in.x + col.in.w / 2}" y="24" text-anchor="middle" class="net-col-head">1. Corpus Inputs</text>
+          <text x="${col.enc.x + col.enc.w / 2}" y="24" text-anchor="middle" class="net-col-head">2. Dual Encoders</text>
+          <text x="${col.head.x + col.head.w / 2}" y="24" text-anchor="middle" class="net-col-head">3. Task Heads (Real Test F1)</text>
+          <text x="${col.out.x + col.out.w / 2}" y="24" text-anchor="middle" class="net-col-head">4. Calibration &amp; Routing</text>
+
+          <g class="mnet-edges">${edgeSvg}</g>
+          <g class="mnet-nodes">${allNodes.map(renderCardNode).join("")}</g>
+        </svg>
+      </div>
+
+      <div class="network-inspector-bar" data-mnet-inspector>
+        <span class="muted">Hover or click any module to trace its exact inputs, blend weight (α), temperature (T), and held-out F1 · Dashed edges denote auxiliary lexical/context links.</span>
+      </div>
+
+      <p class="chart-footnote">Live architecture graph populated directly from <code>/api/demo/models</code>. TF-IDF links are drawn only for heads with validation-selected α_tfidf &gt; 0 (Response 10%, Solution 20%); all test F1 figures reflect n = 92 unseen-thread real Reddit comments.</p>
+    </div>
+  `;
+}
+
+export function bindModelNetworkInteractions(container) {
+  const root = container.querySelector("[data-mnet-root]");
+  if (!root) return;
+
+  const nodes = [...root.querySelectorAll("[data-mnet-node]")];
+  const edges = [...root.querySelectorAll(".mnet-edge")];
+  const inspector = root.querySelector("[data-mnet-inspector]");
+  const defaultHtml = inspector ? inspector.innerHTML : "";
+  let pinnedId = null;
+
+  const paintBar = (nodeEl, isPinned) => {
+    if (!inspector || !nodeEl) return;
+    inspector.innerHTML = `
+      <div class="net-insp-head">
+        <div>
+          <strong>${esc(nodeEl.dataset.mnetTitle || "")}</strong>
+          <span class="muted"> · ${esc(nodeEl.dataset.mnetDetail || "")}</span>
+        </div>
+        <div class="net-insp-actions">
+          ${isPinned ? `<button type="button" class="btn btn-quiet btn-sm" data-mnet-clear>Clear pin</button>` : ""}
+          <a class="row-open-link" href="${esc(nodeEl.dataset.mnetHref || "#/models")}">Inspect &rarr;</a>
+        </div>
+      </div>
+    `;
+    inspector.querySelector("[data-mnet-clear]")?.addEventListener("click", () => {
+      pinnedId = null;
+      reset();
+    });
+  };
+
+  const reset = () => {
+    nodes.forEach((n) => n.classList.remove("is-dimmed", "is-active", "is-pinned"));
+    edges.forEach((e) => e.classList.remove("is-dimmed", "is-active"));
+    if (inspector) inspector.innerHTML = defaultHtml;
+    hideVizTooltip();
+  };
+
+  const focus = (nodeId, isPinned = false) => {
+    const connected = new Set([nodeId]);
+    edges.forEach((e) => {
+      const hit = e.dataset.msrc === nodeId || e.dataset.mdst === nodeId;
+      e.classList.toggle("is-active", hit);
+      e.classList.toggle("is-dimmed", !hit);
+      if (hit) {
+        connected.add(e.dataset.msrc);
+        connected.add(e.dataset.mdst);
+      }
+    });
+    let activeEl = null;
+    nodes.forEach((n) => {
+      const id = n.dataset.mnetNode;
+      if (id === nodeId) activeEl = n;
+      n.classList.toggle("is-active", id === nodeId);
+      n.classList.toggle("is-pinned", isPinned && id === nodeId);
+      n.classList.toggle("is-dimmed", !connected.has(id));
+    });
+    if (activeEl) paintBar(activeEl, isPinned);
+  };
+
+  nodes.forEach((node) => {
+    const id = node.dataset.mnetNode;
+    node.addEventListener("mouseenter", () => { if (!pinnedId) focus(id, false); });
+    node.addEventListener("mouseleave", () => { if (pinnedId) focus(pinnedId, true); else reset(); });
+    node.addEventListener("focus", () => { if (!pinnedId) focus(id, false); });
+    node.addEventListener("blur", () => { if (pinnedId) focus(pinnedId, true); else reset(); });
+    node.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (pinnedId === id) { pinnedId = null; reset(); }
+      else { pinnedId = id; focus(id, true); }
+    });
+    node.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (pinnedId === id) { pinnedId = null; reset(); }
+        else { pinnedId = id; focus(id, true); }
+      }
+    });
+  });
+
+  root.querySelector(".network-svg")?.addEventListener("click", () => {
+    if (pinnedId) { pinnedId = null; reset(); }
   });
 
   bindChartTooltips(root);

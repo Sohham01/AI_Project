@@ -4,10 +4,10 @@
  * 1. agreement  2. personal_experience  3. opinion  4. advice  5. solution  6. counterargument
  * Features an interactive animated 6-segment radial wheel + 3-example interactive switcher per role.
  */
-import { api } from "../api.js?v=5.6";
-import { bindWheelInteractions, horizontalBarChart, radialResponseWheel } from "../charts.js?v=5.6";
-import { badge, callout, deck, tallyStrip } from "../components.js?v=5.6";
-import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, esc, num, percent, share } from "../format.js?v=5.6";
+import { api } from "../api.js?v=5.7";
+import { bindWheelInteractions, horizontalBarChart, radialResponseWheel } from "../charts.js?v=5.7";
+import { badge, callout, deck, tallyStrip } from "../components.js?v=5.7";
+import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, esc, num, percent, share } from "../format.js?v=5.7";
 
 export async function renderResponses(container, ctx) {
   const [res, summary] = await Promise.all([

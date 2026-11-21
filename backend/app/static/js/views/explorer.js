@@ -3,8 +3,8 @@
  * Directly inspired by crisp modern split-pane narrative consoles (Image 2),
  * upgraded in Dusk Smoked Glass: Summary & Evidence | Reply Flow | Model Signals.
  */
-import { api } from "../api.js?v=5.6";
-import { responseMiniStrip, stackedCompositionBar } from "../charts.js?v=5.6";
+import { api } from "../api.js?v=5.7";
+import { responseMiniStrip, stackedCompositionBar } from "../charts.js?v=5.7";
 import {
   badge,
   confidenceBadge,
@@ -14,7 +14,7 @@ import {
   resolutionBadge,
   roleBadge,
   sentimentBadge,
-} from "../components.js?v=5.6";
+} from "../components.js?v=5.7";
 import {
   CANONICAL_RESPONSE_TYPES,
   RESOLUTION_META,
@@ -28,8 +28,8 @@ import {
   pretty,
   shortCommentLabel,
   truncate,
-} from "../format.js?v=5.6";
-import { icons } from "../icons.js?v=5.6";
+} from "../format.js?v=5.7";
+import { icons } from "../icons.js?v=5.7";
 
 const FILTER_KEYS = ["q", "community", "issue", "sentiment", "emotion", "response", "confidence"];
 

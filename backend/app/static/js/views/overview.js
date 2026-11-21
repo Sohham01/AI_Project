@@ -8,9 +8,10 @@
  * 5. Asymmetric 2-Column Split (Zero-Overshoot Monthly Sentiment Timeline + Actionable Density)
  * 6. Clean 2-Column Recent Discussions + Compact Single-Strip Provenance Bar
  */
-import { api } from "../api.js?v=5.6";
+import { api } from "../api.js?v=5.7";
 import {
   bindChartTooltips,
+  bindModelNetworkInteractions,
   bindNetworkInteractions,
   bindSankeyInteractions,
   bindSplineInteractions,
@@ -18,21 +19,23 @@ import {
   horizontalBarChart,
   interactiveSplineAreaChart,
   issueFrictionQuadrantChart,
+  modelNetworkDiagram,
   sankeyFlowChart,
-} from "../charts.js?v=5.6";
+} from "../charts.js?v=5.7";
 import {
   confidenceBadge,
   copyIdChip,
   deck,
   resolutionBadge,
   tallyStrip,
-} from "../components.js?v=5.6";
-import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.6";
+} from "../components.js?v=5.7";
+import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.7";
 
 export async function renderOverview(container, ctx) {
-  const [summary, sentimentRes] = await Promise.all([
+  const [summary, sentimentRes, modelsData] = await Promise.all([
     ctx.summary ? Promise.resolve(ctx.summary) : api.summary(),
     api.sentiment(),
+    api.models().catch(() => null),
   ]);
   ctx.summary = summary;
 
@@ -213,6 +216,16 @@ export async function renderOverview(container, ctx) {
     }),
   });
 
+  // Model Architecture & Inference Network Deck
+  const modelNetDeck = modelsData?.tasks
+    ? deck("Model architecture &amp; inference network", {
+        id: "overview-model-network-deck",
+        subtitle: "How anonymized Reddit replies flow through MuRIL-DAPT v3, lexical TF-IDF blending, 5 calibrated heads, and confidence routing",
+        action: `<a class="btn btn-quiet btn-sm" href="#/models">Full benchmarks &amp; error audit</a>`,
+        body: modelNetworkDiagram(modelsData, summary),
+      })
+    : "";
+
   // Row 6: Clean 2-Column Recent Discussions
   const spotlightRows = (summary.recent_discussions || []).slice(0, 6).map((post) => `
     <a class="spotlight-row" href="#/thread/${encodeURIComponent(post.id)}">
@@ -263,6 +276,7 @@ export async function renderOverview(container, ctx) {
       ${splineDeck}
       ${issuesDeck}
     </div>
+    ${modelNetDeck}
     ${spotlightDeck}
     ${provenanceStrip}
   `;
@@ -293,6 +307,7 @@ export async function renderOverview(container, ctx) {
   });
 
   bindNetworkInteractions(container);
+  bindModelNetworkInteractions(container);
   bindSankeyInteractions(container);
   bindSplineInteractions(container);
   bindChartTooltips(container);
