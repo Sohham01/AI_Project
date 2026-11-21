@@ -1,16 +1,16 @@
-﻿/**
+/**
  * View 6: Sentiment & Emotion Pulse Studio
  * Interactive smooth spline area chart with crosshair scrubbing, animated emotion bars,
  * and sortable Issue x Polarity normalized matrix.
  */
-import { api } from "../api.js?v=5.3";
+import { api } from "../api.js?v=5.4";
 import {
   bindSplineInteractions,
   horizontalBarChart,
   interactiveSplineAreaChart,
   stackedMatrixRows,
-} from "../charts.js?v=5.3";
-import { callout, deck, tallyStrip } from "../components.js?v=5.3";
+} from "../charts.js?v=5.4";
+import { callout, deck, tallyStrip } from "../components.js?v=5.4";
 import {
   EMOTION_COLORS,
   SENTIMENT_META,
@@ -20,7 +20,7 @@ import {
   monthLabel,
   num,
   pretty,
-} from "../format.js?v=5.3";
+} from "../format.js?v=5.4";
 
 const sentState = { issueSort: "negative_share" };
 
@@ -161,7 +161,7 @@ export async function renderSentiment(container, ctx) {
           subtitle: `Mutually exclusive single-label classification (n = ${num(totalComments)}); click any polarity to filter discussions`,
           body: `
             ${horizontalBarChart(sentimentSegments, { total: totalComments, maxCount: totalComments, unit: "comments", showShare: true })}
-            <p class="chart-footnote">Bars scale honestly against all ${num(totalComments)} comments (0%â€“100%) so proportions read accurately at a glance.</p>
+            <p class="chart-footnote">Bars scale honestly against all ${num(totalComments)} comments (0%–100%) so proportions read accurately at a glance.</p>
           `,
         })}
         ${deck("Predicted emotion prevalence", {

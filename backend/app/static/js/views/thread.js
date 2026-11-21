@@ -1,8 +1,8 @@
-﻿/**
+/**
  * View 4: Conversation Audit (Visual Parent-Child Thread Tree & Evidence Studio)
  */
-import { api } from "../api.js?v=5.3";
-import { stackedCompositionBar } from "../charts.js?v=5.3";
+import { api } from "../api.js?v=5.4";
+import { stackedCompositionBar } from "../charts.js?v=5.4";
 import {
   badge,
   confidenceBadge,
@@ -13,7 +13,7 @@ import {
   resolutionBadge,
   roleBadge,
   sentimentBadge,
-} from "../components.js?v=5.3";
+} from "../components.js?v=5.4";
 import {
   CANONICAL_RESPONSE_TYPES,
   LANGUAGE_LABELS,
@@ -27,8 +27,8 @@ import {
   pretty,
   shortCommentLabel,
   truncate,
-} from "../format.js?v=5.3";
-import { icons } from "../icons.js?v=5.3";
+} from "../format.js?v=5.4";
+import { icons } from "../icons.js?v=5.4";
 
 const threadUiState = {
   layout: "tree",
@@ -143,7 +143,7 @@ export async function renderThread(container, ctx, postId) {
         <button type="button" class="parent-jump-bar" data-jump-comment="${esc(parent.reddit_id)}" title="Scroll to parent comment ${esc(parent.reddit_id)}">
           <span class="parent-jump-icon" aria-hidden="true">${icons.reply}</span>
           <span class="parent-jump-label">Replying to <strong class="num">${esc(shortCommentLabel(parent.reddit_id))}</strong> (${esc(RESPONSE_META[parent.predictions?.response?.response_type]?.short || "parent")})</span>
-          <span class="parent-jump-excerpt">â€œ${esc(truncate(parent.body, 96))}â€</span>
+          <span class="parent-jump-excerpt">“${esc(truncate(parent.body, 96))}”</span>
         </button>
       `
       : `<div class="root-indicator">Top-level reply to original post</div>`;
@@ -253,7 +253,7 @@ export async function renderThread(container, ctx, postId) {
         ? `
           <div class="aside-section">
             <h3>Explicit outcome statement</h3>
-            <blockquote class="aside-quote">â€œ${esc(explicitEvidence.body)}â€</blockquote>
+            <blockquote class="aside-quote">“${esc(explicitEvidence.body)}”</blockquote>
             <button type="button" class="btn btn-quiet btn-sm btn-full" data-jump-comment="${esc(explicitEvidence.reddit_id)}">Jump to evidence ${esc(shortCommentLabel(explicitEvidence.reddit_id))}</button>
           </div>
         `

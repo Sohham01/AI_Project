@@ -1,9 +1,9 @@
-﻿/**
+/**
  * View 2: Issues Intelligence Studio (Visual Pods + Sticky Deep Dive + 9-Col Sortable Table Toggle)
  */
-import { api } from "../api.js?v=5.3";
-import { stackedCompositionBar } from "../charts.js?v=5.3";
-import { callout, copyIdChip, deck, emptyState, resolutionBadge } from "../components.js?v=5.3";
+import { api } from "../api.js?v=5.4";
+import { stackedCompositionBar } from "../charts.js?v=5.4";
+import { callout, copyIdChip, deck, emptyState, resolutionBadge } from "../components.js?v=5.4";
 import {
   RESOLUTION_META,
   RESOLUTION_ORDER,
@@ -15,7 +15,7 @@ import {
   pretty,
   share,
   truncate,
-} from "../format.js?v=5.3";
+} from "../format.js?v=5.4";
 
 const viewState = {
   mode: "cards",
@@ -80,7 +80,7 @@ export async function renderIssues(container, ctx, params = {}) {
       <div class="view-toggle-bar">
         <div class="field" style="flex:1 1 260px;max-width:380px">
           <label for="issues-filter-input">Filter issue domains</label>
-          <input id="issues-filter-input" type="search" value="${esc(viewState.search)}" placeholder="Search by issue name or key (placements, hostel)â€¦">
+          <input id="issues-filter-input" type="search" value="${esc(viewState.search)}" placeholder="Search by issue name or key (placements, hostel)…">
         </div>
         <div class="segmented" role="group" aria-label="Issues display mode">
           <button type="button" class="seg-btn ${viewState.mode === "cards" ? "is-active" : ""}" data-issue-mode="cards">Visual cards</button>
@@ -235,7 +235,7 @@ export async function renderIssues(container, ctx, params = {}) {
             <div class="preview-comment-list">
               ${sampleProposals.map((p) => `
                 <div class="preview-comment-item">
-                  <p>â€œ${esc(truncate(p.text, 180))}â€</p>
+                  <p>“${esc(truncate(p.text, 180))}”</p>
                   <div class="topic-example-foot">
                     <a href="#/thread/${encodeURIComponent(p.postId)}">${esc(truncate(p.title, 48))}</a>
                     ${resolutionBadge(p.state)}
@@ -248,7 +248,7 @@ export async function renderIssues(container, ctx, params = {}) {
           <div class="aside-section">
             <h3>Supporting threads</h3>
             <div id="issue-threads-slot" class="preview-comment-list">
-              <div class="muted">Loading matching community discussionsâ€¦</div>
+              <div class="muted">Loading matching community discussions…</div>
             </div>
           </div>
         `,

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Low-Cognitive-Load, Visually Honest SVG & Data Visualizations for RCI Studio.
  * Design rules enforced across every chart:
  * - Zero truncated bar/area baselines (all counts, shares, F1, and perplexity charts anchor honestly at 0).
@@ -21,8 +21,8 @@ import {
   plural,
   pretty,
   share,
-} from "./format.js?v=5.3";
-import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.3";
+} from "./format.js?v=5.4";
+import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.4";
 
 /* ==========================================================================
    0. Shared Interactive Floating Tooltip Binder (Used Across All Charts)
@@ -172,7 +172,7 @@ export function sankeyFlowChart(summary) {
           <span class="pipe-step-num num">01</span>
           <div>
             <h3 class="pipe-stage-title">Issue domains (${issues.length})</h3>
-            <p class="pipe-stage-sub">By comment volume Â· teal inset = actionable replies</p>
+            <p class="pipe-stage-sub">By comment volume · teal inset = actionable replies</p>
           </div>
         </div>
         <div class="pipe-list">${issueItems}</div>
@@ -187,7 +187,7 @@ export function sankeyFlowChart(summary) {
           <span class="pipe-step-num num">02</span>
           <div>
             <h3 class="pipe-stage-title">Canonical response roles (6)</h3>
-            <p class="pipe-stage-sub">All ${num(totalComments)} comments Â· fixed 1â€“6 order</p>
+            <p class="pipe-stage-sub">All ${num(totalComments)} comments · fixed 1–6 order</p>
           </div>
         </div>
         <div class="pipe-list">${responseItems}</div>
@@ -202,13 +202,13 @@ export function sankeyFlowChart(summary) {
           <span class="pipe-step-num num">03</span>
           <div>
             <h3 class="pipe-stage-title">Resolution evidence (4 states)</h3>
-            <p class="pipe-stage-sub">All ${num(totalPosts)} threads Â· explicit outcomes only</p>
+            <p class="pipe-stage-sub">All ${num(totalPosts)} threads · explicit outcomes only</p>
           </div>
         </div>
         <div class="pipe-list">${resolutionItems}</div>
       </div>
     </div>
-    <p class="chart-footnote">Each column shows true observed counts scaled from 0% within its stage (comments for stages 1â€“2; threads for stage 3). Click any bar to drill into the matching slice.</p>
+    <p class="chart-footnote">Each column shows true observed counts scaled from 0% within its stage (comments for stages 1–2; threads for stage 3). Click any bar to drill into the matching slice.</p>
   `;
 }
 
@@ -459,7 +459,7 @@ export function bindSplineInteractions(container) {
         dots.forEach((d) => d.classList.toggle("is-visible", d.dataset.dotIdx === idx));
         const tot = Number(rect.dataset.tot || 1);
         showVizTooltip(
-          `<strong>${esc(rect.dataset.month)} Â· ${num(tot)} comments</strong>
+          `<strong>${esc(rect.dataset.month)} · ${num(tot)} comments</strong>
            <div class="viz-tip-row"><span>Positive</span><span class="num">${num(rect.dataset.pos)} (${share(rect.dataset.pos, tot, 0)})</span></div>
            <div class="viz-tip-row"><span>Neutral</span><span class="num">${num(rect.dataset.neu)} (${share(rect.dataset.neu, tot, 0)})</span></div>
            <div class="viz-tip-row"><span>Negative</span><span class="num">${num(rect.dataset.neg)} (${share(rect.dataset.neg, tot, 0)})</span></div>`,
@@ -509,8 +509,8 @@ export function topicConstellationSvg(topics, selectedId) {
     const isSel = Number(t.topic_id) === Number(selectedId);
     const kw1 = (t.keywords || [])[0] || "";
     const kw2 = (t.keywords || [])[1] || "";
-    const kwLine = [kw1, kw2].filter(Boolean).join(" Â· ");
-    const shortKw = kwLine.length > 16 ? `${kwLine.slice(0, 15)}â€¦` : kwLine;
+    const kwLine = [kw1, kw2].filter(Boolean).join(" · ");
+    const shortKw = kwLine.length > 16 ? `${kwLine.slice(0, 15)}…` : kwLine;
 
     return `
       <g class="topic-orb ${isSel ? "is-selected" : ""}" tabindex="0" role="button" data-select-topic="${t.topic_id}" aria-label="Topic ${t.topic_id}, ${num(count)} comments (${share(count, totalDocs)}), ${esc(kwLine)}">
@@ -792,7 +792,7 @@ export function modelComparisonSvgChart(tasks) {
   return `
     <div>
       <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Validation versus held-out test macro F1 across all five active models">
-        <text x="${pad.left}" y="16" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">Macro F1 on thread-grouped splits (honest 0%â€“100% scale)</text>
+        <text x="${pad.left}" y="16" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">Macro F1 on thread-grouped splits (honest 0%–100% scale)</text>
         ${grid}
         ${rows}
       </svg>
@@ -826,7 +826,7 @@ export function confusionMatrixTable(matrix, labels, { openByDefault = false } =
 
   return `
     <details class="confusion-details" ${openByDefault ? "open" : ""}>
-      <summary>Confusion matrix Â· actual (rows) vs. predicted (columns), n = ${num(total)}</summary>
+      <summary>Confusion matrix · actual (rows) vs. predicted (columns), n = ${num(total)}</summary>
       <div class="table-scroll">
         <table class="confusion-table" aria-label="Held-out test confusion matrix">
           <thead><tr><th scope="col">Actual / Pred</th>${head}</tr></thead>
@@ -838,7 +838,7 @@ export function confusionMatrixTable(matrix, labels, { openByDefault = false } =
 }
 
 /* ==========================================================================
-   6. 4-Architecture Head-to-Head Dumbbell Dot-Plot (Honest 0%â€“100% Scale)
+   6. 4-Architecture Head-to-Head Dumbbell Dot-Plot (Honest 0%–100% Scale)
    Replaces the 25-bar visual wall with 5 crisp horizontal range tracks.
    Shows best non-Transformer baseline -> MuRIL-DAPT v3 gain in 0.5 seconds.
    ========================================================================== */
@@ -877,8 +877,8 @@ export function architectureComparisonChart(archComp, mode = "test") {
 
   const field = mode === "test" ? "test_macro_f1" : "probe_macro_f1";
   const subtitle = mode === "test"
-    ? "Real held-out Reddit test Macro F1 (honest 0%â€“100% scale Â· n = 92 unseen-thread comments, 0 synthetic rows)"
-    : "Auxiliary 54-probe stress diagnostic Macro F1 (honest 0%â€“100% scale Â· observational only, never used for selection)";
+    ? "Real held-out Reddit test Macro F1 (honest 0%–100% scale · n = 92 unseen-thread comments, 0 synthetic rows)"
+    : "Auxiliary 54-probe stress diagnostic Macro F1 (honest 0%–100% scale · observational only, never used for selection)";
 
   const W = 880;
   const rowH = 48;
@@ -928,7 +928,7 @@ export function architectureComparisonChart(archComp, mode = "test") {
 
     return `
       <g class="dumbbell-row"
-         data-chart-tip-title="${esc(`${pretty(taskKey)} Â· ${mode === "test" ? "Real Held-Out Test" : "54-Probe Stress"}`)}"
+         data-chart-tip-title="${esc(`${pretty(taskKey)} · ${mode === "test" ? "Real Held-Out Test" : "54-Probe Stress"}`)}"
          data-chart-tip-rows="${esc(tipRows)}">
         <rect class="dumbbell-hit" x="0" y="${(cy - rowH / 2 + 2).toFixed(1)}" width="${W}" height="${rowH - 4}" rx="8" fill="transparent"/>
         <text x="${pad.left - 14}" y="${(cy + 4).toFixed(1)}" text-anchor="end" fill="var(--color-ink)" font-size="12.5" font-weight="600" font-family="var(--font-body)">${esc(pretty(taskKey))}</text>
@@ -1024,7 +1024,7 @@ export function robustnessCategoryHeatmap(archComp) {
     const cells = ARCH_SERIES.map((s, idx) => {
       const val = scores[idx];
       const isWinner = val >= maxScore - 0.002;
-      return `<td class="num hm-cell ${isWinner ? "hm-winner" : "hm-plain"}" title="${esc(PROBE_CAT_LABELS[cat])} Â· ${esc(s.short)}: ${(val * 100).toFixed(1)}%">${(val * 100).toFixed(1)}%</td>`;
+      return `<td class="num hm-cell ${isWinner ? "hm-winner" : "hm-plain"}" title="${esc(PROBE_CAT_LABELS[cat])} · ${esc(s.short)}: ${(val * 100).toFixed(1)}%">${(val * 100).toFixed(1)}%</td>`;
     }).join("");
     const bestBaseline = Math.max(scores[0], scores[1], scores[2]);
     const transDelta = (scores[3] - bestBaseline) * 100;
@@ -1104,7 +1104,7 @@ export function daptConvergenceChart(daptSummary) {
     ]);
     return `
       <g class="chart-point-hover"
-         data-chart-tip-title="${esc(`MuRIL-DAPT Â· ${epLabel}`)}"
+         data-chart-tip-title="${esc(`MuRIL-DAPT · ${epLabel}`)}"
          data-chart-tip-rows="${esc(tipRows)}">
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="14" fill="transparent"/>
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="var(--color-accent)" stroke="var(--color-surface-solid)" stroke-width="2"/>
@@ -1116,7 +1116,7 @@ export function daptConvergenceChart(daptSummary) {
 
   const isHeldout = daptSummary?.perplexity_split === "heldout_validation";
   const caption = isHeldout
-    ? `Held-out val perplexity (0-anchored Â· n = ${num(daptSummary.val_documents || 0)} unseen texts)`
+    ? `Held-out val perplexity (0-anchored · n = ${num(daptSummary.val_documents || 0)} unseen texts)`
     : "MLM Perplexity (lower = better domain fit)";
 
   return `
@@ -1129,13 +1129,13 @@ export function daptConvergenceChart(daptSummary) {
           </linearGradient>
         </defs>
         <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${esc(caption)}</text>
-        <text x="${W - pad.right}" y="15" text-anchor="end" fill="var(--color-positive)" font-size="11" font-weight="600" font-family="var(--font-body)">âˆ’${dropPct.toFixed(1)}%</text>
+        <text x="${W - pad.right}" y="15" text-anchor="end" fill="var(--color-positive)" font-size="11" font-weight="600" font-family="var(--font-body)">−${dropPct.toFixed(1)}%</text>
         ${grid}
         <path d="${areaPath}" fill="url(#dapt-ppl-grad)"/>
         <path d="${linePath}" fill="none" stroke="var(--color-accent)" stroke-width="2.4" stroke-linecap="round"/>
         ${dots}
       </svg>
-      <p class="chart-footnote">Hover any epoch for held-out MLM cross-entropy loss (<code>${Number(hist[0].mlm_loss).toFixed(2)} â†’ ${Number(hist[hist.length - 1].mlm_loss).toFixed(2)}</code>). Single axis avoids redundant dual-scale clutter.</p>
+      <p class="chart-footnote">Hover any epoch for held-out MLM cross-entropy loss (<code>${Number(hist[0].mlm_loss).toFixed(2)} → ${Number(hist[hist.length - 1].mlm_loss).toFixed(2)}</code>). Single axis avoids redundant dual-scale clutter.</p>
     </div>
   `;
 }
@@ -1195,7 +1195,7 @@ export function calibrationReliabilityChart(calData) {
     ]);
     return `
       <g class="chart-point-hover"
-         data-chart-tip-title="${esc(`Confidence bin ${Math.round(b.lower * 100)}â€“${Math.round(b.upper * 100)}%`)}"
+         data-chart-tip-title="${esc(`Confidence bin ${Math.round(b.lower * 100)}–${Math.round(b.upper * 100)}%`)}"
          data-chart-tip-rows="${esc(tipRows)}">
         <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="13" fill="transparent"/>
         <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="var(--color-positive)" stroke="var(--color-surface-solid)" stroke-width="1.6"/>
@@ -1300,7 +1300,7 @@ export function confidenceHistogramChart(confSummary) {
       </svg>
       <div class="chart-legend" style="margin-top:var(--space-xs)">
         <span class="legend-item"><span class="legend-swatch" style="background:var(--color-positive)"></span><span>High &ge;80% (${num(confSummary.high_count)})</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Medium 55â€“79% (${num(confSummary.medium_count)})</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Medium 55–79% (${num(confSummary.medium_count)})</span></span>
         <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Review &lt;55% (${num(confSummary.low_count)})</span></span>
       </div>
     </div>
@@ -1308,7 +1308,7 @@ export function confidenceHistogramChart(confSummary) {
 }
 
 /* ==========================================================================
-   11. Honest Linear Issue Triage Visual (0%â€“100% Paired Bars)
+   11. Honest Linear Issue Triage Visual (0%–100% Paired Bars)
    Replaces the non-linear sqrt-X + zoomed-Y bubble cloud with a single unified,
    zero-distortion linear comparison of Negative Sentiment % and Unconfirmed %.
    ========================================================================== */
@@ -1332,10 +1332,10 @@ export function issueFrictionQuadrantChart(matrix) {
       ["Friction index", `${Number(m.friction_score || 0).toFixed(1)} / 100 (${pretty(m.priority_band)})`],
       ["Negative sentiment", `${negPct.toFixed(1)}% of comments`],
       ["Unconfirmed resolution", `${unresPct.toFixed(0)}% of threads`],
-      ["Volume", `${plural(m.posts, "thread")} Â· ${plural(m.comments, "comment")}`],
+      ["Volume", `${plural(m.posts, "thread")} · ${plural(m.comments, "comment")}`],
       ["Dominant emotion", pretty(m.dominant_emotion)],
       ["Mean confidence", percent(m.mean_confidence)],
-      ["Top NMF cluster", m.top_topic || "â€”"],
+      ["Top NMF cluster", m.top_topic || "—"],
     ]);
     return `
       <a class="triage-row"
@@ -1345,7 +1345,7 @@ export function issueFrictionQuadrantChart(matrix) {
          data-chart-tip-hint="Click to open Issues deep dive">
         <div class="triage-col-issue">
           <span class="triage-title">${esc(m.label)}</span>
-          <span class="triage-meta num">${plural(m.posts, "thread")} Â· ${plural(m.comments, "comment")} Â· ${esc(pretty(m.dominant_emotion))}</span>
+          <span class="triage-meta num">${plural(m.posts, "thread")} · ${plural(m.comments, "comment")} · ${esc(pretty(m.dominant_emotion))}</span>
         </div>
 
         <div class="triage-col-bar">
@@ -1380,19 +1380,19 @@ export function issueFrictionQuadrantChart(matrix) {
     <div class="triage-matrix" role="region" aria-label="Issue friction triage matrix on honest 0 to 100 percent linear scales">
       <div class="triage-head">
         <span>Issue domain &amp; dominant emotion</span>
-        <span>Negative sentiment (0â€“100%)</span>
-        <span>Unconfirmed resolution (0â€“100%)</span>
+        <span>Negative sentiment (0–100%)</span>
+        <span>Unconfirmed resolution (0–100%)</span>
         <span class="triage-head-right">Friction</span>
       </div>
       <div class="triage-body">${rows}</div>
       <div class="triage-foot">
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-swatch" style="background:var(--color-negative)"></span><span>Critical (&ge;62)</span></span>
-          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Elevated (48â€“61)</span></span>
-          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Moderate (34â€“47)</span></span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Elevated (48–61)</span></span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Moderate (34–47)</span></span>
           <span class="legend-item"><span class="legend-swatch" style="background:var(--color-positive)"></span><span>Healthy (&lt;34)</span></span>
         </div>
-        <span class="muted" style="font-size:var(--text-xs)">All tracks span true 0%â€“100% linear scale Â· Friction = 40% Neg + 35% Unconfirmed + 25% Volume</span>
+        <span class="muted" style="font-size:var(--text-xs)">All tracks span true 0%–100% linear scale · Friction = 40% Neg + 35% Unconfirmed + 25% Volume</span>
       </div>
     </div>
   `;

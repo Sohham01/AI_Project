@@ -1,13 +1,13 @@
-﻿/**
+/**
  * View 9: Models, Architecture Proof, Error Analysis & Provenance Vault
  * Streamlined low-cognitive-load IA (zero duplicated charts, progressive disclosure):
  * 1. Compact Pipeline Integrity Bar (7/7 automated checks, expandable)
- * 2. Hero 4-Architecture Benchmark (Honest 0â€“100% Horizontal Dumbbell + Tradeoff Ledger + Collapsible 54-Probe Matrix & Key Reasons)
+ * 2. Hero 4-Architecture Benchmark (Honest 0–100% Horizontal Dumbbell + Tradeoff Ledger + Collapsible 54-Probe Matrix & Key Reasons)
  * 3. Mechanism & Confidence (Clean 2-Column: Single-Axis Zero-Anchored DAPT Perplexity + Corpus Confidence Histogram)
  * 4. Interactive 5-Task Error Analysis & 1:1 Square Calibration Studio (with tabbed Recoveries vs Residual Errors)
  * 5. Collapsible Per-Task Granular Audit Accordion + Compact Dataset Provenance Vault
  */
-import { api } from "../api.js?v=5.3";
+import { api } from "../api.js?v=5.4";
 import {
   architectureComparisonChart,
   bindChartTooltips,
@@ -16,9 +16,9 @@ import {
   confusionMatrixTable,
   daptConvergenceChart,
   robustnessCategoryHeatmap,
-} from "../charts.js?v=5.3";
-import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=5.3";
-import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=5.3";
+} from "../charts.js?v=5.4";
+import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=5.4";
+import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=5.4";
 
 const TASK_ORDER = ["issue", "solution", "sentiment", "response", "emotion"];
 
@@ -118,9 +118,9 @@ function renderVerificationBanner(verification) {
         <div class="verify-summary-left">
           <span class="swatch-inline" style="background:${allOk ? "var(--color-positive)" : "var(--color-warning)"}" aria-hidden="true"></span>
           <strong>Pipeline integrity: ${passed} / ${total} checks passed</strong>
-          <span class="muted">Zero split leakage Â· 0 synthetic rows Â· T &ge; 1.0 Â· zero PII</span>
+          <span class="muted">Zero split leakage · 0 synthetic rows · T &ge; 1.0 · zero PII</span>
         </div>
-        <span class="num muted" style="font-size:var(--text-xs)">${dateTimeText(verification.verified_at)} Â· Inspect</span>
+        <span class="num muted" style="font-size:var(--text-xs)">${dateTimeText(verification.verified_at)} · Inspect</span>
       </summary>
       ${verification.scope_note ? `<p class="muted" style="font-size:var(--text-xs);padding:0 var(--space-lg) var(--space-sm)">${esc(verification.scope_note)}</p>` : ""}
       <div class="verify-checks-grid">${rows}</div>
@@ -218,7 +218,7 @@ function renderArchitectureSection(archComp, evalScope) {
       ` : ""}
 
       <details class="clean-disclosure">
-        <summary>Auxiliary 54-probe linguistic stress breakdown (8 shift categories Â· observational only)</summary>
+        <summary>Auxiliary 54-probe linguistic stress breakdown (8 shift categories · observational only)</summary>
         <div style="margin-top:var(--space-sm)">${robustnessCategoryHeatmap(archComp)}</div>
       </details>
     `,
@@ -262,13 +262,13 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
   const tierRows = ["high", "medium", "low"].map((t) => {
     const info = tiers[t] || {};
     const dot = t === "high" ? "var(--color-positive)" : t === "medium" ? "var(--color-info)" : "var(--color-warning)";
-    const label = t === "high" ? "High (â‰¥80%)" : t === "medium" ? "Medium (55â€“79%)" : "Low (<55% Â· Review)";
+    const label = t === "high" ? "High (≥80%)" : t === "medium" ? "Medium (55–79%)" : "Low (<55% · Review)";
     return `
       <tr>
         <td><span class="swatch-inline" style="background:${dot};margin-right:6px" aria-hidden="true"></span>${label}</td>
         <td class="num">${num(info.count || 0)}</td>
         <td class="num">${percent(info.share)}</td>
-        <td class="num"><strong>${info.accuracy !== null && info.accuracy !== undefined ? percent(info.accuracy) : "â€”"}</strong></td>
+        <td class="num"><strong>${info.accuracy !== null && info.accuracy !== undefined ? percent(info.accuracy) : "—"}</strong></td>
       </tr>
     `;
   }).join("");
@@ -293,14 +293,14 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
       <article class="err-case-card err-case-win">
         <div class="err-case-top">
           <span class="meta-issue-label">${esc(pretty(w.category))}</span>
-          <span class="meta-sep" aria-hidden="true">Â·</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
           ${confidenceBadge(w.transformer_confidence)}
           <span class="meta-inline-tag is-pos">Beat ${num(w.baselines_failed)}/3 baselines</span>
         </div>
-        <blockquote class="err-case-quote">â€œ${esc(w.text)}â€</blockquote>
+        <blockquote class="err-case-quote">“${esc(w.text)}”</blockquote>
         <div class="err-case-compare">
           <span><strong>Gold &amp; MuRIL:</strong> <code>${esc(fmtPred(w.true_label))}</code></span>
-          <span class="muted">LogReg: <code>${esc(fmtPred(w.baseline_predictions?.logistic_regression))}</code> Â· ANN: <code>${esc(fmtPred(w.baseline_predictions?.ann_mlp))}</code> Â· CNN: <code>${esc(fmtPred(w.baseline_predictions?.cnn_textcnn))}</code></span>
+          <span class="muted">LogReg: <code>${esc(fmtPred(w.baseline_predictions?.logistic_regression))}</code> · ANN: <code>${esc(fmtPred(w.baseline_predictions?.ann_mlp))}</code> · CNN: <code>${esc(fmtPred(w.baseline_predictions?.cnn_textcnn))}</code></span>
         </div>
         <p class="err-case-reason">${esc(w.why_transformer_won)}</p>
       </article>
@@ -312,10 +312,10 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
       <article class="err-case-card err-case-miss">
         <div class="err-case-top">
           <span class="meta-issue-label">${esc(e.failure_mode || pretty(e.category))}</span>
-          <span class="meta-sep" aria-hidden="true">Â·</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
           ${confidenceBadge(e.transformer_confidence, e.confidence_tier)}
         </div>
-        <blockquote class="err-case-quote">â€œ${esc(e.text)}â€</blockquote>
+        <blockquote class="err-case-quote">“${esc(e.text)}”</blockquote>
         <div class="err-case-compare">
           <span><strong>True:</strong> <code>${esc(fmtPred(e.true_label))}</code></span>
           <span><strong>Predicted:</strong> <code>${esc(fmtPred(e.transformer_prediction))}</code></span>
@@ -329,7 +329,7 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
     <div class="err-kpi-row">
       <div class="eval-cell"><span>Real test error rate</span><strong class="num">${percent(probeCm.error_rate)}</strong><small class="num">${num(probeCm.error_count)} / ${num(probeCm.n_samples)} unseen real comments</small></div>
       <div class="eval-cell"><span>Beat majority baselines</span><strong class="num">${num(agree.transformer_beats_majority_baselines || 0)}</strong><small>${num(agree.transformer_only_win || 0)} where all 3 baselines failed</small></div>
-      <div class="eval-cell"><span>Calibrated 5-bin ECE</span><strong class="num">${Number(cal.calibrated_ece ?? 0).toFixed(3)}</strong><small class="num">Raw T=1.0: ${Number(cal.uncalibrated_ece ?? 0).toFixed(3)} Â· Brier ${Number(cal.brier_score ?? 0).toFixed(3)}</small></div>
+      <div class="eval-cell"><span>Calibrated 5-bin ECE</span><strong class="num">${Number(cal.calibrated_ece ?? 0).toFixed(3)}</strong><small class="num">Raw T=1.0: ${Number(cal.uncalibrated_ece ?? 0).toFixed(3)} · Brier ${Number(cal.brier_score ?? 0).toFixed(3)}</small></div>
       <div class="eval-cell"><span>All 4 models failed</span><strong class="num">${num(agree.all_failed || 0)}</strong><small>Ambiguous / boundary real comments</small></div>
     </div>
 
@@ -340,7 +340,7 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
         ${!probeCm.multilabel && probeCm.matrix ? `<div class="spacer-sm"></div>${confusionMatrixTable(probeCm.matrix, probeCm.labels, { openByDefault: true })}` : ""}
       </div>
       <div>
-        <h3 class="subpanel-title">Reliability &amp; confidence tiers (T = ${esc(cal.temperature ?? "â€”")}, n = ${num(cal.n_samples || probeCm.n_samples)})</h3>
+        <h3 class="subpanel-title">Reliability &amp; confidence tiers (T = ${esc(cal.temperature ?? "—")}, n = ${num(cal.n_samples || probeCm.n_samples)})</h3>
         ${calibrationReliabilityChart(cal)}
         <div class="spacer-sm"></div>
         <div class="table-scroll">
@@ -421,13 +421,13 @@ export async function renderModels(container, ctx) {
         <summary class="task-accordion-head">
           <div class="task-acc-title">
             <strong>${esc(pretty(name))}</strong>
-            <span class="muted">${isMulti ? "Multi-label" : (task.labels || []).length === 2 ? "Binary" : "Single-label"} Â· ${esc(task.model_name)} ${esc(task.model_version)}</span>
+            <span class="muted">${isMulti ? "Multi-label" : (task.labels || []).length === 2 ? "Binary" : "Single-label"} · ${esc(task.model_name)} ${esc(task.model_version)}</span>
           </div>
           <div class="task-acc-metrics num">
             <span><span class="muted">Split</span> ${num(split.train)}/${num(split.validation)}/${num(split.test)}</span>
             <span><span class="muted">Val</span> ${percent(vm.macro_f1)}</span>
             <span><span class="muted">Test F1</span> <strong>${percent(tm.macro_f1)}</strong></span>
-            <span><span class="muted">54-Probe</span> ${probeF1 !== undefined && probeF1 !== null ? percent(probeF1) : "â€”"}</span>
+            <span><span class="muted">54-Probe</span> ${probeF1 !== undefined && probeF1 !== null ? percent(probeF1) : "—"}</span>
             <span class="meta-inline-tag ${leakage ? "is-warn" : "is-pos"}">${leakage ? "Leakage" : "0 leakage"}</span>
           </div>
         </summary>
@@ -445,7 +445,7 @@ export async function renderModels(container, ctx) {
               <div class="spacer-md"></div>
               <dl class="spec-kv">
                 <div><dt>Artifact</dt><dd><code class="break-code">${esc(task.artifact_path || "None")}</code></dd></div>
-                <div><dt>Metrics (${glossaryTip("subset_accuracy", "Subset / Acc")})</dt><dd class="num">${isMulti ? `${percent(tm.subset_accuracy, 1, "Not emitted")} subset Â· ${percent(tm.micro_f1, 1, "N/A")} micro F1` : `${percent(tm.accuracy, 1, "N/A")} accuracy`}</dd></div>
+                <div><dt>Metrics (${glossaryTip("subset_accuracy", "Subset / Acc")})</dt><dd class="num">${isMulti ? `${percent(tm.subset_accuracy, 1, "Not emitted")} subset · ${percent(tm.micro_f1, 1, "N/A")} micro F1` : `${percent(tm.accuracy, 1, "N/A")} accuracy`}</dd></div>
                 <div><dt>Scope</dt><dd>${esc(task.inference_scope || "Batch inference over anonymized Reddit corpus")}</dd></div>
               </dl>
             </div>
@@ -464,10 +464,10 @@ export async function renderModels(container, ctx) {
           <div><dt>Version</dt><dd class="num">v${esc(prov.dataset_version || health.dataset_version)}</dd></div>
           <div><dt>Source archive</dt><dd>${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (public Reddit)" : "Local archive")}</dd></div>
           <div><dt>Updated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
-          <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads Â· ${num(summary.comments)} comments (${avgReplies}/thread)</dd></div>
-          <div><dt>Privacy</dt><dd>${badge(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Pseudonymized Â· zero PII", isSynthetic ? "warning" : "positive")}</dd></div>
+          <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads · ${num(summary.comments)} comments (${avgReplies}/thread)</dd></div>
+          <div><dt>Privacy</dt><dd>${badge(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Pseudonymized · zero PII", isSynthetic ? "warning" : "positive")}</dd></div>
           <div><dt>Artifact root</dt><dd class="num">${esc(activeArtifactDir)}</dd></div>
-          ${dapt ? `<div class="kv-span-full"><dt>Domain-Adaptive MLM (DAPT)</dt><dd class="num">${num(dapt.train_documents || dapt.unlabeled_documents)} train / ${num(dapt.val_documents || 0)} held-out val texts Â· perplexity ${esc(dapt.initial_perplexity)} â†’ ${esc(dapt.final_perplexity)}</dd></div>` : ""}
+          ${dapt ? `<div class="kv-span-full"><dt>Domain-Adaptive MLM (DAPT)</dt><dd class="num">${num(dapt.train_documents || dapt.unlabeled_documents)} train / ${num(dapt.val_documents || 0)} held-out val texts · perplexity ${esc(dapt.initial_perplexity)} → ${esc(dapt.final_perplexity)}</dd></div>` : ""}
           ${filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_boilerplate_filtered)} AutoMod stickies &amp; ${num(filt.gif_only_filtered)} GIF embeds removed; IDs pseudonymized and PII redacted</dd></div>` : ""}
         </dl>
       </div>

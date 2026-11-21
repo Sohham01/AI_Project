@@ -1,10 +1,10 @@
-﻿/**
+/**
  * View 3: Discussion Workbench (Master-Detail Split Studio with 3 Live Preview Tabs)
  * Directly inspired by crisp modern split-pane narrative consoles (Image 2),
  * upgraded in Dusk Smoked Glass: Summary & Evidence | Reply Flow | Model Signals.
  */
-import { api } from "../api.js?v=5.3";
-import { responseMiniStrip, stackedCompositionBar } from "../charts.js?v=5.3";
+import { api } from "../api.js?v=5.4";
+import { responseMiniStrip, stackedCompositionBar } from "../charts.js?v=5.4";
 import {
   badge,
   confidenceBadge,
@@ -14,7 +14,7 @@ import {
   resolutionBadge,
   roleBadge,
   sentimentBadge,
-} from "../components.js?v=5.3";
+} from "../components.js?v=5.4";
 import {
   CANONICAL_RESPONSE_TYPES,
   RESOLUTION_META,
@@ -28,8 +28,8 @@ import {
   pretty,
   shortCommentLabel,
   truncate,
-} from "../format.js?v=5.3";
-import { icons } from "../icons.js?v=5.3";
+} from "../format.js?v=5.4";
+import { icons } from "../icons.js?v=5.4";
 
 const FILTER_KEYS = ["q", "community", "issue", "sentiment", "emotion", "response", "confidence"];
 
@@ -64,7 +64,7 @@ export async function renderExplorer(container, ctx, params = {}) {
   };
 
   const activeChips = [];
-  if (filters.q) activeChips.push({ key: "q", label: `Query: â€œ${filters.q}â€` });
+  if (filters.q) activeChips.push({ key: "q", label: `Query: “${filters.q}”` });
   if (filters.community) activeChips.push({ key: "community", label: `Community: ${filters.community}` });
   if (filters.issue) activeChips.push({ key: "issue", label: `Issue: ${issueLabelFromKey(filters.issue, summary)}` });
   if (filters.sentiment) activeChips.push({ key: "sentiment", label: `Sentiment: ${pretty(filters.sentiment)}` });
@@ -105,7 +105,7 @@ export async function renderExplorer(container, ctx, params = {}) {
       <div class="filter-grid filter-grid-explorer">
         <div class="field field-span-2">
           <label for="ex-q">Search titles, posts &amp; comments</label>
-          <input id="ex-q" name="q" type="search" maxlength="120" value="${esc(filters.q || "")}" placeholder="Placements, waitlist, hostel, fees, CATâ€¦">
+          <input id="ex-q" name="q" type="search" maxlength="120" value="${esc(filters.q || "")}" placeholder="Placements, waitlist, hostel, fees, CAT…">
         </div>
         <div class="field">
           <label for="ex-issue">Issue domain</label>
@@ -147,7 +147,7 @@ export async function renderExplorer(container, ctx, params = {}) {
           <select id="ex-confidence" name="confidence">
             <option value="">Any confidence tier</option>
             <option value="high" ${filters.confidence === "high" ? "selected" : ""}>High (&ge;80%)</option>
-            <option value="medium" ${filters.confidence === "medium" ? "selected" : ""}>Medium (55â€“79%)</option>
+            <option value="medium" ${filters.confidence === "medium" ? "selected" : ""}>Medium (55–79%)</option>
             <option value="low" ${filters.confidence === "low" ? "selected" : ""}>Low (&lt;55%)</option>
             <option value="review" ${filters.confidence === "review" ? "selected" : ""}>Contains review comments</option>
           </select>
@@ -194,7 +194,7 @@ export async function renderExplorer(container, ctx, params = {}) {
                 <article class="discussion-card ${isSel ? "is-selected" : ""}" role="listitem" data-preview-id="${esc(post.id)}">
                   <div class="discussion-card-badges">
                     <span class="meta-issue-label">${esc(pretty(post.issue))}</span>
-                    <span class="meta-sep" aria-hidden="true">Â·</span>
+                    <span class="meta-sep" aria-hidden="true">·</span>
                     ${resolutionBadge(post.resolution_state)}
                     ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
                     <span class="num muted" style="font-size:var(--text-xs);margin-left:auto">${dateText(post.created_at)}</span>
@@ -202,7 +202,7 @@ export async function renderExplorer(container, ctx, params = {}) {
                   <h2 class="discussion-card-title">
                     <a href="#/thread/${encodeURIComponent(post.id)}">${esc(post.title)}</a>
                   </h2>
-                  <p class="discussion-card-excerpt">${esc(post.body || "Image or title-only community post â€” open thread to inspect replies.")}</p>
+                  <p class="discussion-card-excerpt">${esc(post.body || "Image or title-only community post — open thread to inspect replies.")}</p>
                   <div class="discussion-card-footer">
                     ${responseMiniStrip(post.response_counts)}
                     <a class="row-open-link" href="#/thread/${encodeURIComponent(post.id)}">Open full tree</a>
@@ -271,7 +271,7 @@ export async function renderExplorer(container, ctx, params = {}) {
           <h3>Resolution evidence status</h3>
           <p style="font-size:var(--text-sm);color:var(--color-ink-2);margin-bottom:var(--space-xs)">${esc(RESOLUTION_META[post.resolution_state]?.description || "")}</p>
           ${evidence
-            ? `<blockquote class="preview-quote">â€œ${esc(evidence.body)}â€<footer>Explicit follow-up signal in comment <span class="num">${esc(shortCommentLabel(evidence.reddit_id))}</span></footer></blockquote>`
+            ? `<blockquote class="preview-quote">“${esc(evidence.body)}”<footer>Explicit follow-up signal in comment <span class="num">${esc(shortCommentLabel(evidence.reddit_id))}</span></footer></blockquote>`
             : `<p class="muted" style="font-size:var(--text-sm)">No explicit outcome follow-up statement detected in this thread.</p>`}
         </div>
 

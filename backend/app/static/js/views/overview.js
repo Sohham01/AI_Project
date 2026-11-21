@@ -1,14 +1,14 @@
-﻿/**
- * View 1: Community Intelligence Studio (Overview â€” Calm, Honest, Scannable Edition)
+/**
+ * View 1: Community Intelligence Studio (Overview — Calm, Honest, Scannable Edition)
  * Visual rhythm:
  * 1. Ruled 4-Metric Tally Strip (corpus, actionable replies, explicit outcomes, confidence)
  * 2. Key Cross-Model Findings (top 3 high-signal cards upfront + one-click reveal for all 5)
  * 3. Honest 3-Stage Corpus Pipeline (Issue Domains -> 6 Canonical Roles -> 4 Resolution States)
- * 4. Unified Honest 0â€“100% Linear Issue Triage Visual (no distorted axes, no duplicate table)
+ * 4. Unified Honest 0–100% Linear Issue Triage Visual (no distorted axes, no duplicate table)
  * 5. Asymmetric 2-Column Split (Zero-Overshoot Monthly Sentiment Timeline + Actionable Density)
  * 6. Clean 2-Column Recent Discussions + Compact Single-Strip Provenance Bar
  */
-import { api } from "../api.js?v=5.3";
+import { api } from "../api.js?v=5.4";
 import {
   bindChartTooltips,
   bindSankeyInteractions,
@@ -17,15 +17,15 @@ import {
   interactiveSplineAreaChart,
   issueFrictionQuadrantChart,
   sankeyFlowChart,
-} from "../charts.js?v=5.3";
+} from "../charts.js?v=5.4";
 import {
   confidenceBadge,
   copyIdChip,
   deck,
   resolutionBadge,
   tallyStrip,
-} from "../components.js?v=5.3";
-import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.3";
+} from "../components.js?v=5.4";
+import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.4";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes] = await Promise.all([
@@ -68,7 +68,7 @@ export async function renderOverview(container, ctx) {
       countTo: totalPosts,
       unit: "threads",
       accent: true,
-      note: `${num(totalComments)} anonymized comments Â· ${num(communityCount)} subreddits`,
+      note: `${num(totalComments)} anonymized comments · ${num(communityCount)} subreddits`,
       href: "#/explorer",
     },
     {
@@ -87,7 +87,7 @@ export async function renderOverview(container, ctx) {
       valueText: `${num(reportedSuccess + reportedPending)} / ${num(totalPosts)}`,
       ratioPct: successPct,
       color: "var(--color-positive)",
-      note: `${num(reportedSuccess)} success Â· ${num(reportedPending)} pending Â· ${num(unconfirmedTotal)} unconfirmed`,
+      note: `${num(reportedSuccess)} success · ${num(reportedPending)} pending · ${num(unconfirmedTotal)} unconfirmed`,
       href: "#/resolution",
     },
     {
@@ -99,7 +99,7 @@ export async function renderOverview(container, ctx) {
       ratioPct: meanConfPct > 0 ? meanConfPct : null,
       color: meanConfPct >= 75 ? "var(--color-positive)" : "var(--color-accent)",
       note: meanConfPct > 0
-        ? `${percent(conf.high_share, 0)} high (â‰¥80%) Â· ${num(conf.low_count)} below 55%`
+        ? `${percent(conf.high_share, 0)} high (≥80%) · ${num(conf.low_count)} below 55%`
         : `MuRIL-DAPT v3 hybrid + ${num(summary.topic_count)} NMF topics`,
       href: "#/models",
     },
@@ -152,15 +152,15 @@ export async function renderOverview(container, ctx) {
 
   // Row 3: Honest 3-Stage Corpus Breakdown Pipeline
   const pipelineDeck = deck("Corpus flow: issues, response roles &amp; outcomes", {
-    subtitle: "Observed distribution at each stage of the community pipeline â€” hover for exact shares, click any bar to drill in",
+    subtitle: "Observed distribution at each stage of the community pipeline — hover for exact shares, click any bar to drill in",
     action: `<a class="btn btn-quiet btn-sm" href="#/resolution">Audit all ${num(totalPosts)} threads</a>`,
     body: sankeyFlowChart(summary),
   });
 
-  // Row 4: Unified Honest 0â€“100% Linear Issue Triage Visual
+  // Row 4: Unified Honest 0–100% Linear Issue Triage Visual
   const priorityDeck = priorityMatrix.length
     ? deck("Issue friction &amp; triage comparison", {
-        subtitle: "Side-by-side comparison on honest 0%â€“100% linear scales â€” hover any domain for full emotion, topic, and confidence context",
+        subtitle: "Side-by-side comparison on honest 0%–100% linear scales — hover any domain for full emotion, topic, and confidence context",
         action: `<a class="btn btn-quiet btn-sm" href="#/issues">Deep-dive issues</a>`,
         body: issueFrictionQuadrantChart(priorityMatrix),
       })
@@ -179,7 +179,7 @@ export async function renderOverview(container, ctx) {
   }));
 
   const splineDeck = deck("Monthly sentiment timeline", {
-    subtitle: `${dateSpan} Â· zero-anchored monotone curves, hover to inspect monthly shares`,
+    subtitle: `${dateSpan} · zero-anchored monotone curves, hover to inspect monthly shares`,
     action: `<a class="btn btn-quiet btn-sm" href="#/sentiment">Sentiment studio</a>`,
     body: interactiveSplineAreaChart(monthly, { chartId: "ov-spline" }),
   });
@@ -200,7 +200,7 @@ export async function renderOverview(container, ctx) {
     <a class="spotlight-row" href="#/thread/${encodeURIComponent(post.id)}">
       <div class="spotlight-row-top">
         <span class="meta-issue-label">${esc(pretty(post.issue))}</span>
-        <span class="meta-sep" aria-hidden="true">Â·</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
         ${resolutionBadge(post.resolution_state)}
         ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
       </div>
@@ -213,7 +213,7 @@ export async function renderOverview(container, ctx) {
   `).join("");
 
   const spotlightDeck = deck("Recent community discussions", {
-    subtitle: "Latest anonymized public threads â€” open any discussion to inspect the nested reply tree and per-comment probabilities",
+    subtitle: "Latest anonymized public threads — open any discussion to inspect the nested reply tree and per-comment probabilities",
     action: `<a class="btn btn-primary btn-sm" href="#/explorer">Open workbench</a>`,
     body: `<div class="spotlight-grid">${spotlightRows}</div>`,
   });
@@ -224,11 +224,11 @@ export async function renderOverview(container, ctx) {
     <aside class="compact-prov-bar anim-enter" aria-label="Dataset provenance summary">
       <div class="compact-prov-items">
         <span><span class="muted">Dataset</span> ${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v5")}</span>
-        <span class="meta-sep" aria-hidden="true">Â·</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
         <span class="num"><span class="muted">Version</span> v${esc(prov.dataset_version || summary.dataset_version)}</span>
-        <span class="meta-sep" aria-hidden="true">Â·</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
         <span><span class="muted">Source</span> ${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (anonymized Reddit)" : "Local corpus")}</span>
-        <span class="meta-sep" aria-hidden="true">Â·</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
         <span><span class="muted">Span</span> ${esc(dateSpan)}</span>
       </div>
       <a class="row-open-link" href="#/models">Models &amp; audit &rarr;</a>

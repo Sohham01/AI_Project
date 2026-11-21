@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dusk Studio UI Component Primitives.
  * Smoked-glass decks, animated ring-gauge KPI pods, honest notices, badges,
  * copyable IDs, glossary tooltips, empty/error/skeleton states.
@@ -11,8 +11,8 @@ import {
   SENTIMENT_META,
   esc,
   pretty,
-} from "./format.js?v=5.3";
-import { icons } from "./icons.js?v=5.3";
+} from "./format.js?v=5.4";
+import { icons } from "./icons.js?v=5.4";
 
 /**
  * Primary Dusk elevated deck container.
@@ -116,7 +116,7 @@ export function confidenceBadge(score, tier = null, { needsReview = false, prefi
       ? "var(--color-info)"
       : "var(--color-warning)";
   const pct = `${(val * 100).toFixed(0)}%`;
-  const suffix = isReview ? " Â· review" : "";
+  const suffix = isReview ? " · review" : "";
   const title = `Calibrated prediction confidence: ${(val * 100).toFixed(1)}% (${resolvedTier} tier${isReview ? "; flagged for human review" : ""})`;
   if (isReview) {
     return `<span class="tag tag-warning tag-conf" title="${esc(title)}"><span class="swatch-inline" style="background:${dotColor}" aria-hidden="true"></span>${esc(prefix)}${pct}${esc(suffix)}</span>`;
