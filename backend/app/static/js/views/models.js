@@ -7,7 +7,7 @@
  * 4. Interactive 5-Task Error Analysis & 1:1 Square Calibration Studio (with tabbed Recoveries vs Residual Errors)
  * 5. Collapsible Per-Task Granular Audit Accordion + Compact Dataset Provenance Vault
  */
-import { api } from "../api.js?v=5.4";
+import { api } from "../api.js?v=5.6";
 import {
   architectureComparisonChart,
   bindChartTooltips,
@@ -16,9 +16,9 @@ import {
   confusionMatrixTable,
   daptConvergenceChart,
   robustnessCategoryHeatmap,
-} from "../charts.js?v=5.4";
-import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=5.4";
-import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=5.4";
+} from "../charts.js?v=5.6";
+import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=5.6";
+import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=5.6";
 
 const TASK_ORDER = ["issue", "solution", "sentiment", "response", "emotion"];
 

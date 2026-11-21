@@ -4,8 +4,8 @@
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · replaced flat broadsheet sidebar layout from scratch with Dusk smoked-glass studio, 204px labeled rail, hairline-parted tally strip, animated Sankey/spline/constellation visuals, and switchable Daylight Bone mode */
 /* Hallmark · finish-review: subagent · 8 findings · 8 resolved · gap: none */
 /* Hallmark · dropped page-kicker · gate 54 forbids eyebrows before headings */
-@import url("./tokens.css?v=5.4");
-@import url("./base.css?v=5.4");
+@import url("./tokens.css?v=5.6");
+@import url("./base.css?v=5.6");
 
 /* ==========================================================================
    Core Canvas & Typography
@@ -1921,6 +1921,127 @@ a.tally-cell:hover .tally-value {
 }
 .meta-inline-tag.is-pos { background: var(--color-positive-soft); color: var(--color-positive); }
 .meta-inline-tag.is-warn { background: var(--color-warning-soft); color: var(--color-warning); }
+
+/* Interactive Tripartite Community & Discourse Network (Overview) */
+.network-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.network-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.network-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+@media (max-width: 720px) {
+  .network-svg { min-width: 720px; }
+}
+.net-col-head {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--color-muted);
+}
+.net-edge {
+  fill: none;
+  stroke-linecap: round;
+  cursor: pointer;
+  transition: opacity var(--dur-micro) var(--ease-out);
+}
+.net-edge.is-major { opacity: 0.34; }
+.net-edge.is-minor { opacity: 0.10; }
+.net-edge.is-dimmed { opacity: 0.04; }
+.net-edge.is-active { opacity: 0.90; }
+
+.net-node {
+  cursor: pointer;
+  transition: opacity var(--dur-micro) var(--ease-out);
+}
+.net-node.is-dimmed { opacity: 0.24; }
+.net-node-halo {
+  opacity: 0;
+  transition: opacity var(--dur-micro) var(--ease-out);
+}
+.net-node:hover .net-node-halo,
+.net-node.is-active .net-node-halo,
+.net-node.is-pinned .net-node-halo { opacity: 0.9; }
+.net-hub-rect {
+  transition: stroke var(--dur-micro) var(--ease-out), fill var(--dur-micro) var(--ease-out);
+}
+.net-node-hub:hover .net-hub-rect,
+.net-node-hub.is-active .net-hub-rect,
+.net-node-hub.is-pinned .net-hub-rect {
+  stroke: var(--color-accent);
+  fill: var(--color-paper-2);
+}
+.net-label {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 500;
+  fill: var(--color-ink);
+}
+.net-sub {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--color-muted);
+}
+
+.network-inspector-bar {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-inner);
+  background: var(--color-paper-2);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-height: 44px;
+  justify-content: center;
+}
+.net-insp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+}
+.net-insp-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.net-insp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.net-link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-solid);
+  box-shadow: inset 0 0 0 1px var(--color-rule);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+  transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+}
+.net-link-chip strong { color: var(--color-ink); font-weight: 600; }
+.net-link-chip:hover {
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--color-accent-border);
+  color: var(--color-ink);
+}
 
 /* Honest 3-Stage Corpus Pipeline (Overview Hero) */
 .pipeline-flow {

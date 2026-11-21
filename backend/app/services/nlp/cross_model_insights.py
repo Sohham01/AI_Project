@@ -446,3 +446,178 @@ def build_cross_model_insights(
         "multilingual_share": round(hinglish_or_hi / n_comments, 4),
         "multilingual_count": hinglish_or_hi,
     }
+
+
+def build_community_network(
+    posts: Sequence[Dict[str, Any]],
+    rows: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Compute exact observed tripartite co-occurrence network for the Overview studio.
+
+    Layers:
+      1. Communities (subreddits) -> exact observed thread & comment counts
+      2. Issue domains            -> exact observed thread & comment counts
+      3a. Canonical response roles (6 fixed classes) -> exact comment counts
+      3b. Multi-label emotions (6 canonical emotions) -> exact comment co-occurrences
+
+    Every edge weight is an exact observed corpus count (zero marginal approximations).
+    """
+    canonical_responses = (
+        "agreement",
+        "personal_experience",
+        "opinion",
+        "advice",
+        "solution",
+        "counterargument",
+    )
+    canonical_emotions = (
+        "curiosity",
+        "frustration",
+        "stress",
+        "confidence",
+        "gratitude",
+        "hope",
+    )
+
+    sub_posts: Counter = Counter()
+    sub_comments: Counter = Counter()
+    issue_posts: Counter = Counter()
+    issue_comments: Counter = Counter()
+    issue_labels: Dict[str, str] = {}
+    sub_issue_threads: Counter = Counter()
+    sub_issue_comments: Counter = Counter()
+
+    for post in posts:
+        sub = str(post.get("subreddit") or "")
+        ikey = str(post.get("issue_key") or "")
+        if not sub or not ikey:
+            continue
+        c_len = len(post.get("comments") or [])
+        sub_posts[sub] += 1
+        sub_comments[sub] += c_len
+        issue_posts[ikey] += 1
+        issue_comments[ikey] += c_len
+        issue_labels[ikey] = str(post.get("issue_category") or ikey)
+        sub_issue_threads[(sub, ikey)] += 1
+        sub_issue_comments[(sub, ikey)] += c_len
+
+    resp_counts: Counter = Counter()
+    emo_counts: Counter = Counter()
+    issue_resp_counts: Counter = Counter()
+    issue_emo_counts: Counter = Counter()
+
+    for row in rows:
+        ikey = str(row.get("issue_key") or "")
+        if not ikey:
+            continue
+        preds = row.get("predictions") or {}
+        resp = (preds.get("response") or {}).get("response_type") or row.get("response_type")
+        if resp:
+            resp_counts[resp] += 1
+            issue_resp_counts[(ikey, resp)] += 1
+        emos = (preds.get("emotion") or {}).get("emotions") or []
+        for em in emos:
+            emo_counts[em] += 1
+            issue_emo_counts[(ikey, em)] += 1
+
+    communities = [
+        {
+            "id": f"sub:{sub}",
+            "key": sub,
+            "label": f"r/{sub}" if not sub.startswith("r/") else sub,
+            "posts": int(cnt),
+            "comments": int(sub_comments[sub]),
+        }
+        for sub, cnt in sub_posts.most_common()
+    ]
+
+    issues = [
+        {
+            "id": f"iss:{ikey}",
+            "key": ikey,
+            "label": issue_labels[ikey],
+            "posts": int(issue_posts[ikey]),
+            "comments": int(cnt),
+        }
+        for ikey, cnt in issue_comments.most_common()
+    ]
+
+    responses = [
+        {
+            "id": f"resp:{rkey}",
+            "key": rkey,
+            "label": rkey.replace("_", " ").capitalize(),
+            "comments": int(resp_counts.get(rkey, 0)),
+        }
+        for rkey in canonical_responses
+    ]
+
+    emotions = [
+        {
+            "id": f"emo:{ekey}",
+            "key": ekey,
+            "label": ekey.capitalize(),
+            "comments": int(emo_counts.get(ekey, 0)),
+        }
+        for ekey in canonical_emotions
+        if emo_counts.get(ekey, 0) > 0
+    ]
+
+    community_to_issue = [
+        {
+            "source": f"sub:{sub}",
+            "target": f"iss:{ikey}",
+            "source_key": sub,
+            "target_key": ikey,
+            "threads": int(t_cnt),
+            "comments": int(sub_issue_comments[(sub, ikey)]),
+            "share_of_source": round(t_cnt / max(sub_posts[sub], 1), 4),
+        }
+        for (sub, ikey), t_cnt in sub_issue_threads.most_common()
+        if t_cnt > 0
+    ]
+
+    issue_to_response = [
+        {
+            "source": f"iss:{ikey}",
+            "target": f"resp:{rkey}",
+            "source_key": ikey,
+            "target_key": rkey,
+            "comments": int(c_cnt),
+            "share_of_source": round(c_cnt / max(issue_comments[ikey], 1), 4),
+        }
+        for (ikey, rkey), c_cnt in issue_resp_counts.most_common()
+        if c_cnt > 0
+    ]
+
+    issue_to_emotion = [
+        {
+            "source": f"iss:{ikey}",
+            "target": f"emo:{ekey}",
+            "source_key": ikey,
+            "target_key": ekey,
+            "comments": int(c_cnt),
+            "share_of_source": round(c_cnt / max(issue_comments[ikey], 1), 4),
+        }
+        for (ikey, ekey), c_cnt in issue_emo_counts.most_common()
+        if c_cnt > 0
+    ]
+
+    return {
+        "nodes": {
+            "communities": communities,
+            "issues": issues,
+            "responses": responses,
+            "emotions": emotions,
+        },
+        "edges": {
+            "community_to_issue": community_to_issue,
+            "issue_to_response": issue_to_response,
+            "issue_to_emotion": issue_to_emotion,
+        },
+        "totals": {
+            "threads": int(sum(sub_posts.values())),
+            "comments": int(sum(resp_counts.values())),
+            "emotion_mentions": int(sum(emo_counts.values())),
+        },
+    }

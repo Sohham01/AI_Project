@@ -19,6 +19,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.services.nlp.cross_model_insights import (
+    build_community_network,
     build_confidence_summary,
     build_cross_model_insights,
     build_issue_priority_matrix,
@@ -89,6 +90,7 @@ class SummaryResponse(BaseModel):
     confidence_summary: dict[str, Any] = Field(default_factory=dict)
     issue_priority_matrix: list[dict[str, Any]] = Field(default_factory=list)
     cross_model_insights: dict[str, Any] = Field(default_factory=dict)
+    community_network: dict[str, Any] = Field(default_factory=dict)
 
 
 class DiscussionListResponse(BaseModel):
@@ -300,6 +302,7 @@ def _summary_data() -> dict[str, Any]:
 
     conf_summary = build_confidence_summary(rows, posts)
     priority_matrix = build_issue_priority_matrix(posts, rows, topics, data["topic_assignments"])
+    community_net = build_community_network(posts, rows)
     insights = build_cross_model_insights(
         posts,
         rows,
@@ -355,6 +358,7 @@ def _summary_data() -> dict[str, Any]:
         "confidence_summary": conf_summary,
         "issue_priority_matrix": priority_matrix,
         "cross_model_insights": insights,
+        "community_network": community_net,
     }
 
 

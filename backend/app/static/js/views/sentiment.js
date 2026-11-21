@@ -3,14 +3,14 @@
  * Interactive smooth spline area chart with crosshair scrubbing, animated emotion bars,
  * and sortable Issue x Polarity normalized matrix.
  */
-import { api } from "../api.js?v=5.4";
+import { api } from "../api.js?v=5.6";
 import {
   bindSplineInteractions,
   horizontalBarChart,
   interactiveSplineAreaChart,
   stackedMatrixRows,
-} from "../charts.js?v=5.4";
-import { callout, deck, tallyStrip } from "../components.js?v=5.4";
+} from "../charts.js?v=5.6";
+import { callout, deck, tallyStrip } from "../components.js?v=5.6";
 import {
   EMOTION_COLORS,
   SENTIMENT_META,
@@ -20,7 +20,7 @@ import {
   monthLabel,
   num,
   pretty,
-} from "../format.js?v=5.4";
+} from "../format.js?v=5.6";
 
 const sentState = { issueSort: "negative_share" };
 

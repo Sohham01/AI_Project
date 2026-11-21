@@ -240,3 +240,14 @@ def test_live_api_confidence_insights_and_error_analysis_endpoints() -> None:
     assert all(item["confidence_tier"] == "high" for item in high_threads["items"])
     review_threads = demo.discussions("", "", "", "", "", "", 1, 12, "review")
     assert all(item["low_confidence_comments"] > 0 for item in review_threads["items"])
+
+    # Observed community network reconciliation (zero fabricated marginal weights)
+    net = summary["community_network"]
+    assert net["nodes"]["communities"]
+    assert net["nodes"]["issues"]
+    assert len(net["nodes"]["responses"]) == 6
+    assert net["nodes"]["emotions"]
+    assert sum(e["threads"] for e in net["edges"]["community_to_issue"]) == summary["posts"]
+    assert sum(e["comments"] for e in net["edges"]["issue_to_response"]) == summary["comments"]
+    assert all(e["threads"] > 0 and 0.0 < e["share_of_source"] <= 1.0 for e in net["edges"]["community_to_issue"])
+    assert all(e["comments"] > 0 and 0.0 < e["share_of_source"] <= 1.0 for e in net["edges"]["issue_to_response"])

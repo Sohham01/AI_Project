@@ -9,6 +9,7 @@
  */
 import {
   CANONICAL_RESPONSE_TYPES,
+  EMOTION_COLORS,
   RESOLUTION_META,
   RESOLUTION_ORDER,
   RESPONSE_META,
@@ -21,8 +22,8 @@ import {
   plural,
   pretty,
   share,
-} from "./format.js?v=5.4";
-import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.4";
+} from "./format.js?v=5.6";
+import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.6";
 
 /* ==========================================================================
    0. Shared Interactive Floating Tooltip Binder (Used Across All Charts)
@@ -1396,4 +1397,431 @@ export function issueFrictionQuadrantChart(matrix) {
       </div>
     </div>
   `;
+}
+
+/* ==========================================================================
+   12. Interactive Tripartite Community & Discourse Network (Overview)
+   100% observed co-occurrence counts (zero marginal guesses, zero hairball):
+   Layer 1: Subreddit Communities (threads) -> Layer 2: Issue Domains (hubs)
+   -> Layer 3: Canonical Response Roles OR Multi-Label Emotions (comments).
+   Hover or click any node to isolate its true observed connections.
+   ========================================================================== */
+export function communityNetworkDiagram(network, mode = "responses") {
+  const nodes = network?.nodes || {};
+  const edges = network?.edges || {};
+  const subs = nodes.communities || [];
+  const issues = nodes.issues || [];
+  const rightNodes = mode === "emotions" ? (nodes.emotions || []) : (nodes.responses || []);
+  const leftEdges = edges.community_to_issue || [];
+  const rightEdges = mode === "emotions" ? (edges.issue_to_emotion || []) : (edges.issue_to_response || []);
+
+  if (!subs.length || !issues.length || !rightNodes.length) {
+    return `<div class="chart-empty">Community co-occurrence network data unavailable.</div>`;
+  }
+
+  const W = 1040;
+  const H = 446;
+  const topY = 58;
+  const botY = 414;
+  const spanY = botY - topY;
+
+  const pillW = 264;
+  const pillH = 40;
+  const pillLeftX = 388;
+  const pillRightX = pillLeftX + pillW;
+  const leftBaseX = 204;
+  const rightBaseX = 836;
+
+  const maxSubPosts = Math.max(1, ...subs.map((s) => Number(s.posts || 0)));
+  const maxIssComments = Math.max(1, ...issues.map((i) => Number(i.comments || 0)));
+  const maxRightComments = Math.max(1, ...rightNodes.map((r) => Number(r.comments || 0)));
+  const maxLeftW = Math.max(1, ...leftEdges.map((e) => Number(e.threads || 0)));
+  const maxRightW = Math.max(1, ...rightEdges.map((e) => Number(e.comments || 0)));
+
+  const yAt = (idx, len) => (len <= 1 ? (topY + botY) / 2 : topY + (idx / (len - 1)) * spanY);
+
+  // Subtle outward bow on outer node columns so curves fan cleanly without crowding
+  const subLayout = subs.map((s, idx) => {
+    const y = yAt(idx, subs.length);
+    const t = subs.length > 1 ? idx / (subs.length - 1) : 0.5;
+    const x = leftBaseX - Math.sin(t * Math.PI) * 14;
+    const r = Math.max(4.5, Math.sqrt(Number(s.posts || 1) / maxSubPosts) * 11.5);
+    return {
+      ...s,
+      layer: "community",
+      x,
+      y,
+      r,
+      color: "var(--color-info)",
+      href: `#/explorer?community=${encodeURIComponent(s.key)}`,
+      metricText: plural(s.posts, "thread"),
+      subText: `${plural(s.posts, "thread")} · ${plural(s.comments, "comment")}`,
+    };
+  });
+
+  const issueLayout = issues.map((iss, idx) => {
+    const y = yAt(idx, issues.length);
+    const dotR = Math.max(3.8, Math.sqrt(Number(iss.comments || 1) / maxIssComments) * 7.2);
+    return {
+      ...iss,
+      layer: "issue",
+      x: pillLeftX + pillW / 2,
+      y,
+      r: dotR,
+      color: idx === 0 ? "var(--color-accent)" : idx === 1 ? "var(--color-accent-2)" : "var(--color-series-val)",
+      href: `#/issues?selected=${encodeURIComponent(iss.key)}`,
+      metricText: plural(iss.comments, "comment"),
+      subText: `${plural(iss.posts, "thread")} · ${plural(iss.comments, "comment")}`,
+    };
+  });
+
+  const rightLayout = rightNodes.map((rn, idx) => {
+    const y = yAt(idx, rightNodes.length);
+    const t = rightNodes.length > 1 ? idx / (rightNodes.length - 1) : 0.5;
+    const x = rightBaseX + Math.sin(t * Math.PI) * 14;
+    const r = Math.max(4.5, Math.sqrt(Number(rn.comments || 1) / maxRightComments) * 11.5);
+    const color = mode === "emotions"
+      ? (EMOTION_COLORS[rn.key] || "var(--color-accent)")
+      : (RESPONSE_META[rn.key]?.color || "var(--color-accent)");
+    const displayLabel = mode === "emotions"
+      ? pretty(rn.key)
+      : `${idx + 1}. ${RESPONSE_META[rn.key]?.label || pretty(rn.key)}`;
+    const href = mode === "emotions"
+      ? `#/explorer?emotion=${encodeURIComponent(rn.key)}`
+      : `#/explorer?response=${encodeURIComponent(rn.key)}`;
+    return {
+      ...rn,
+      displayLabel,
+      layer: mode === "emotions" ? "emotion" : "response",
+      x,
+      y,
+      r,
+      color,
+      href,
+      metricText: plural(rn.comments, "comment"),
+      subText: `${plural(rn.comments, "comment")}`,
+    };
+  });
+
+  const nodeById = new Map([
+    ...subLayout.map((n) => [n.id, n]),
+    ...issueLayout.map((n) => [n.id, n]),
+    ...rightLayout.map((n) => [n.id, n]),
+  ]);
+
+  // Build adjacency summary per node for the live connection inspector bar
+  const adjByNode = new Map();
+  const pushAdj = (nodeId, peerLabel, valueLabel, weightNum, drillHref) => {
+    if (!adjByNode.has(nodeId)) adjByNode.set(nodeId, []);
+    adjByNode.get(nodeId).push({ peerLabel, valueLabel, weightNum, drillHref });
+  };
+
+  const renderedLeftEdges = leftEdges.map((e) => {
+    const s = nodeById.get(e.source);
+    const t = nodeById.get(e.target);
+    if (!s || !t) return "";
+    const x1 = s.x + s.r + 2;
+    const y1 = s.y;
+    const x2 = pillLeftX;
+    const y2 = t.y;
+    const cx1 = x1 + (x2 - x1) * 0.48;
+    const cx2 = x2 - (x2 - x1) * 0.48;
+    const sw = 1.1 + Math.sqrt(Number(e.threads || 0) / maxLeftW) * 6.0;
+    const major = Number(e.share_of_source || 0) >= 0.15 || Number(e.threads || 0) >= 10;
+    const sharePct = `${(Number(e.share_of_source || 0) * 100).toFixed(0)}%`;
+    const drillHref = `#/explorer?community=${encodeURIComponent(e.source_key)}&issue=${encodeURIComponent(e.target_key)}`;
+    pushAdj(s.id, pretty(t.label), `${plural(e.threads, "thread")} (${sharePct})`, Number(e.threads), drillHref);
+    pushAdj(t.id, s.label, `${plural(e.threads, "thread")}`, Number(e.threads), drillHref);
+
+    const tipRows = JSON.stringify([
+      ["Observed threads", `${num(e.threads)} (${sharePct} of ${s.label})`],
+      ["Observed comments", num(e.comments)],
+    ]);
+    return `
+      <path
+        class="net-edge ${major ? "is-major" : "is-minor"}"
+        data-source="${esc(e.source)}"
+        data-target="${esc(e.target)}"
+        data-href="${esc(drillHref)}"
+        data-chart-tip-title="${esc(`${s.label} → ${pretty(t.label)}`)}"
+        data-chart-tip-rows="${esc(tipRows)}"
+        data-chart-tip-hint="Click edge to filter matching threads"
+        d="M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${cx1.toFixed(1)} ${y1.toFixed(1)}, ${cx2.toFixed(1)} ${y2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}"
+        stroke="var(--color-info)"
+        stroke-width="${sw.toFixed(1)}"
+      />
+    `;
+  }).join("");
+
+  const renderedRightEdges = rightEdges.map((e) => {
+    const s = nodeById.get(e.source);
+    const t = nodeById.get(e.target);
+    if (!s || !t) return "";
+    const x1 = pillRightX;
+    const y1 = s.y;
+    const x2 = t.x - t.r - 2;
+    const y2 = t.y;
+    const cx1 = x1 + (x2 - x1) * 0.48;
+    const cx2 = x2 - (x2 - x1) * 0.48;
+    const sw = 1.1 + Math.sqrt(Number(e.comments || 0) / maxRightW) * 6.5;
+    const major = Number(e.share_of_source || 0) >= 0.14 || Number(e.comments || 0) >= 70;
+    const sharePct = `${(Number(e.share_of_source || 0) * 100).toFixed(0)}%`;
+    const drillHref = mode === "emotions"
+      ? `#/explorer?issue=${encodeURIComponent(e.source_key)}&emotion=${encodeURIComponent(e.target_key)}`
+      : `#/explorer?issue=${encodeURIComponent(e.source_key)}&response=${encodeURIComponent(e.target_key)}`;
+    pushAdj(s.id, t.displayLabel, `${plural(e.comments, "comment")} (${sharePct})`, Number(e.comments), drillHref);
+    pushAdj(t.id, pretty(s.label), `${plural(e.comments, "comment")}`, Number(e.comments), drillHref);
+
+    const tipRows = JSON.stringify([
+      ["Observed comments", `${num(e.comments)} (${sharePct} of ${pretty(s.label)})`],
+      ["Target class", t.displayLabel],
+    ]);
+    return `
+      <path
+        class="net-edge ${major ? "is-major" : "is-minor"}"
+        data-source="${esc(e.source)}"
+        data-target="${esc(e.target)}"
+        data-href="${esc(drillHref)}"
+        data-chart-tip-title="${esc(`${pretty(s.label)} → ${t.displayLabel}`)}"
+        data-chart-tip-rows="${esc(tipRows)}"
+        data-chart-tip-hint="Click edge to filter matching threads"
+        d="M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${cx1.toFixed(1)} ${y1.toFixed(1)}, ${cx2.toFixed(1)} ${y2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}"
+        stroke="${t.color}"
+        stroke-width="${sw.toFixed(1)}"
+      />
+    `;
+  }).join("");
+
+  const encodeSummary = (n) => {
+    const links = (adjByNode.get(n.id) || [])
+      .sort((a, b) => b.weightNum - a.weightNum)
+      .slice(0, 4);
+    return JSON.stringify({
+      label: n.displayLabel || pretty(n.label),
+      subText: n.subText,
+      href: n.href,
+      links,
+    });
+  };
+
+  const renderOuterNode = (n, side) => {
+    const isLeft = side === "left";
+    const labelX = isLeft ? n.x - n.r - 12 : n.x + n.r + 12;
+    const anchor = isLeft ? "end" : "start";
+    const labelText = n.displayLabel || n.label;
+    return `
+      <g class="net-node"
+         tabindex="0"
+         role="button"
+         data-net-node="${esc(n.id)}"
+         data-net-summary="${esc(encodeSummary(n))}"
+         data-href="${esc(n.href)}"
+         aria-label="${esc(labelText)}: ${esc(n.subText)}">
+        <circle class="net-node-halo" cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${(n.r + 5).toFixed(1)}" fill="none" stroke="${n.color}" stroke-width="1.5"/>
+        <circle class="net-node-dot" cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${n.r.toFixed(1)}" fill="${n.color}" stroke="var(--color-surface-solid)" stroke-width="2"/>
+        <text x="${labelX.toFixed(1)}" y="${(n.y - 2).toFixed(1)}" text-anchor="${anchor}" class="net-label">${esc(labelText)}</text>
+        <text x="${labelX.toFixed(1)}" y="${(n.y + 12).toFixed(1)}" text-anchor="${anchor}" class="net-sub">${esc(n.metricText)}</text>
+      </g>
+    `;
+  };
+
+  const renderCenterPill = (n) => {
+    const py = n.y - pillH / 2;
+    const dotCx = pillLeftX + 16;
+    const labelX = pillLeftX + 30;
+    const shortTitle = pretty(n.label).length > 36 ? `${pretty(n.label).slice(0, 35)}…` : pretty(n.label);
+    return `
+      <g class="net-node net-node-hub"
+         tabindex="0"
+         role="button"
+         data-net-node="${esc(n.id)}"
+         data-net-summary="${esc(encodeSummary(n))}"
+         data-href="${esc(n.href)}"
+         aria-label="${esc(pretty(n.label))}: ${esc(n.subText)}">
+        <rect class="net-hub-rect" x="${pillLeftX}" y="${py.toFixed(1)}" width="${pillW}" height="${pillH}" rx="10" fill="var(--color-surface-solid)" stroke="var(--color-rule-2)" stroke-width="1"/>
+        <circle cx="${dotCx}" cy="${n.y.toFixed(1)}" r="${n.r.toFixed(1)}" fill="${n.color}"/>
+        <text x="${labelX}" y="${(n.y - 2).toFixed(1)}" text-anchor="start" class="net-label">${esc(shortTitle)}</text>
+        <text x="${labelX}" y="${(n.y + 12).toFixed(1)}" text-anchor="start" class="net-sub">${esc(n.subText)}</text>
+      </g>
+    `;
+  };
+
+  const rightHeader = mode === "emotions"
+    ? `Emotions (${rightLayout.length} · comments)`
+    : `Response roles (${rightLayout.length} · comments)`;
+
+  return `
+    <div class="network-wrap" data-network-root>
+      <div class="network-scroll">
+        <svg class="network-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive observed co-occurrence network linking ${subs.length} subreddits through ${issues.length} issue domains to ${rightLayout.length} ${mode}">
+          <text x="${leftBaseX}" y="22" text-anchor="end" class="net-col-head">Communities (${subs.length} · threads)</text>
+          <text x="${pillLeftX + pillW / 2}" y="22" text-anchor="middle" class="net-col-head">Issue domains (${issues.length} hubs)</text>
+          <text x="${rightBaseX}" y="22" text-anchor="start" class="net-col-head">${esc(rightHeader)}</text>
+
+          <g class="net-edges">
+            ${renderedLeftEdges}
+            ${renderedRightEdges}
+          </g>
+
+          <g class="net-nodes">
+            ${subLayout.map((n) => renderOuterNode(n, "left")).join("")}
+            ${issueLayout.map(renderCenterPill).join("")}
+            ${rightLayout.map((n) => renderOuterNode(n, "right")).join("")}
+          </g>
+        </svg>
+      </div>
+
+      <div class="network-inspector-bar" data-net-inspector>
+        <span class="muted">Hover any node or link to spotlight its exact observed connections · Click a node to pin focus, or click any edge to filter threads.</span>
+      </div>
+
+      <p class="chart-footnote">Every edge width represents exact observed counts (left: ${num(network.totals?.threads || 0)} threads; right: ${mode === "emotions" ? `${num(network.totals?.emotion_mentions || 0)} multi-label emotion tags` : `${num(network.totals?.comments || 0)} classified comments`}). Minor edges (&lt;15% share) stay muted until hovered to avoid hairball clutter.</p>
+    </div>
+  `;
+}
+
+export function bindNetworkInteractions(container) {
+  const root = container.querySelector("[data-network-root]");
+  if (!root) return;
+
+  const nodes = [...root.querySelectorAll("[data-net-node]")];
+  const edges = [...root.querySelectorAll(".net-edge")];
+  const inspector = root.querySelector("[data-net-inspector]");
+  const defaultInspectorHtml = inspector ? inspector.innerHTML : "";
+  let pinnedNodeId = null;
+
+  const paintInspector = (nodeEl, isPinned) => {
+    if (!inspector || !nodeEl) return;
+    try {
+      const info = JSON.parse(nodeEl.dataset.netSummary || "{}");
+      const chips = (info.links || []).map((lk) => `
+        <a class="net-link-chip" href="${esc(lk.drillHref)}">
+          <span>${esc(lk.peerLabel)}</span>
+          <strong class="num">${esc(lk.valueLabel)}</strong>
+        </a>
+      `).join("");
+      inspector.innerHTML = `
+        <div class="net-insp-head">
+          <div>
+            <strong>${esc(info.label)}</strong>
+            <span class="muted num"> · ${esc(info.subText)}</span>
+          </div>
+          <div class="net-insp-actions">
+            ${isPinned ? `<button type="button" class="btn btn-quiet btn-sm" data-net-clear>Clear pin</button>` : ""}
+            <a class="row-open-link" href="${esc(info.href)}">Open slice &rarr;</a>
+          </div>
+        </div>
+        ${chips ? `<div class="net-insp-chips">${chips}</div>` : ""}
+      `;
+      inspector.querySelector("[data-net-clear]")?.addEventListener("click", () => {
+        pinnedNodeId = null;
+        resetVisuals();
+      });
+    } catch {
+      // Keep quiet on malformed dataset
+    }
+  };
+
+  const resetVisuals = () => {
+    nodes.forEach((n) => n.classList.remove("is-dimmed", "is-active", "is-pinned"));
+    edges.forEach((e) => e.classList.remove("is-dimmed", "is-active"));
+    if (inspector) inspector.innerHTML = defaultInspectorHtml;
+    hideVizTooltip();
+  };
+
+  const focusNode = (nodeId, isPinned = false) => {
+    const connected = new Set([nodeId]);
+    edges.forEach((e) => {
+      const hit = e.dataset.source === nodeId || e.dataset.target === nodeId;
+      e.classList.toggle("is-active", hit);
+      e.classList.toggle("is-dimmed", !hit);
+      if (hit) {
+        connected.add(e.dataset.source);
+        connected.add(e.dataset.target);
+      }
+    });
+    let activeEl = null;
+    nodes.forEach((n) => {
+      const id = n.dataset.netNode;
+      const isSelf = id === nodeId;
+      if (isSelf) activeEl = n;
+      n.classList.toggle("is-active", isSelf);
+      n.classList.toggle("is-pinned", isPinned && isSelf);
+      n.classList.toggle("is-dimmed", !connected.has(id));
+    });
+    if (activeEl) paintInspector(activeEl, isPinned);
+  };
+
+  nodes.forEach((node) => {
+    const id = node.dataset.netNode;
+    node.addEventListener("mouseenter", () => {
+      if (!pinnedNodeId) focusNode(id, false);
+    });
+    node.addEventListener("mouseleave", () => {
+      if (pinnedNodeId) focusNode(pinnedNodeId, true);
+      else resetVisuals();
+    });
+    node.addEventListener("focus", () => {
+      if (!pinnedNodeId) focusNode(id, false);
+    });
+    node.addEventListener("blur", () => {
+      if (pinnedNodeId) focusNode(pinnedNodeId, true);
+      else resetVisuals();
+    });
+    node.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (pinnedNodeId === id) {
+        pinnedNodeId = null;
+        resetVisuals();
+      } else {
+        pinnedNodeId = id;
+        focusNode(id, true);
+      }
+    });
+    node.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (pinnedNodeId === id) {
+          pinnedNodeId = null;
+          resetVisuals();
+        } else {
+          pinnedNodeId = id;
+          focusNode(id, true);
+        }
+      }
+    });
+  });
+
+  edges.forEach((edge) => {
+    edge.addEventListener("mouseenter", () => {
+      if (pinnedNodeId) return;
+      const src = edge.dataset.source;
+      const dst = edge.dataset.target;
+      edges.forEach((other) => {
+        other.classList.toggle("is-active", other === edge);
+        other.classList.toggle("is-dimmed", other !== edge);
+      });
+      nodes.forEach((n) => {
+        const hit = n.dataset.netNode === src || n.dataset.netNode === dst;
+        n.classList.toggle("is-dimmed", !hit);
+        n.classList.toggle("is-active", hit);
+      });
+    });
+    edge.addEventListener("mouseleave", () => {
+      if (pinnedNodeId) focusNode(pinnedNodeId, true);
+      else resetVisuals();
+    });
+    edge.addEventListener("click", () => {
+      if (edge.dataset.href) window.location.hash = edge.dataset.href;
+    });
+  });
+
+  root.querySelector(".network-svg")?.addEventListener("click", () => {
+    if (pinnedNodeId) {
+      pinnedNodeId = null;
+      resetVisuals();
+    }
+  });
+
+  bindChartTooltips(root);
 }

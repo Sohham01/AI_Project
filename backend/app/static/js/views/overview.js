@@ -8,24 +8,26 @@
  * 5. Asymmetric 2-Column Split (Zero-Overshoot Monthly Sentiment Timeline + Actionable Density)
  * 6. Clean 2-Column Recent Discussions + Compact Single-Strip Provenance Bar
  */
-import { api } from "../api.js?v=5.4";
+import { api } from "../api.js?v=5.6";
 import {
   bindChartTooltips,
+  bindNetworkInteractions,
   bindSankeyInteractions,
   bindSplineInteractions,
+  communityNetworkDiagram,
   horizontalBarChart,
   interactiveSplineAreaChart,
   issueFrictionQuadrantChart,
   sankeyFlowChart,
-} from "../charts.js?v=5.4";
+} from "../charts.js?v=5.6";
 import {
   confidenceBadge,
   copyIdChip,
   deck,
   resolutionBadge,
   tallyStrip,
-} from "../components.js?v=5.4";
-import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.4";
+} from "../components.js?v=5.6";
+import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.6";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes] = await Promise.all([
@@ -59,6 +61,7 @@ export async function renderOverview(container, ctx) {
   const insights = summary.cross_model_insights || {};
   const insightCards = insights.cards || [];
   const priorityMatrix = summary.issue_priority_matrix || [];
+  const communityNetwork = summary.community_network || null;
 
   // Row 1: Calm Ruled Tally Strip
   const tallyRow = tallyStrip([
@@ -150,7 +153,22 @@ export async function renderOverview(container, ctx) {
       })
     : "";
 
-  // Row 3: Honest 3-Stage Corpus Breakdown Pipeline
+  // Row 3: Interactive Observed Community & Discourse Network
+  const networkDeck = communityNetwork?.nodes?.communities?.length
+    ? deck("Community &amp; discourse network", {
+        id: "overview-network-deck",
+        subtitle: "Exact observed links from subreddits through issue hubs to canonical response roles or emotions — hover or click any node to isolate its neighborhood",
+        action: `
+          <div class="segmented" role="group" aria-label="Switch network right-hand layer">
+            <button type="button" class="seg-btn is-active" data-net-mode="responses">Response roles</button>
+            <button type="button" class="seg-btn" data-net-mode="emotions">Emotions</button>
+          </div>
+        `,
+        body: `<div id="overview-network-slot">${communityNetworkDiagram(communityNetwork, "responses")}</div>`,
+      })
+    : "";
+
+  // Row 4: Honest 3-Stage Corpus Breakdown Pipeline
   const pipelineDeck = deck("Corpus flow: issues, response roles &amp; outcomes", {
     subtitle: "Observed distribution at each stage of the community pipeline — hover for exact shares, click any bar to drill in",
     action: `<a class="btn btn-quiet btn-sm" href="#/resolution">Audit all ${num(totalPosts)} threads</a>`,
@@ -238,6 +256,7 @@ export async function renderOverview(container, ctx) {
   container.innerHTML = `
     ${tallyRow}
     ${insightsDeck}
+    ${networkDeck}
     ${pipelineDeck}
     ${priorityDeck}
     <div class="studio-grid-asymmetric">
@@ -260,6 +279,20 @@ export async function renderOverview(container, ctx) {
     });
   }
 
+  // Wire Network layer switch (Response roles <-> Emotions)
+  container.querySelectorAll("[data-net-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.netMode;
+      container.querySelectorAll("[data-net-mode]").forEach((b) => b.classList.toggle("is-active", b === btn));
+      const slot = container.querySelector("#overview-network-slot");
+      if (slot && communityNetwork) {
+        slot.innerHTML = communityNetworkDiagram(communityNetwork, mode);
+        bindNetworkInteractions(slot);
+      }
+    });
+  });
+
+  bindNetworkInteractions(container);
   bindSankeyInteractions(container);
   bindSplineInteractions(container);
   bindChartTooltips(container);
