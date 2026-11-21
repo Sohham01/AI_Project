@@ -51,4 +51,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         path = request.url.path
         csp = DOCS_CSP if path.startswith(("/docs", "/redoc")) else STUDIO_CSP
         response.headers.setdefault("Content-Security-Policy", csp)
+        if path == "/app" or path.startswith(("/app/", "/assets/")):
+            response.headers.setdefault("Cache-Control", "no-cache")
         return response

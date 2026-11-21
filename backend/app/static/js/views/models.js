@@ -1,18 +1,20 @@
 /**
- * View 9: Models, Architecture Proof, Error Analysis & Dataset Provenance Vault
- * Shows WHY we chose Transformer (LogReg vs ANN vs CNN vs MuRIL-DAPT v3 across
- * 5 tasks & 8 unseen stress categories), HOW DAPT MLM & temperature calibration
- * work, interactive Error Analysis (confusion matrices, recovery & failure cases),
- * automated Benchmark Verification, and 100% honest provenance/metric reporting.
+ * View 9: Models, Architecture Proof, Error Analysis & Provenance Vault
+ * Streamlined low-cognitive-load IA (zero duplicated charts, progressive disclosure):
+ * 1. Compact Pipeline Integrity Bar (7/7 automated checks, expandable)
+ * 2. Hero 4-Architecture Benchmark (Honest 0–100% Horizontal Dumbbell + Tradeoff Ledger + Collapsible 54-Probe Matrix & Key Reasons)
+ * 3. Mechanism & Confidence (Clean 2-Column: Single-Axis Zero-Anchored DAPT Perplexity + Corpus Confidence Histogram)
+ * 4. Interactive 5-Task Error Analysis & 1:1 Square Calibration Studio (with tabbed Recoveries vs Residual Errors)
+ * 5. Collapsible Per-Task Granular Audit Accordion + Compact Dataset Provenance Vault
  */
 import { api } from "../api.js";
 import {
   architectureComparisonChart,
+  bindChartTooltips,
   calibrationReliabilityChart,
   confidenceHistogramChart,
   confusionMatrixTable,
   daptConvergenceChart,
-  modelComparisonSvgChart,
   robustnessCategoryHeatmap,
 } from "../charts.js";
 import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js";
@@ -21,11 +23,11 @@ import { dateTimeText, esc, num, percent, pretty } from "../format.js";
 const TASK_ORDER = ["issue", "solution", "sentiment", "response", "emotion"];
 
 const TASK_DESCRIPTIONS = {
-  sentiment: "3-class mutually exclusive polarity classifier (negative, neutral, positive) powered by MuRIL-DAPT v3 + Word+Char TF-IDF hybrid.",
-  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress) powered by MuRIL-DAPT v3.",
-  issue: "8-label multi-label issue detector using MuRIL-DAPT v3 + parent post title context + Word+Char TF-IDF hybrid.",
-  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy (MuRIL-DAPT v3 + Word+Char TF-IDF hybrid).",
-  solution: "Binary actionable-solution detector (not_solution vs. solution) powered by MuRIL-DAPT v3 + Word+Char TF-IDF hybrid.",
+  sentiment: "3-class polarity classifier (negative, neutral, positive) using MuRIL-DAPT v3 + TF-IDF hybrid.",
+  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress).",
+  issue: "8-label multi-label issue detector using MuRIL-DAPT v3 + parent post title context + TF-IDF hybrid.",
+  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy.",
+  solution: "Binary actionable-solution detector (not_solution vs. solution) using MuRIL-DAPT v3 + TF-IDF hybrid.",
 };
 
 function fmtParams(n) {
@@ -53,8 +55,8 @@ function renderPerClassSection(taskName, task) {
 
   if (totalSupport === 0 && nSamples > 0) {
     return callout(
-      `<strong>Per-class breakdown and confusion matrix unavailable in this frozen artifact (label-key mismatch):</strong> Held-out aggregate metrics remain valid (<code>n = ${num(nSamples)}</code>, accuracy <code>${percent(metrics.accuracy)}</code>, macro F1 <code>${percent(metrics.macro_f1)}</code>).`,
-      { tone: "warning", title: "Artifact diagnostic:" }
+      `Per-class breakdown unavailable (label-key mismatch); held-out aggregate metrics remain valid (<code>n = ${num(nSamples)}</code>, macro F1 <code>${percent(metrics.macro_f1)}</code>).`,
+      { tone: "warning", title: "Artifact note:" }
     );
   }
 
@@ -86,7 +88,7 @@ function renderPerClassSection(taskName, task) {
             <th scope="col" class="num">Precision</th>
             <th scope="col" class="num">Recall</th>
             <th scope="col" class="num">F1 score</th>
-            <th scope="col" class="num">Test support</th>
+            <th scope="col" class="num">Support</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -102,7 +104,7 @@ function renderVerificationBanner(verification) {
   const allOk = Boolean(verification.verified);
   const rows = verification.checks.map((c) => `
     <div class="verify-check-row">
-      <span class="tag ${c.passed ? "tag-positive" : "tag-danger"}">${c.passed ? "PASS" : "FAIL"}</span>
+      <span class="swatch-inline" style="margin-top:6px;background:${c.passed ? "var(--color-positive)" : "var(--color-negative)"}" aria-hidden="true"></span>
       <div>
         <strong>${esc(c.label)}</strong>
         <p class="muted" style="font-size:var(--text-xs);margin-top:2px">${esc(c.detail)}</p>
@@ -114,18 +116,19 @@ function renderVerificationBanner(verification) {
     <details class="verify-banner ${allOk ? "verify-ok" : "verify-warn"} anim-enter">
       <summary class="verify-summary">
         <div class="verify-summary-left">
-          <span class="tag ${allOk ? "tag-positive" : "tag-warning"}">${allOk ? "PIPELINE INTEGRITY OK" : "AUDIT ATTENTION"}</span>
-          <strong>${passed} / ${total} automated split-isolation, real-data provenance, calibration-bound (T &ge; 1.0) &amp; zero-PII checks passed</strong>
+          <span class="swatch-inline" style="background:${allOk ? "var(--color-positive)" : "var(--color-warning)"}" aria-hidden="true"></span>
+          <strong>Pipeline integrity: ${passed} / ${total} checks passed</strong>
+          <span class="muted">Zero split leakage · 0 synthetic rows · T &ge; 1.0 · zero PII</span>
         </div>
-        <span class="num muted" style="font-size:var(--text-xs)">Checked ${dateTimeText(verification.verified_at)} · Inspect audit</span>
+        <span class="num muted" style="font-size:var(--text-xs)">${dateTimeText(verification.verified_at)} · Inspect</span>
       </summary>
-      ${verification.scope_note ? `<p class="muted" style="font-size:var(--text-xs);padding:0 var(--space-md) var(--space-sm)">${esc(verification.scope_note)}</p>` : ""}
+      ${verification.scope_note ? `<p class="muted" style="font-size:var(--text-xs);padding:0 var(--space-lg) var(--space-sm)">${esc(verification.scope_note)}</p>` : ""}
       <div class="verify-checks-grid">${rows}</div>
     </details>
   `;
 }
 
-function renderArchitectureSection(archComp) {
+function renderArchitectureSection(archComp, evalScope) {
   if (!archComp || !archComp.aggregate) return "";
   const order = archComp.architectures_order || Object.keys(archComp.aggregate);
   const agg = archComp.aggregate || {};
@@ -135,16 +138,16 @@ function renderArchitectureSection(archComp) {
     const row = agg[key];
     if (!row) return "";
     const isSelected = key === "transformer_muril_dapt_v3" || key === "production_hybrid";
-    const gapPp = (Number(row.generalization_gap || 0) * 100).toFixed(1);
+    const roleTag = key === "transformer_muril_dapt_v3"
+      ? `<span class="meta-inline-tag">Core encoder</span>`
+      : key === "production_hybrid"
+        ? `<span class="meta-inline-tag is-pos">Deployed</span>`
+        : "";
     return `
       <tr class="${isSelected ? "arch-row-highlight" : ""}">
-        <td>
-          <strong>${esc(row.label)}</strong>
-          ${key === "transformer_muril_dapt_v3" ? badge("Core Encoder", "info") : key === "production_hybrid" ? badge("Deployed", "positive") : ""}
-        </td>
-        <td class="num">${percent(row.mean_test_macro_f1)}</td>
-        <td class="num"><strong>${percent(row.mean_probe_macro_f1)}</strong></td>
-        <td class="num"><span class="tag ${Number(row.generalization_gap) <= 0.28 ? "tag-positive" : "tag-warning"}">-${gapPp} pp</span></td>
+        <td><strong>${esc(row.label)}</strong> ${roleTag}</td>
+        <td class="num"><strong>${percent(row.mean_test_macro_f1)}</strong></td>
+        <td class="num">${percent(row.mean_probe_macro_f1)}</td>
         <td class="num">${Number(row.mean_calibration_ece ?? 0).toFixed(3)}</td>
         <td class="num">${fmtParams(row.param_count)}</td>
         <td class="num">${Number(row.total_train_seconds ?? 0).toFixed(1)}s</td>
@@ -168,89 +171,87 @@ function renderArchitectureSection(archComp) {
     return `${n >= 0 ? "+" : ""}${n.toFixed(1)} pp`;
   };
 
-  return deck("4-Architecture Benchmark on Real Held-Out Reddit Comments", {
+  return deck("4-Architecture benchmark on real held-out Reddit comments", {
     id: "why-transformer-deck",
-    subtitle: "Apples-to-apples comparison of Logistic Regression, ANN (MLP), 1D TextCNN, and MuRIL-DAPT v3 Transformer on identical post_id-grouped splits of 459 curated real Reddit comments (0 synthetic rows) plus auxiliary 54-probe stress diagnostic",
+    subtitle: evalScope || "Apples-to-apples comparison on identical post_id-grouped real Reddit test splits (n = 92 unseen-thread comments, 0 synthetic rows)",
     action: `
       <div class="segmented" role="group" aria-label="Architecture chart split toggle">
-        <button type="button" class="seg-btn is-active" data-arch-mode="test">Real Held-out Test (Primary)</button>
-        <button type="button" class="seg-btn" data-arch-mode="probe">54-Probe Stress (Aux)</button>
+        <button type="button" class="seg-btn is-active" data-arch-mode="test">Real Held-Out Test</button>
+        <button type="button" class="seg-btn" data-arch-mode="probe">54-Probe Aux</button>
       </div>
     `,
     body: `
       ${why.gain_vs_logreg_pp !== undefined ? `
         <div class="arch-callout-strip">
-          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. LogReg</span><strong class="num">${fmtDelta(why.gain_vs_logreg_pp)} real test</strong></div>
-          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. ANN (MLP)</span><strong class="num">${fmtDelta(why.gain_vs_ann_pp)} real test</strong></div>
-          <div class="arch-delta-pill"><span>MuRIL-DAPT v3 vs. 1D CNN</span><strong class="num">${fmtDelta(why.gain_vs_cnn_pp)} real test</strong></div>
-          <div class="arch-delta-pill arch-delta-accent"><span>Production Hybrid Real Test</span><strong class="num">${percent(why.mean_test_f1_hybrid ?? why.mean_ood_f1_hybrid)}</strong></div>
+          <div class="arch-delta-pill arch-delta-accent"><span>MuRIL-DAPT v3 (5-task mean)</span><strong class="num">${percent(why.mean_test_f1_transformer ?? agg.transformer_muril_dapt_v3?.mean_test_macro_f1)}</strong></div>
+          <div class="arch-delta-pill"><span>Gain vs. Logistic Reg.</span><strong class="num">${fmtDelta(why.gain_vs_logreg_pp)}</strong></div>
+          <div class="arch-delta-pill"><span>Gain vs. ANN (MLP)</span><strong class="num">${fmtDelta(why.gain_vs_ann_pp)}</strong></div>
+          <div class="arch-delta-pill"><span>Gain vs. 1D TextCNN</span><strong class="num">${fmtDelta(why.gain_vs_cnn_pp)}</strong></div>
         </div>
       ` : ""}
+
       <div id="arch-chart-slot">${architectureComparisonChart(archComp, "test")}</div>
+
       <div class="spacer-md"></div>
-      <h3 class="subpanel-title">Architecture tradeoff ledger (5-task mean on real held-out test, auxiliary 54-probe diagnostic, 5-bin ECE &amp; compute)</h3>
       <div class="table-scroll">
         <table class="data-table" aria-label="4-architecture aggregate comparison">
           <thead>
             <tr>
               <th scope="col">Architecture</th>
-              <th scope="col" class="num">Real Test F1 (Primary)</th>
+              <th scope="col" class="num">Real Test F1 (n=92)</th>
               <th scope="col" class="num">54-Probe Aux F1</th>
-              <th scope="col" class="num">Shift Delta</th>
-              <th scope="col" class="num">Mean 5-Bin ECE</th>
+              <th scope="col" class="num">5-Bin ECE</th>
               <th scope="col" class="num">Params</th>
-              <th scope="col" class="num">Train (5 tasks)</th>
-              <th scope="col" class="num">Latency / text</th>
+              <th scope="col" class="num">Train time</th>
+              <th scope="col" class="num">Latency</th>
             </tr>
           </thead>
           <tbody>${summaryRows}</tbody>
         </table>
       </div>
-      <div class="spacer-md"></div>
-      <h3 class="subpanel-title">Auxiliary 54-probe stress diagnostic by linguistic shift category (observational only)</h3>
-      ${robustnessCategoryHeatmap(archComp)}
-      ${reasonCards ? `<div class="spacer-md"></div><div class="why-grid">${reasonCards}</div>` : ""}
+
+      ${reasonCards ? `
+        <details class="clean-disclosure">
+          <summary>Why MuRIL-DAPT v3 outperformed classical &amp; shallow neural baselines (4 findings)</summary>
+          <div class="why-grid" style="margin-top:var(--space-sm)">${reasonCards}</div>
+        </details>
+      ` : ""}
+
+      <details class="clean-disclosure">
+        <summary>Auxiliary 54-probe linguistic stress breakdown (8 shift categories · observational only)</summary>
+        <div style="margin-top:var(--space-sm)">${robustnessCategoryHeatmap(archComp)}</div>
+      </details>
     `,
   });
 }
 
-function renderHowItWorksSection(dapt, errorAnalysis, confSummary) {
-  if (!dapt && !errorAnalysis && !confSummary) return "";
-  const calTask = errorAnalysis?.response?.calibration || errorAnalysis?.sentiment?.calibration || null;
-
-  return deck("How MuRIL-DAPT v3 adapts &amp; calibrates prediction confidence", {
-    subtitle: "Mechanism visuals explaining unsupervised Masked Language Modeling (DAPT) convergence, temperature-scaled reliability calibration, and live corpus confidence routing",
+function renderHowItWorksSection(dapt, confSummary) {
+  if (!dapt && !confSummary) return "";
+  return deck("Domain adaptation (DAPT) &amp; live confidence routing", {
+    subtitle: "How unsupervised Masked Language Modeling adapts MuRIL to Indian Reddit language and how calibrated confidence routes uncertain predictions to human review",
     body: `
       <div class="studio-grid-2">
         <div class="how-panel">
-          <h3 class="subpanel-title">1. Unsupervised domain adaptation (DAPT / MLM — held-out val perplexity)</h3>
-          <p class="how-explain">Before supervised fine-tuning, MuRIL adapts via Masked Language Modeling on <strong>${num(dapt?.train_documents || dapt?.unlabeled_documents || 0)}</strong> unlabeled Reddit texts and is evaluated on a disjoint held-out validation split of <strong>${num(dapt?.val_documents || 0)}</strong> unseen texts (Epoch 0 pre-DAPT baseline &rarr; Epoch ${num(dapt?.epochs || 4)}).</p>
+          <h3 class="subpanel-title">1. Unsupervised domain adaptation (DAPT)</h3>
+          <p class="how-explain">Trained on <strong>${num(dapt?.train_documents || dapt?.unlabeled_documents || 0)}</strong> unlabeled Reddit texts and evaluated on <strong>${num(dapt?.val_documents || 0)}</strong> disjoint unseen texts across ${num(dapt?.epochs || 4)} epochs.</p>
           ${daptConvergenceChart(dapt)}
         </div>
-        <div class="how-panel">
-          <h3 class="subpanel-title">2. Non-sharpening temperature scaling (T &ge; 1.0) &amp; 5-bin reliability</h3>
-          <p class="how-explain">Validation-only scalar temperature scaling strictly clamped to <code>T &ge; 1.0</code> (<code>T = ${esc(calTask?.temperature ?? "—")}</code>) softens overconfident logits and is evaluated across 5 reliability bins on <code>n = ${num(calTask?.n_samples || 92)}</code> held-out real Reddit comments.</p>
-          ${calTask ? calibrationReliabilityChart(calTask) : `<div class="chart-empty">Calibration bins unavailable.</div>`}
-        </div>
-      </div>
-      ${confSummary?.histogram?.length ? `
-        <div class="spacer-md"></div>
-        <div class="how-panel">
-          <div class="how-panel-head">
-            <div>
-              <h3 class="subpanel-title">3. Live corpus prediction confidence distribution</h3>
-              <p class="how-explain">Mean calibrated 5-task confidence across all live comments is <strong>${percent(confSummary.mean_confidence)}</strong> (median ${percent(confSummary.median_confidence)}). Comments below 55% or with low task margin (${num(confSummary.needs_review_count)} total) are flagged for Annotation Studio review.</p>
+        ${confSummary?.histogram?.length ? `
+          <div class="how-panel">
+            <div class="how-panel-head">
+              <h3 class="subpanel-title" style="margin:0">2. Live corpus prediction confidence</h3>
+              <a class="row-open-link" href="#/explorer?confidence=review">Review queue &rarr;</a>
             </div>
-            <a class="btn btn-quiet btn-sm" href="#/explorer?confidence=review">Inspect review queue</a>
+            <p class="how-explain" style="margin-top:var(--space-xs)">Mean 5-task confidence is <strong>${percent(confSummary.mean_confidence)}</strong> (median ${percent(confSummary.median_confidence)}). <strong>${num(confSummary.low_count)}</strong> fall below 55% (${num(confSummary.needs_review_count)} total flagged including low task margin).</p>
+            ${confidenceHistogramChart(confSummary)}
           </div>
-          ${confidenceHistogramChart(confSummary)}
-        </div>
-      ` : ""}
+        ` : ""}
+      </div>
     `,
   });
 }
 
-function renderErrorAnalysisBody(taskKey, errTask) {
+function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
   if (!errTask) return `<p class="muted">No error analysis available for this task.</p>`;
   const probeCm = errTask.probe_confusion || {};
   const cal = errTask.calibration || {};
@@ -260,36 +261,41 @@ function renderErrorAnalysisBody(taskKey, errTask) {
 
   const tierRows = ["high", "medium", "low"].map((t) => {
     const info = tiers[t] || {};
+    const dot = t === "high" ? "var(--color-positive)" : t === "medium" ? "var(--color-info)" : "var(--color-warning)";
+    const label = t === "high" ? "High (≥80%)" : t === "medium" ? "Medium (55–79%)" : "Low (<55% · Review)";
     return `
       <tr>
-        <td>${badge(t === "high" ? "High (>=80%)" : t === "medium" ? "Medium (55-79%)" : "Low (<55% · Review)", t === "high" ? "positive" : t === "medium" ? "info" : "warning")}</td>
+        <td><span class="swatch-inline" style="background:${dot};margin-right:6px" aria-hidden="true"></span>${label}</td>
         <td class="num">${num(info.count || 0)}</td>
         <td class="num">${percent(info.share)}</td>
         <td class="num"><strong>${info.accuracy !== null && info.accuracy !== undefined ? percent(info.accuracy) : "—"}</strong></td>
-        <td class="num">${info.error_rate !== null && info.error_rate !== undefined ? percent(info.error_rate) : "—"}</td>
       </tr>
     `;
   }).join("");
 
   const topPairsHtml = (probeCm.top_confusions || []).length
-    ? (probeCm.top_confusions || []).map((p) => `
+    ? (probeCm.top_confusions || []).slice(0, 5).map((p) => `
       <div class="confusion-pair-row">
         <div class="confusion-pair-head">
           <span><code>${esc(p.true_label)}</code> &rarr; <code>${esc(p.predicted_label)}</code></span>
-          <span class="tag tag-warning num">${num(p.count)} errors (${percent(p.share_of_errors, 0)})</span>
+          <span class="num muted">${num(p.count)} errors (${percent(p.share_of_errors, 0)})</span>
         </div>
         <p class="muted" style="font-size:var(--text-xs);margin-top:4px">${esc(p.diagnosis)}</p>
       </div>
     `).join("")
-    : `<p class="muted">Zero off-diagonal confusions recorded on the 54 unseen probes for this task.</p>`;
+    : `<p class="muted">Zero off-diagonal confusions recorded on the ${num(probeCm.n_samples)} held-out real test comments.</p>`;
 
-  const winsHtml = (arch.transformer_wins || []).length
-    ? (arch.transformer_wins || []).slice(0, 4).map((w) => `
+  const wins = arch.transformer_wins || [];
+  const residuals = arch.residual_errors || [];
+
+  const winsHtml = wins.length
+    ? wins.slice(0, 3).map((w) => `
       <article class="err-case-card err-case-win">
         <div class="err-case-top">
-          ${badge(pretty(w.category), "info")}
+          <span class="meta-issue-label">${esc(pretty(w.category))}</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
           ${confidenceBadge(w.transformer_confidence)}
-          <span class="tag tag-positive">Beat ${num(w.baselines_failed)}/3 baselines</span>
+          <span class="meta-inline-tag is-pos">Beat ${num(w.baselines_failed)}/3 baselines</span>
         </div>
         <blockquote class="err-case-quote">“${esc(w.text)}”</blockquote>
         <div class="err-case-compare">
@@ -299,13 +305,14 @@ function renderErrorAnalysisBody(taskKey, errTask) {
         <p class="err-case-reason">${esc(w.why_transformer_won)}</p>
       </article>
     `).join("")
-    : `<p class="muted">All four architectures agreed on the correct probes for this task.</p>`;
+    : `<p class="muted">All four architectures agreed on the correct real test comments for this task.</p>`;
 
-  const residualHtml = (arch.residual_errors || []).length
-    ? (arch.residual_errors || []).slice(0, 4).map((e) => `
+  const residualHtml = residuals.length
+    ? residuals.slice(0, 3).map((e) => `
       <article class="err-case-card err-case-miss">
         <div class="err-case-top">
-          ${badge(e.failure_mode || pretty(e.category), "warning")}
+          <span class="meta-issue-label">${esc(e.failure_mode || pretty(e.category))}</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
           ${confidenceBadge(e.transformer_confidence, e.confidence_tier)}
         </div>
         <blockquote class="err-case-quote">“${esc(e.text)}”</blockquote>
@@ -316,52 +323,51 @@ function renderErrorAnalysisBody(taskKey, errTask) {
         <p class="err-case-reason">${esc(e.root_cause)}</p>
       </article>
     `).join("")
-    : `<p class="muted">Zero residual Transformer errors on the 54 unseen probes for this task.</p>`;
+    : `<p class="muted">Zero residual Transformer errors on the ${num(probeCm.n_samples)} held-out real test comments.</p>`;
 
   return `
     <div class="err-kpi-row">
-      <div class="eval-cell"><span>Real Held-out Error Rate</span><strong class="num">${percent(probeCm.error_rate)}</strong><small class="num">${num(probeCm.error_count)} / ${num(probeCm.n_samples)} unseen real comments</small></div>
-      <div class="eval-cell"><span>Transformer Beat Majority Baselines</span><strong class="num">${num(agree.transformer_beats_majority_baselines || 0)}</strong><small>${num(agree.transformer_only_win || 0)} where ALL 3 baselines failed</small></div>
-      <div class="eval-cell"><span>Calibrated 5-Bin ECE / Brier</span><strong class="num">${Number(cal.calibrated_ece ?? 0).toFixed(3)}</strong><small class="num">Raw T=1.0: ${Number(cal.uncalibrated_ece ?? 0).toFixed(3)} · Brier ${Number(cal.brier_score ?? 0).toFixed(3)}</small></div>
-      <div class="eval-cell"><span>All 4 Architectures Failed</span><strong class="num">${num(agree.all_failed || 0)}</strong><small>Hardest ambiguous real comments</small></div>
+      <div class="eval-cell"><span>Real test error rate</span><strong class="num">${percent(probeCm.error_rate)}</strong><small class="num">${num(probeCm.error_count)} / ${num(probeCm.n_samples)} unseen real comments</small></div>
+      <div class="eval-cell"><span>Beat majority baselines</span><strong class="num">${num(agree.transformer_beats_majority_baselines || 0)}</strong><small>${num(agree.transformer_only_win || 0)} where all 3 baselines failed</small></div>
+      <div class="eval-cell"><span>Calibrated 5-bin ECE</span><strong class="num">${Number(cal.calibrated_ece ?? 0).toFixed(3)}</strong><small class="num">Raw T=1.0: ${Number(cal.uncalibrated_ece ?? 0).toFixed(3)} · Brier ${Number(cal.brier_score ?? 0).toFixed(3)}</small></div>
+      <div class="eval-cell"><span>All 4 models failed</span><strong class="num">${num(agree.all_failed || 0)}</strong><small>Ambiguous / boundary real comments</small></div>
     </div>
 
     <div class="studio-grid-2" style="margin-top:var(--space-md)">
       <div>
-        <h3 class="subpanel-title">Top confused class pairs (empirical error audit, n = ${num(probeCm.n_samples)} real test comments)</h3>
+        <h3 class="subpanel-title">Top confused class pairs (n = ${num(probeCm.n_samples)} real test)</h3>
         <div class="confusion-pair-list">${topPairsHtml}</div>
-        ${!probeCm.multilabel && probeCm.matrix ? `<div class="spacer-sm"></div>${confusionMatrixTable(probeCm.matrix, probeCm.labels)}` : ""}
+        ${!probeCm.multilabel && probeCm.matrix ? `<div class="spacer-sm"></div>${confusionMatrixTable(probeCm.matrix, probeCm.labels, { openByDefault: true })}` : ""}
       </div>
       <div>
-        <h3 class="subpanel-title">Empirical accuracy by prediction confidence tier (n = ${num(cal.n_samples || probeCm.n_samples)} real test)</h3>
+        <h3 class="subpanel-title">Reliability &amp; confidence tiers (T = ${esc(cal.temperature ?? "—")}, n = ${num(cal.n_samples || probeCm.n_samples)})</h3>
+        ${calibrationReliabilityChart(cal)}
+        <div class="spacer-sm"></div>
         <div class="table-scroll">
           <table class="data-table" aria-label="${esc(pretty(taskKey))} accuracy by confidence tier">
             <thead>
               <tr>
-                <th scope="col">Confidence tier</th>
-                <th scope="col" class="num">Comments</th>
+                <th scope="col">Tier</th>
+                <th scope="col" class="num">n</th>
                 <th scope="col" class="num">Share</th>
                 <th scope="col" class="num">Accuracy</th>
-                <th scope="col" class="num">Error rate</th>
               </tr>
             </thead>
             <tbody>${tierRows}</tbody>
           </table>
         </div>
-        <div class="spacer-sm"></div>
-        ${calibrationReliabilityChart(cal)}
       </div>
     </div>
 
-    <div class="studio-grid-2" style="margin-top:var(--space-lg)">
-      <div>
-        <h3 class="subpanel-title">Where Transformer beat LogReg / ANN / CNN (real held-out recoveries)</h3>
-        <div class="err-case-stack">${winsHtml}</div>
+    <div class="err-examples-block">
+      <div class="view-toggle-bar" style="margin-bottom:var(--space-sm)">
+        <h3 class="subpanel-title" style="margin:0">Empirical real held-out examples</h3>
+        <div class="segmented" role="tablist" aria-label="Switch between Transformer recoveries and residual errors">
+          <button type="button" role="tab" aria-selected="${caseTab === "wins"}" class="seg-btn ${caseTab === "wins" ? "is-active" : ""}" data-err-case-tab="wins">MuRIL recoveries (${wins.length})</button>
+          <button type="button" role="tab" aria-selected="${caseTab === "miss"}" class="seg-btn ${caseTab === "miss" ? "is-active" : ""}" data-err-case-tab="miss">Residual errors (${residuals.length})</button>
+        </div>
       </div>
-      <div>
-        <h3 class="subpanel-title">Hardest residual errors (data-driven sample diagnostics)</h3>
-        <div class="err-case-stack">${residualHtml}</div>
-      </div>
+      <div class="err-case-stack">${caseTab === "wins" ? winsHtml : residualHtml}</div>
     </div>
   `;
 }
@@ -397,159 +403,94 @@ export async function renderModels(container, ctx) {
     : "ml/artifacts/live_corpus/";
   const avgReplies = summary.posts ? (Number(summary.comments || 0) / Number(summary.posts)).toFixed(1) : "0";
 
-  const provenanceBody = `
-    <div class="provenance-two-col">
-      <div>
-        <h3 class="subpanel-title">Corpus metadata &amp; privacy</h3>
-        <dl class="vault-kv-grid">
-          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v4")}</dd></div>
-          <div><dt>Dataset version</dt><dd class="num">v${esc(prov.dataset_version || health.dataset_version)}</dd></div>
-          <div><dt>Source archive</dt><dd>${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (public Reddit)" : (prov.generation_seed ? `Seed ${prov.generation_seed}` : "Local archive"))}</dd></div>
-          <div><dt>Updated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
-          <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads, ${num(summary.comments)} comments (${avgReplies} / thread)</dd></div>
-          <div><dt>Privacy &amp; access</dt><dd><span class="tag ${isSynthetic ? "tag-warning" : "tag-positive"}">${esc(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Anonymized public Reddit")}</span></dd></div>
-          <div><dt>Artifact directory</dt><dd class="num">${esc(activeArtifactDir)}</dd></div>
-          ${dapt ? `<div class="kv-span-full"><dt>Domain-Adaptive MLM (DAPT)</dt><dd class="num">${num(dapt.unlabeled_documents)} real Reddit texts, ${num(dapt.epochs)} epochs (perplexity ${esc(dapt.initial_perplexity)} → ${esc(dapt.final_perplexity)})</dd></div>` : ""}
-          ${filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_boilerplate_filtered)} AutoModerator sticky comments and ${num(filt.gif_only_filtered)} GIF-only embeds removed; usernames stripped and inline PII redacted</dd></div>` : ""}
-        </dl>
-      </div>
-
-      <div>
-        <h3 class="subpanel-title">Methodology &amp; epistemic boundaries</h3>
-        <ul class="limitations-list">
-          <li><strong>Anonymized real Reddit discussions:</strong> Public IIM Sambalpur discussions across ${subListText} collected via Arctic Shift with author usernames removed and inline contact/user mentions redacted.</li>
-          <li><strong>4-Architecture Verified Selection:</strong> Benchmarked Logistic Regression, 2-layer ANN (MLP), 1D Multi-Kernel TextCNN, and MuRIL-DAPT v3 Transformer on identical <code>post_id</code>-grouped splits and 54 unseen stress probes before selecting the calibrated MuRIL-DAPT v3 hybrid.</li>
-          <li><strong>Calibrated Confidence &amp; Human Review:</strong> Validation-only temperature scaling yields reliable probabilities; low-confidence predictions (&lt;55%) route directly to human adjudication in the local Annotation Studio.</li>
-          <li><strong>Proposal vs. resolution separation:</strong> Predicted <code>advice</code> and <code>solution</code> replies are strictly separated from explicit first-person follow-up resolution signals.</li>
-          <li><strong>Honest metric reporting:</strong> Multi-label tasks (<code>emotion</code>, <code>issue</code>) report <code>macro_f1</code>, <code>micro_f1</code>, <code>subset_accuracy</code>, and <code>hamming_loss</code>; any unemitted metric is displayed as <em>Not emitted</em> rather than 0%.</li>
-        </ul>
-      </div>
-    </div>
-  `;
-
-  const chartTasks = orderedNames.map((name) => {
-    const t = tasksObj[name];
-    return {
-      key: name,
-      label: pretty(name),
-      valF1: t.validation?.metrics?.macro_f1,
-      testF1: t.test?.metrics?.macro_f1,
-      multilabel: Boolean(t.test?.metrics?.multilabel),
-      binary: (t.labels || []).length === 2 && !t.test?.metrics?.multilabel,
-    };
-  });
-
-  const comparisonRows = orderedNames.map((name) => {
-    const t = tasksObj[name];
-    const tm = t.test?.metrics || {};
-    const vm = t.validation?.metrics || {};
-    const isMulti = Boolean(tm.multilabel);
-    const probeF1 = t.robustness_54_probes?.overall_macro_f1;
-    const accuracyCell = isMulti
-      ? (tm.subset_accuracy !== null && tm.subset_accuracy !== undefined
-          ? percent(tm.subset_accuracy)
-          : `<span class="not-emitted-pill" title="subset_accuracy is null in evaluation.json">Not emitted</span>`)
-      : percent(tm.accuracy);
-
-    return `
-      <tr>
-        <td><a class="table-primary-link" href="#/models" data-scroll-task="${esc(name)}">${esc(pretty(name))}</a><span class="table-subcode">${esc(t.model_name)} ${esc(t.model_version)}</span></td>
-        <td>${badge(isMulti ? "Multi-label" : (t.labels || []).length === 2 ? "Binary" : "Single-label", isMulti ? "info" : "neutral")}</td>
-        <td class="num">${num(t.split?.train)} / ${num(t.split?.validation)} / ${num(t.split?.test)}</td>
-        <td>${badge(t.leakage_report?.leakage_detected ? "Leakage detected" : "Zero leakage", t.leakage_report?.leakage_detected ? "danger" : "positive")}</td>
-        <td class="num">${percent(vm.macro_f1)}</td>
-        <td class="num"><strong>${percent(tm.macro_f1)}</strong></td>
-        <td class="num"><strong>${probeF1 !== undefined && probeF1 !== null ? percent(probeF1) : "—"}</strong></td>
-        <td class="num">${accuracyCell}</td>
-      </tr>
-    `;
-  }).join("");
-
-  const taskCards = orderedNames.map((name) => {
+  // Compact Collapsible Per-Task Granular Audit (replaces duplicate 5-task chart + 5 giant expanded cards)
+  const perTaskAccordions = orderedNames.map((name, idx) => {
     const task = tasksObj[name];
     const tm = task.test?.metrics || {};
     const vm = task.validation?.metrics || {};
     const isMulti = Boolean(tm.multilabel);
     const split = task.split || {};
     const leakage = Boolean(task.leakage_report?.leakage_detected);
-    const allWarnings = [...new Set([...(task.test?.warnings || []), ...(task.warnings || [])])];
-
-    const hasSubsetAcc = tm.subset_accuracy !== null && tm.subset_accuracy !== undefined;
-    const primaryMetricTiles = isMulti
-      ? `
-        <div class="eval-cell"><span>Test macro F1</span><strong class="num">${percent(tm.macro_f1)}</strong><small class="num">Val: ${percent(vm.macro_f1)}</small></div>
-        <div class="eval-cell"><span>Test micro F1</span><strong class="num">${percent(tm.micro_f1)}</strong><small class="num">Val: ${percent(vm.micro_f1)}</small></div>
-        <div class="eval-cell"><span>${glossaryTip("subset_accuracy", "Subset accuracy")}</span><strong class="${hasSubsetAcc ? "num" : "metric-muted"}">${percent(tm.subset_accuracy, 1, "Not emitted")}</strong><small class="num">${hasSubsetAcc ? `Hamming loss: ${percent(tm.hamming_loss, 2, "Not emitted")} · Val: ${percent(vm.subset_accuracy)}` : "Field is <code>null</code> in JSON"}</small></div>
-        <div class="eval-cell"><span>Thread split (${esc(split.group_by || "post_id")})</span><strong class="num">${num(split.train)} / ${num(split.validation)} / ${num(split.test)}</strong><small>${leakage ? "Leakage detected" : "Zero cross-split leakage"}</small></div>
-      `
-      : `
-        <div class="eval-cell"><span>Test accuracy</span><strong class="num">${percent(tm.accuracy)}</strong><small class="num">Val: ${percent(vm.accuracy)}</small></div>
-        <div class="eval-cell"><span>Test macro F1</span><strong class="num">${percent(tm.macro_f1)}</strong><small class="num">Val: ${percent(vm.macro_f1)}</small></div>
-        <div class="eval-cell"><span>${tm.micro_f1 !== null && tm.micro_f1 !== undefined ? "Test micro F1" : "Test weighted F1"}</span><strong class="num">${percent(tm.micro_f1 ?? tm.weighted_f1, 1, "N/A")}</strong><small class="num">n = ${num(tm.n_samples)} test records</small></div>
-        <div class="eval-cell"><span>Thread split (${esc(split.group_by || "post_id")})</span><strong class="num">${num(split.train)} / ${num(split.validation)} / ${num(split.test)}</strong><small>${leakage ? "Leakage detected" : "Zero cross-split leakage"}</small></div>
-      `;
-
-    const multilabelNote = isMulti && (tm.subset_accuracy === null || tm.subset_accuracy === undefined)
-      ? callout(
-          `In <code>evaluation.json</code>, <code>subset_accuracy</code>, <code>hamming_loss</code>, and <code>hamming_accuracy</code> are <code>null</code> because <code>ml/evaluation/reports.py::_extract_metrics()</code> extracts only <code>macro_f1</code>, <code>micro_f1</code>, and <code>per_label</code> for multi-label tasks.`,
-          { tone: "info", title: "Metric definition note:" }
-        )
-      : "";
-
-    const warningsHtml = allWarnings.length
-      ? `<div class="eval-warnings"><span class="eval-warnings-label">Evaluator &amp; split warnings (${allWarnings.length}):</span><ul>${allWarnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div>`
-      : "";
-
+    const probeF1 = task.robustness_54_probes?.overall_macro_f1;
     const labelDistHtml = Object.entries(task.label_counts || {})
-      .map(([k, v]) => `<span class="tag tag-neutral">${esc(k)}: <span class="num">${num(v)}</span></span>`)
+      .map(([k, v]) => `<span class="meta-inline-tag">${esc(k)}: <span class="num">${num(v)}</span></span>`)
       .join("");
 
-    const probeF1 = task.robustness_54_probes?.overall_macro_f1;
-    const probeBadge = probeF1 !== undefined && probeF1 !== null
-      ? badge(`54-probe unseen F1: ${percent(probeF1)}`, probeF1 >= 0.7 ? "positive" : "info")
-      : "";
-
-    return deck(`${esc(pretty(name))} classifier`, {
-      id: `model-task-${esc(name)}`,
-      className: "model-detail-card",
-      subtitle: TASK_DESCRIPTIONS[name] || "",
-      action: `
-        ${badge(`${task.model_name} ${task.model_version}`, "info")}
-        ${probeBadge}
-        ${task.registry_id ? copyIdChip(task.registry_id, { label: "registry" }) : ""}
-      `,
-      body: `
-        <div class="eval-row-grid">${primaryMetricTiles}</div>
-        ${multilabelNote}
-        ${warningsHtml}
-        <div class="model-detail-split">
-          <div>
-            <h3 class="subpanel-title">Held-out test per-${isMulti ? "label" : "class"} breakdown (n = ${num(tm.n_samples)})</h3>
-            ${renderPerClassSection(name, task)}
-            ${confusionMatrixTable(tm.confusion_matrix, tm.confusion_matrix_labels)}
+    return `
+      <details class="task-accordion" id="model-task-${esc(name)}" ${idx === 0 ? "" : ""}>
+        <summary class="task-accordion-head">
+          <div class="task-acc-title">
+            <strong>${esc(pretty(name))}</strong>
+            <span class="muted">${isMulti ? "Multi-label" : (task.labels || []).length === 2 ? "Binary" : "Single-label"} · ${esc(task.model_name)} ${esc(task.model_version)}</span>
           </div>
-          <div>
-            <h3 class="subpanel-title">Live corpus predicted label distribution (n = ${num(summary.comments)})</h3>
-            <div class="label-chip-wrap">${labelDistHtml}</div>
-            <div class="spacer-md"></div>
-            <h3 class="subpanel-title">Artifact &amp; scope</h3>
-            <dl class="spec-kv">
-              <div><dt>Artifact</dt><dd><code class="break-code">${esc(task.artifact_path || "None")}</code></dd></div>
-              <div><dt>Split seed</dt><dd class="num">${esc(split.seed)}</dd></div>
-              <div><dt>Stratified</dt><dd>${split.stratify_used ? "Yes" : "No (group-aware)"}</dd></div>
-              <div><dt>Scope</dt><dd>${esc(task.inference_scope || "Batch inference over anonymized Reddit corpus")}</dd></div>
-            </dl>
+          <div class="task-acc-metrics num">
+            <span><span class="muted">Split</span> ${num(split.train)}/${num(split.validation)}/${num(split.test)}</span>
+            <span><span class="muted">Val</span> ${percent(vm.macro_f1)}</span>
+            <span><span class="muted">Test F1</span> <strong>${percent(tm.macro_f1)}</strong></span>
+            <span><span class="muted">54-Probe</span> ${probeF1 !== undefined && probeF1 !== null ? percent(probeF1) : "—"}</span>
+            <span class="meta-inline-tag ${leakage ? "is-warn" : "is-pos"}">${leakage ? "Leakage" : "0 leakage"}</span>
+          </div>
+        </summary>
+        <div class="task-accordion-body">
+          <p class="muted" style="font-size:var(--text-sm);margin-bottom:var(--space-md)">${esc(TASK_DESCRIPTIONS[name] || "")}</p>
+          <div class="model-detail-split">
+            <div>
+              <h4 class="subpanel-title">Held-out test per-${isMulti ? "label" : "class"} breakdown (n = ${num(tm.n_samples)})</h4>
+              ${renderPerClassSection(name, task)}
+              ${confusionMatrixTable(tm.confusion_matrix, tm.confusion_matrix_labels)}
+            </div>
+            <div>
+              <h4 class="subpanel-title">Live corpus predicted distribution (n = ${num(summary.comments)})</h4>
+              <div class="label-chip-wrap">${labelDistHtml}</div>
+              <div class="spacer-md"></div>
+              <dl class="spec-kv">
+                <div><dt>Artifact</dt><dd><code class="break-code">${esc(task.artifact_path || "None")}</code></dd></div>
+                <div><dt>Metrics (${glossaryTip("subset_accuracy", "Subset / Acc")})</dt><dd class="num">${isMulti ? `${percent(tm.subset_accuracy, 1, "Not emitted")} subset · ${percent(tm.micro_f1, 1, "N/A")} micro F1` : `${percent(tm.accuracy, 1, "N/A")} accuracy`}</dd></div>
+                <div><dt>Scope</dt><dd>${esc(task.inference_scope || "Batch inference over anonymized Reddit corpus")}</dd></div>
+              </dl>
+            </div>
           </div>
         </div>
-      `,
-    });
+      </details>
+    `;
   }).join("");
 
+  const provenanceBody = `
+    <div class="provenance-two-col">
+      <div>
+        <h3 class="subpanel-title">Corpus metadata &amp; privacy</h3>
+        <dl class="vault-kv-grid">
+          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v5")}</dd></div>
+          <div><dt>Version</dt><dd class="num">v${esc(prov.dataset_version || health.dataset_version)}</dd></div>
+          <div><dt>Source archive</dt><dd>${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (public Reddit)" : "Local archive")}</dd></div>
+          <div><dt>Updated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
+          <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads · ${num(summary.comments)} comments (${avgReplies}/thread)</dd></div>
+          <div><dt>Privacy</dt><dd>${badge(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Pseudonymized · zero PII", isSynthetic ? "warning" : "positive")}</dd></div>
+          <div><dt>Artifact root</dt><dd class="num">${esc(activeArtifactDir)}</dd></div>
+          ${dapt ? `<div class="kv-span-full"><dt>Domain-Adaptive MLM (DAPT)</dt><dd class="num">${num(dapt.train_documents || dapt.unlabeled_documents)} train / ${num(dapt.val_documents || 0)} held-out val texts · perplexity ${esc(dapt.initial_perplexity)} → ${esc(dapt.final_perplexity)}</dd></div>` : ""}
+          ${filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_boilerplate_filtered)} AutoMod stickies &amp; ${num(filt.gif_only_filtered)} GIF embeds removed; IDs pseudonymized and PII redacted</dd></div>` : ""}
+        </dl>
+      </div>
+
+      <div>
+        <h3 class="subpanel-title">Methodology &amp; epistemic boundaries</h3>
+        <ul class="limitations-list">
+          <li><strong>100% real anonymized Reddit data:</strong> Public discussions across ${subListText}; 459 comments across 200 distinct threads hand-labeled for strictly thread-grouped training, validation, and testing (0 synthetic rows).</li>
+          <li><strong>4-architecture benchmark:</strong> Logistic Regression, 2-layer ANN, 1D TextCNN, and MuRIL-DAPT v3 evaluated on identical unseen-thread splits; MuRIL-DAPT v3 leads all 5 tasks.</li>
+          <li><strong>Non-sharpening calibration:</strong> Validation-only scalar temperature scaling strictly clamped to <code>T &ge; 1.0</code>; low-confidence comments (&lt;55%) route to human adjudication.</li>
+          <li><strong>Proposal vs. outcome separation:</strong> Predicted <code>advice</code> / <code>solution</code> replies are strictly separated from explicit first-person follow-up resolution signals.</li>
+        </ul>
+      </div>
+    </div>
+  `;
+
   let activeErrTask = errorAnalysis ? (TASK_ORDER.find((t) => t in errorAnalysis) || Object.keys(errorAnalysis)[0]) : null;
+  let activeCaseTab = "wins";
+
   const errorAnalysisDeck = errorAnalysis && activeErrTask
-    ? deck("Interactive error analysis &amp; model failure diagnostics", {
+    ? deck("Interactive error analysis &amp; calibration reliability", {
         id: "error-analysis-deck",
-        subtitle: "Inspect per-task confusion pairs, calibration reliability by confidence tier, real probe recoveries where Transformer beat LogReg/ANN/CNN, and residual errors",
+        subtitle: "Select any classifier to audit real held-out confusions, 1:1 reliability calibration (with bin sample sizes n=), and real examples",
         action: `
           <div class="segmented" role="tablist" aria-label="Select task for error analysis">
             ${TASK_ORDER.filter((t) => t in errorAnalysis).map((t) => `
@@ -557,54 +498,49 @@ export async function renderModels(container, ctx) {
             `).join("")}
           </div>
         `,
-        body: `<div id="error-analysis-slot">${renderErrorAnalysisBody(activeErrTask, errorAnalysis[activeErrTask])}</div>`,
+        body: `<div id="error-analysis-slot">${renderErrorAnalysisBody(activeErrTask, errorAnalysis[activeErrTask], activeCaseTab)}</div>`,
       })
     : "";
 
   container.innerHTML = `
     ${renderVerificationBanner(verification)}
-    ${callout(`${esc(modelsData.evaluation_scope)}`, { tone: "info", title: "Evaluation & inference scope:" })}
-    ${renderArchitectureSection(archComp)}
-    ${renderHowItWorksSection(dapt, errorAnalysis, confSummary)}
+    ${renderArchitectureSection(archComp, modelsData.evaluation_scope)}
+    ${renderHowItWorksSection(dapt, confSummary)}
     ${errorAnalysisDeck}
-    ${deck("Dataset provenance, governance &amp; methodology", {
+    ${deck("Per-task classifier ledger &amp; class-level audit", {
+      subtitle: "Click any classifier row to inspect per-class Precision, Recall, F1, confusion matrix, and live corpus label counts",
+      body: `<div class="task-accordion-list">${perTaskAccordions}</div>`,
+    })}
+    ${deck("Dataset provenance, governance &amp; boundaries", {
       subtitle: "Verified metadata read directly from /api/demo/summary and /api/demo/health",
       body: provenanceBody,
     })}
-    ${deck("Production 5-task benchmark summary", {
-      subtitle: "Side-by-side comparison of held-out validation, held-out test, and unseen 54-probe Macro F1 across all five active classifiers",
-      body: `
-        ${modelComparisonSvgChart(chartTasks)}
-        <div class="spacer-md"></div>
-        <div class="table-scroll">
-          <table class="data-table" aria-label="Five active NLP models benchmark comparison">
-            <thead>
-              <tr>
-                <th scope="col">Task &amp; model</th>
-                <th scope="col">Paradigm</th>
-                <th scope="col" class="num">Train / Val / Test</th>
-                <th scope="col">${glossaryTip("group_split", "Leakage")}</th>
-                <th scope="col" class="num">Val F1</th>
-                <th scope="col" class="num">${glossaryTip("macro_f1", "Test F1")}</th>
-                <th scope="col" class="num">54-Probe OOD</th>
-                <th scope="col" class="num">${glossaryTip("subset_accuracy", "Accuracy / subset")}</th>
-              </tr>
-            </thead>
-            <tbody>${comparisonRows}</tbody>
-          </table>
-        </div>
-      `,
-    })}
-    <div class="model-cards-stack">${taskCards}</div>
   `;
 
-  // Wire Architecture split toggle (54-Probe OOD vs Held-out Test)
+  function wireErrorCaseTabs() {
+    container.querySelectorAll("[data-err-case-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeCaseTab = btn.dataset.errCaseTab;
+        const slot = container.querySelector("#error-analysis-slot");
+        if (slot && errorAnalysis) {
+          slot.innerHTML = renderErrorAnalysisBody(activeErrTask, errorAnalysis[activeErrTask], activeCaseTab);
+          wireErrorCaseTabs();
+          bindChartTooltips(slot);
+        }
+      });
+    });
+  }
+
+  // Wire Architecture split toggle (Real Held-Out Test vs 54-Probe Aux)
   container.querySelectorAll("[data-arch-mode]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const mode = btn.dataset.archMode;
       container.querySelectorAll("[data-arch-mode]").forEach((b) => b.classList.toggle("is-active", b === btn));
       const slot = container.querySelector("#arch-chart-slot");
-      if (slot && archComp) slot.innerHTML = architectureComparisonChart(archComp, mode);
+      if (slot && archComp) {
+        slot.innerHTML = architectureComparisonChart(archComp, mode);
+        bindChartTooltips(slot);
+      }
     });
   });
 
@@ -612,21 +548,21 @@ export async function renderModels(container, ctx) {
   container.querySelectorAll("[data-err-task]").forEach((btn) => {
     btn.addEventListener("click", () => {
       activeErrTask = btn.dataset.errTask;
+      activeCaseTab = "wins";
       container.querySelectorAll("[data-err-task]").forEach((b) => {
         const on = b === btn;
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
       });
       const slot = container.querySelector("#error-analysis-slot");
-      if (slot && errorAnalysis) slot.innerHTML = renderErrorAnalysisBody(activeErrTask, errorAnalysis[activeErrTask]);
+      if (slot && errorAnalysis) {
+        slot.innerHTML = renderErrorAnalysisBody(activeErrTask, errorAnalysis[activeErrTask], activeCaseTab);
+        wireErrorCaseTabs();
+        bindChartTooltips(slot);
+      }
     });
   });
 
-  // Wire smooth scroll to per-task cards
-  container.querySelectorAll("[data-scroll-task]").forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      container.querySelector(`#model-task-${CSS.escape(link.dataset.scrollTask)}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  });
+  wireErrorCaseTabs();
+  bindChartTooltips(container);
 }

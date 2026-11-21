@@ -102,8 +102,8 @@ export async function renderExplorer(container, ctx, params = {}) {
 
   const filterBar = `
     <form id="explorer-filter-form" class="filter-dock anim-enter" role="search" aria-label="Filter community discussions">
-      <div class="filter-grid">
-        <div class="field">
+      <div class="filter-grid filter-grid-explorer">
+        <div class="field field-span-2">
           <label for="ex-q">Search titles, posts &amp; comments</label>
           <input id="ex-q" name="q" type="search" maxlength="120" value="${esc(filters.q || "")}" placeholder="Placements, waitlist, hostel, fees, CAT…">
         </div>
@@ -193,10 +193,11 @@ export async function renderExplorer(container, ctx, params = {}) {
               return `
                 <article class="discussion-card ${isSel ? "is-selected" : ""}" role="listitem" data-preview-id="${esc(post.id)}">
                   <div class="discussion-card-badges">
-                    <span class="tag tag-neutral">${esc(pretty(post.issue))}</span>
+                    <span class="meta-issue-label">${esc(pretty(post.issue))}</span>
+                    <span class="meta-sep" aria-hidden="true">·</span>
                     ${resolutionBadge(post.resolution_state)}
                     ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
-                    <span class="num muted" style="font-size:var(--text-xs)">${dateText(post.created_at)}</span>
+                    <span class="num muted" style="font-size:var(--text-xs);margin-left:auto">${dateText(post.created_at)}</span>
                   </div>
                   <h2 class="discussion-card-title">
                     <a href="#/thread/${encodeURIComponent(post.id)}">${esc(post.title)}</a>

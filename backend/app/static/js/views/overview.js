@@ -1,14 +1,16 @@
 /**
- * View 1: Community Intelligence Studio (Overview — Insightful Cross-Model Edition)
- * 1. Four Ruled Tally Strip KPI Pods (including calibrated prediction confidence)
- * 2. Cross-Model Insight Engine Briefings (synthesizing Issue x Sentiment x Emotion x Response x Resolution x Architecture)
- * 3. Full-Width Interactive 3-Stage Sankey Research Flow
- * 4. Issue Priority & Friction Matrix (Quadrant visual + Ranked Action Table)
- * 5. Asymmetric Interactive Split: Monthly Sentiment Spline + Top Actionable Issues
- * 6. Recent Thread Spotlight (with confidence pills) + Compact Provenance Deck
+ * View 1: Community Intelligence Studio (Overview — Calm, Honest, Scannable Edition)
+ * Visual rhythm:
+ * 1. Ruled 4-Metric Tally Strip (corpus, actionable replies, explicit outcomes, confidence)
+ * 2. Key Cross-Model Findings (top 3 high-signal cards upfront + one-click reveal for all 5)
+ * 3. Honest 3-Stage Corpus Pipeline (Issue Domains -> 6 Canonical Roles -> 4 Resolution States)
+ * 4. Unified Honest 0–100% Linear Issue Triage Visual (no distorted axes, no duplicate table)
+ * 5. Asymmetric 2-Column Split (Zero-Overshoot Monthly Sentiment Timeline + Actionable Density)
+ * 6. Clean 2-Column Recent Discussions + Compact Single-Strip Provenance Bar
  */
 import { api } from "../api.js";
 import {
+  bindChartTooltips,
   bindSankeyInteractions,
   bindSplineInteractions,
   horizontalBarChart,
@@ -17,14 +19,13 @@ import {
   sankeyFlowChart,
 } from "../charts.js";
 import {
-  badge,
   confidenceBadge,
   copyIdChip,
   deck,
   resolutionBadge,
   tallyStrip,
 } from "../components.js";
-import { dateText, esc, monthLabel, num, percent, pretty } from "../format.js";
+import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes] = await Promise.all([
@@ -59,7 +60,7 @@ export async function renderOverview(container, ctx) {
   const insightCards = insights.cards || [];
   const priorityMatrix = summary.issue_priority_matrix || [];
 
-  // Row 1: Dusk Ruled Tally Strip (now featuring Calibrated Confidence)
+  // Row 1: Calm Ruled Tally Strip
   const tallyRow = tallyStrip([
     {
       label: "Community corpus",
@@ -67,7 +68,7 @@ export async function renderOverview(container, ctx) {
       countTo: totalPosts,
       unit: "threads",
       accent: true,
-      note: `${num(totalComments)} anonymized comments across ${num(communityCount)} subreddits`,
+      note: `${num(totalComments)} anonymized comments · ${num(communityCount)} subreddits`,
       href: "#/explorer",
     },
     {
@@ -78,19 +79,19 @@ export async function renderOverview(container, ctx) {
       suffix: "%",
       ratioPct: actionablePct,
       color: "var(--color-role-advice)",
-      note: `${num(totalActionable)} of ${num(totalComments)} replies (${num(totalSolutions)} solution, ${num(totalAdvice)} advice)`,
+      note: `${num(totalSolutions)} solution, ${num(totalAdvice)} advice replies`,
       href: "#/responses",
     },
     {
-      label: "Explicit outcome evidence",
+      label: "Explicit outcomes",
       valueText: `${num(reportedSuccess + reportedPending)} / ${num(totalPosts)}`,
       ratioPct: successPct,
       color: "var(--color-positive)",
-      note: `${num(reportedSuccess)} reported success, ${num(reportedPending)} pending, ${num(unconfirmedTotal)} unconfirmed`,
+      note: `${num(reportedSuccess)} success · ${num(reportedPending)} pending · ${num(unconfirmedTotal)} unconfirmed`,
       href: "#/resolution",
     },
     {
-      label: "Calibrated confidence",
+      label: "Mean confidence",
       valueText: meanConfPct > 0 ? `${meanConfPct.toFixed(1)}%` : "5 models",
       countTo: meanConfPct > 0 ? meanConfPct : 5,
       decimals: meanConfPct > 0 ? 1 : 0,
@@ -98,104 +99,93 @@ export async function renderOverview(container, ctx) {
       ratioPct: meanConfPct > 0 ? meanConfPct : null,
       color: meanConfPct >= 75 ? "var(--color-positive)" : "var(--color-accent)",
       note: meanConfPct > 0
-        ? `${percent(conf.high_share, 0)} high (>=80%), ${num(conf.needs_review_count)} flagged for review`
-        : `GPU MuRIL-DAPT v3 hybrid + ${num(summary.topic_count)} NMF topics`,
+        ? `${percent(conf.high_share, 0)} high (≥80%) · ${num(conf.low_count)} below 55%`
+        : `MuRIL-DAPT v3 hybrid + ${num(summary.topic_count)} NMF topics`,
       href: "#/models",
     },
   ], "Community corpus headline figures");
 
-  // Row 2: Cross-Model Insight Engine Briefings
+  // Row 2: Key Findings (Top 3 upfront to prevent card overload; optional reveal for all)
+  const renderInsightItem = (card) => {
+    const toneColor = card.tone === "danger"
+      ? "var(--color-negative)"
+      : card.tone === "warning"
+        ? "var(--color-warning)"
+        : card.tone === "positive"
+          ? "var(--color-positive)"
+          : card.tone === "accent"
+            ? "var(--color-accent)"
+            : "var(--color-info)";
+    return `
+      <article class="insight-card">
+        <div class="insight-card-top">
+          <span class="insight-cat"><span class="swatch-inline" style="background:${toneColor}" aria-hidden="true"></span>${esc(card.category)}</span>
+          <span class="insight-metric num">${esc(card.metric)}</span>
+        </div>
+        <h3 class="insight-headline">${esc(card.headline)}</h3>
+        <p class="insight-detail">${esc(card.detail)}</p>
+        ${card.href ? `<a class="insight-link" href="${esc(card.href)}">${esc(card.cta || "Inspect")} &rarr;</a>` : ""}
+      </article>
+    `;
+  };
+
+  const hasExtraInsights = insightCards.length > 3;
   const insightsDeck = insightCards.length
-    ? deck("Cross-model insight engine", {
-        subtitle: "Synthesized evidence joining all 5 supervised NLP classifiers, 10 NMF topics, calibrated confidence tiers, and 4-architecture OOD telemetry",
-        action: `<a class="btn btn-quiet btn-sm" href="#/models">Why Transformer &amp; Error Audit</a>`,
+    ? deck("Key cross-model findings", {
+        subtitle: "Empirical takeaways joining all 5 supervised classifiers, calibrated confidence tiers, and real held-out benchmarks",
+        action: `
+          ${hasExtraInsights ? `<button type="button" class="btn btn-quiet btn-sm" id="toggle-all-insights" aria-expanded="false">Show all ${insightCards.length}</button>` : ""}
+          <a class="btn btn-quiet btn-sm" href="#/models">Model benchmarks</a>
+        `,
         body: `
-          <div class="insight-grid">
-            ${insightCards.map((card) => `
-              <article class="insight-card insight-tone-${esc(card.tone || "info")}">
-                <div class="insight-card-top">
-                  ${badge(card.category, card.tone === "accent" ? "info" : (card.tone || "neutral"))}
-                  <span class="insight-metric num">${esc(card.metric)}</span>
-                </div>
-                <h3 class="insight-headline">${esc(card.headline)}</h3>
-                <p class="insight-detail">${esc(card.detail)}</p>
-                ${card.href ? `<a class="insight-link" href="${esc(card.href)}">${esc(card.cta || "Drill in")} &rarr;</a>` : ""}
-              </article>
-            `).join("")}
+          <div class="insight-grid" id="primary-insights-grid">
+            ${insightCards.slice(0, 3).map(renderInsightItem).join("")}
           </div>
+          ${hasExtraInsights ? `
+            <div class="insight-grid insight-grid-extra" id="extra-insights-grid" hidden>
+              ${insightCards.slice(3).map(renderInsightItem).join("")}
+            </div>
+          ` : ""}
         `,
       })
     : "";
 
-  // Row 3: Full-width Interactive 3-Stage Sankey Research Flow
-  const sankeyDeck = deck("Interactive issue-to-evidence flow", {
-    subtitle: `Hover any node or ribbon to trace public discussions across ${num(issues.length)} issue domains, the 6 fixed canonical response classes, and 4 resolution states; click any node to drill in`,
+  // Row 3: Honest 3-Stage Corpus Breakdown Pipeline
+  const pipelineDeck = deck("Corpus flow: issues, response roles &amp; outcomes", {
+    subtitle: "Observed distribution at each stage of the community pipeline — hover for exact shares, click any bar to drill in",
     action: `<a class="btn btn-quiet btn-sm" href="#/resolution">Audit all ${num(totalPosts)} threads</a>`,
     body: sankeyFlowChart(summary),
   });
 
-  // Row 4: Issue Priority & Friction Synthesis (Quadrant + Ranked Multi-Signal Table)
+  // Row 4: Unified Honest 0–100% Linear Issue Triage Visual
   const priorityDeck = priorityMatrix.length
-    ? deck("Issue friction &amp; priority matrix", {
-        subtitle: "Cross-task triage ranking combining Negative Sentiment (40%), Unconfirmed Resolution (35%), and Corpus Volume (25%), paired with dominant emotion, NMF cluster, and prediction confidence",
+    ? deck("Issue friction &amp; triage comparison", {
+        subtitle: "Side-by-side comparison on honest 0%–100% linear scales — hover any domain for full emotion, topic, and confidence context",
         action: `<a class="btn btn-quiet btn-sm" href="#/issues">Deep-dive issues</a>`,
-        body: `
-          <div class="priority-split">
-            <div>${issueFrictionQuadrantChart(priorityMatrix)}</div>
-            <div class="table-scroll">
-              <table class="data-table priority-table" aria-label="Cross-model issue friction priority ranking">
-                <thead>
-                  <tr>
-                    <th scope="col">Issue domain</th>
-                    <th scope="col" class="num">Friction</th>
-                    <th scope="col" class="num">Neg %</th>
-                    <th scope="col" class="num">Unresolved</th>
-                    <th scope="col">Top emotion</th>
-                    <th scope="col" class="num">Mean conf</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${priorityMatrix.map((m) => `
-                    <tr>
-                      <td>
-                        <a class="table-primary-link" href="#/issues?selected=${encodeURIComponent(m.key)}">${esc(m.label)}</a>
-                        <span class="table-subcode">${num(m.posts)} threads · ${num(m.comments)} comments · ${esc(m.top_topic)}</span>
-                      </td>
-                      <td class="num">${badge(`${m.friction_score.toFixed(0)}`, m.priority_band === "critical" ? "danger" : m.priority_band === "elevated" ? "warning" : m.priority_band === "moderate" ? "info" : "positive")}</td>
-                      <td class="num">${percent(m.negative_share, 0)}</td>
-                      <td class="num">${percent(m.unresolved_share, 0)}</td>
-                      <td><span class="tag tag-neutral">${esc(pretty(m.dominant_emotion))}</span></td>
-                      <td class="num">${confidenceBadge(m.mean_confidence)}</td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `,
+        body: issueFrictionQuadrantChart(priorityMatrix),
       })
     : "";
 
-  // Row 5: Asymmetric Interactive Split (Monthly Sentiment Spline + Top Actionable Issues)
+  // Row 5: Asymmetric Interactive Split (Monthly Sentiment Timeline + Actionable Density)
   const sortedIssues = [...issues].sort(
     (a, b) => Number(b.actionable_recommendations || 0) - Number(a.actionable_recommendations || 0)
   );
   const issueBars = sortedIssues.map((issue, idx) => ({
     label: pretty(issue.label),
-    sublabel: `${num(issue.posts)} threads`,
+    sublabel: plural(issue.posts, "thread"),
     count: Number(issue.actionable_recommendations || 0),
     color: idx === 0 ? "var(--color-accent)" : idx < 3 ? "var(--color-role-advice)" : "var(--color-series-val)",
     href: `#/issues?selected=${encodeURIComponent(issue.key)}`,
   }));
 
-  const splineDeck = deck("Monthly sentiment pulse", {
-    subtitle: `Hover across ${dateSpan} to scrub predicted polarity counts by comment month`,
-    action: `<a class="btn btn-quiet btn-sm" href="#/sentiment">Full affect studio</a>`,
+  const splineDeck = deck("Monthly sentiment timeline", {
+    subtitle: `${dateSpan} · zero-anchored monotone curves, hover to inspect monthly shares`,
+    action: `<a class="btn btn-quiet btn-sm" href="#/sentiment">Sentiment studio</a>`,
     body: interactiveSplineAreaChart(monthly, { chartId: "ov-spline" }),
   });
 
-  const issuesDeck = deck("Actionable density by issue", {
-    subtitle: "Ranked by total predicted solution and advice replies across public community threads",
+  const issuesDeck = deck("Actionable replies by issue", {
+    subtitle: "Predicted solution and advice replies ranked across issue domains",
     action: `<a class="btn btn-quiet btn-sm" href="#/issues">Issues studio</a>`,
     body: horizontalBarChart(issueBars, {
       total: Math.max(1, totalActionable),
@@ -205,56 +195,72 @@ export async function renderOverview(container, ctx) {
     }),
   });
 
-  // Row 6: Thread Spotlight Hairline List (with calibrated confidence badges)
-  const spotlightRows = (summary.recent_discussions || []).map((post) => `
+  // Row 6: Clean 2-Column Recent Discussions
+  const spotlightRows = (summary.recent_discussions || []).slice(0, 6).map((post) => `
     <a class="spotlight-row" href="#/thread/${encodeURIComponent(post.id)}">
       <div class="spotlight-row-top">
-        <span class="tag tag-neutral">${esc(pretty(post.issue))}</span>
+        <span class="meta-issue-label">${esc(pretty(post.issue))}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
         ${resolutionBadge(post.resolution_state)}
         ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
       </div>
       <div class="spotlight-row-title">${esc(post.title)}</div>
       <div class="spotlight-row-foot">
         <span class="num">${dateText(post.created_at)}</span>
-        <span class="num">${num(post.comment_count)} replies</span>
+        <span class="num">${plural(post.comment_count, "reply", "replies")}</span>
       </div>
     </a>
   `).join("");
 
   const spotlightDeck = deck("Recent community discussions", {
-    subtitle: "Latest anonymized public Reddit discussions with calibrated prediction confidence; open any thread to inspect nested replies",
-    action: `<a class="btn btn-primary btn-sm" href="#/explorer">Open discussion workbench</a>`,
+    subtitle: "Latest anonymized public threads — open any discussion to inspect the nested reply tree and per-comment probabilities",
+    action: `<a class="btn btn-primary btn-sm" href="#/explorer">Open workbench</a>`,
     body: `<div class="spotlight-grid">${spotlightRows}</div>`,
   });
 
+  // Compact Provenance Strip (low visual weight instead of a full extra deck)
   const prov = summary.provenance || {};
-  const isSynthetic = Boolean(summary.synthetic_only);
-  const provenanceDeck = deck("Dataset provenance &amp; methodology", {
-    subtitle: "Live corpus metadata read from /api/demo/summary",
-    action: `<a class="btn btn-quiet btn-sm" href="#/models">Models &amp; evaluation</a>`,
-    body: `
-      <dl class="vault-kv-grid">
-        <div><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v4")}</dd></div>
-        <div><dt>Source &amp; version</dt><dd class="num">${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift public archive" : "Local corpus")}, v${esc(prov.dataset_version || summary.dataset_version)}</dd></div>
-        <div><dt>Privacy &amp; access</dt><dd><span class="tag ${isSynthetic ? "tag-warning" : "tag-positive"}">${esc(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Anonymized public Reddit")}</span></dd></div>
-        <div><dt>Archive time span</dt><dd>${esc(dateSpan)} (${num(communityCount)} subreddits)</dd></div>
-      </dl>
-    `,
-  });
+  const provenanceStrip = `
+    <aside class="compact-prov-bar anim-enter" aria-label="Dataset provenance summary">
+      <div class="compact-prov-items">
+        <span><span class="muted">Dataset</span> ${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v5")}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span class="num"><span class="muted">Version</span> v${esc(prov.dataset_version || summary.dataset_version)}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span><span class="muted">Source</span> ${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (anonymized Reddit)" : "Local corpus")}</span>
+        <span class="meta-sep" aria-hidden="true">·</span>
+        <span><span class="muted">Span</span> ${esc(dateSpan)}</span>
+      </div>
+      <a class="row-open-link" href="#/models">Models &amp; audit &rarr;</a>
+    </aside>
+  `;
 
   container.innerHTML = `
     ${tallyRow}
     ${insightsDeck}
-    ${sankeyDeck}
+    ${pipelineDeck}
     ${priorityDeck}
     <div class="studio-grid-asymmetric">
       ${splineDeck}
       ${issuesDeck}
     </div>
     ${spotlightDeck}
-    ${provenanceDeck}
+    ${provenanceStrip}
   `;
+
+  // Wire "Show all insights" progressive disclosure
+  const toggleBtn = container.querySelector("#toggle-all-insights");
+  const extraGrid = container.querySelector("#extra-insights-grid");
+  if (toggleBtn && extraGrid) {
+    toggleBtn.addEventListener("click", () => {
+      const open = extraGrid.hidden;
+      extraGrid.hidden = !open;
+      toggleBtn.setAttribute("aria-expanded", String(open));
+      toggleBtn.textContent = open ? "Show top 3" : `Show all ${insightCards.length}`;
+    });
+  }
 
   bindSankeyInteractions(container);
   bindSplineInteractions(container);
+  bindChartTooltips(container);
 }

@@ -155,7 +155,7 @@ export async function renderTopics(container, ctx) {
           label: "Devanagari script clusters",
           valueText: num(devTopics.length),
           countTo: devTopics.length,
-          unit: "topics",
+          unit: devTopics.length === 1 ? "topic" : "topics",
           ratioPct: devPct,
           color: "var(--color-accent-2)",
           note: `${num(devComments)} comments (${devPct.toFixed(1)}%)`,
@@ -164,7 +164,7 @@ export async function renderTopics(container, ctx) {
           label: "Hinglish / code-mixed",
           valueText: num(hinglishTopics.length),
           countTo: hinglishTopics.length,
-          unit: "topics",
+          unit: hinglishTopics.length === 1 ? "topic" : "topics",
           ratioPct: hinglishPct,
           color: "var(--color-role-advice)",
           note: `${num(hinglishComments)} comments (${hinglishPct.toFixed(1)}%) with Romanized Hindi terms`,
@@ -177,7 +177,7 @@ export async function renderTopics(container, ctx) {
         countTo: rawTopics.length,
         unit: "clusters",
         accent: true,
-        note: `TF-IDF (1–2 grams, English stopwords removed), ${num(termsPerTopic)} weighted terms per cluster`,
+        note: `TF-IDF (1–2 grams, AutoMod boilerplate filtered), ${num(termsPerTopic)} weighted terms per cluster`,
       },
       {
         label: "Assigned comments",
@@ -206,7 +206,7 @@ export async function renderTopics(container, ctx) {
           ${devTopics.length > 0 ? `<button type="button" class="pill-btn ${topicState.scriptFilter === "devanagari" ? "is-active" : ""}" data-topic-script="devanagari">Devanagari (${devTopics.length})</button>` : ""}
         </div>
         <div class="segmented" role="group" aria-label="Topic visualization layout">
-          <button type="button" class="seg-btn ${topicState.viewMode === "constellation" ? "is-active" : ""}" data-topic-mode="constellation">Interactive constellation</button>
+          <button type="button" class="seg-btn ${topicState.viewMode === "constellation" ? "is-active" : ""}" data-topic-mode="constellation">Proportional map</button>
           <button type="button" class="seg-btn ${topicState.viewMode === "all" ? "is-active" : ""}" data-topic-mode="all">All ${rawTopics.length} cards</button>
         </div>
       </div>
@@ -254,7 +254,7 @@ export async function renderTopics(container, ctx) {
 
     container.innerHTML = `
       ${callout(
-        `Unsupervised ${glossaryTip("nmf_topics", "NMF topic clusters")} are fit directly on anonymized public Reddit comments (unigrams &amp; bigrams, English stopwords and AutoMod boilerplate removed). Click any cluster orb to inspect its top weighted terms and representative replies, or compare against supervised domains in <a href="#/issues">Issues studio</a>.`,
+        `Unsupervised ${glossaryTip("nmf_topics", "NMF topic clusters")} are fit directly on anonymized public Reddit comments (unigrams &amp; bigrams, AutoMod boilerplate removed). Click any cluster circle to inspect its top weighted terms and representative replies, or compare against supervised domains in <a href="#/issues">Issues studio</a>.`,
         { tone: "info", title: "Unsupervised topic discovery:" }
       )}
       ${tallyRow}

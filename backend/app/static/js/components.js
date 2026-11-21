@@ -109,11 +109,19 @@ export function confidenceBadge(score, tier = null, { needsReview = false, prefi
   if (score === null || score === undefined || !Number.isFinite(Number(score))) return "";
   const val = Number(score);
   const resolvedTier = tier || (val >= 0.8 ? "high" : val >= 0.55 ? "medium" : "low");
-  const tone = resolvedTier === "high" ? "positive" : resolvedTier === "medium" ? "info" : "warning";
+  const isReview = Boolean(needsReview || resolvedTier === "low");
+  const dotColor = resolvedTier === "high"
+    ? "var(--color-positive)"
+    : resolvedTier === "medium"
+      ? "var(--color-info)"
+      : "var(--color-warning)";
   const pct = `${(val * 100).toFixed(0)}%`;
-  const suffix = needsReview || resolvedTier === "low" ? " · review" : "";
-  const title = `Calibrated prediction confidence: ${(val * 100).toFixed(1)}% (${resolvedTier} tier${suffix ? "; flagged for human review" : ""})`;
-  return `<span class="tag tag-${tone} tag-conf" title="${esc(title)}">${esc(prefix)}${pct} conf${esc(suffix)}</span>`;
+  const suffix = isReview ? " · review" : "";
+  const title = `Calibrated prediction confidence: ${(val * 100).toFixed(1)}% (${resolvedTier} tier${isReview ? "; flagged for human review" : ""})`;
+  if (isReview) {
+    return `<span class="tag tag-warning tag-conf" title="${esc(title)}"><span class="swatch-inline" style="background:${dotColor}" aria-hidden="true"></span>${esc(prefix)}${pct}${esc(suffix)}</span>`;
+  }
+  return `<span class="conf-meter" title="${esc(title)}"><span class="swatch-inline" style="background:${dotColor}" aria-hidden="true"></span><span class="num">${esc(prefix)}${pct}</span></span>`;
 }
 
 export function resolutionBadge(state) {

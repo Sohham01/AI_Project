@@ -1,10 +1,11 @@
 /**
- * Interactive Token-Driven SVG Visualizations for RCI Dusk Studio.
- * 1. Interactive 3-stage Sankey Flow (Issues -> 6 Canonical Responses -> 4 Resolution States)
- * 2. Smooth Multi-Series Spline Area Chart with live crosshair scrubbing & series filter
- * 3. Interactive NMF Topic Constellation (8 clickable script-colored proportional orbs)
- * 4. Animated Radial Canonical Response Wheel (6 fixed classes)
- * 5. Animated Stacked Bars, Horizontal Bars, Benchmark Columns & Confusion Heatmap
+ * Low-Cognitive-Load, Visually Honest SVG & Data Visualizations for RCI Studio.
+ * Design rules enforced across every chart:
+ * - Zero truncated bar/area baselines (all counts, shares, F1, and perplexity charts anchor honestly at 0).
+ * - Zero redundant dual Y-axes (e.g., DAPT shows single-axis Held-Out Perplexity; MLM loss sits in tooltip).
+ * - Zero non-linear axis distortions (linear 0-100% scales with explicit ticks and sample sizes n=).
+ * - Zero spline overshoot (Fritsch-Carlson monotone cubic interpolation clamped strictly within [0, yMax]).
+ * - Zero invented marginal cross-tab edges (3-stage pipeline presents true per-stage proportions cleanly).
  */
 import {
   CANONICAL_RESPONSE_TYPES,
@@ -17,17 +18,50 @@ import {
   monthLabel,
   num,
   percent,
+  plural,
   pretty,
   share,
 } from "./format.js";
 import { hideVizTooltip, showVizTooltip } from "./motion.js";
 
 /* ==========================================================================
-   1. Interactive 3-Stage Sankey Research Flow (Overview Signature Visual)
+   0. Shared Interactive Floating Tooltip Binder (Used Across All Charts)
+   ========================================================================== */
+export function bindChartTooltips(container) {
+  if (!container) return;
+  container.querySelectorAll("[data-chart-tip-title]").forEach((el) => {
+    if (el.dataset.tipBound === "1") return;
+    el.dataset.tipBound = "1";
+    const show = (e) => {
+      const title = el.dataset.chartTipTitle || "";
+      const body = el.dataset.chartTipBody || "";
+      const rows = el.dataset.chartTipRows ? JSON.parse(el.dataset.chartTipRows) : null;
+      const hint = el.dataset.chartTipHint || "";
+      const rowsHtml = Array.isArray(rows)
+        ? rows.map(([k, v]) => `<div class="viz-tip-row"><span>${esc(k)}</span><span class="num">${esc(v)}</span></div>`).join("")
+        : "";
+      const html = `
+        <strong>${esc(title)}</strong>
+        ${body ? `<div>${esc(body)}</div>` : ""}
+        ${rowsHtml}
+        ${hint ? `<div class="muted" style="margin-top:4px">${esc(hint)}</div>` : ""}
+      `;
+      showVizTooltip(html, e.clientX, e.clientY);
+    };
+    el.addEventListener("mouseenter", show);
+    el.addEventListener("mousemove", show);
+    el.addEventListener("mouseleave", hideVizTooltip);
+  });
+}
+
+/* ==========================================================================
+   1. Honest 3-Stage Corpus Pipeline (Overview Signature Visual)
+   Replaces marginal-assumption spaghetti ribbons with 3 crisp, proportional,
+   clickable stage breakdowns: Issue Domains -> Canonical Roles -> Resolution.
    ========================================================================== */
 export function sankeyFlowChart(summary) {
   const issues = [...(summary.issue_distribution || [])].sort(
-    (a, b) => Number(b.actionable_recommendations || 0) - Number(a.actionable_recommendations || 0)
+    (a, b) => Number(b.comments || 0) - Number(a.comments || 0)
   );
   const respMap = Object.fromEntries(
     (summary.response_distribution || []).map((r) => [r.label, Number(r.count || 0)])
@@ -36,289 +70,221 @@ export function sankeyFlowChart(summary) {
     (summary.resolution_summary || []).map((r) => [r.label, Number(r.count || 0)])
   );
 
-  const W = 1120;
-  const H = 440;
-  const topPad = 42;
-  const botPad = 18;
-  const usableH = H - topPad - botPad;
-  const nodeW = 14;
-  const midPillW = 188;
-  const colX = { issue: 248, response: 468, resolution: 882 };
+  const totalComments = Math.max(1, Number(summary.comments || 1));
+  const totalPosts = Math.max(1, Number(summary.posts || 1));
+  const maxIssueComments = Math.max(1, ...issues.map((i) => Number(i.comments || 0)));
+  const maxResp = Math.max(1, ...CANONICAL_RESPONSE_TYPES.map((k) => Number(respMap[k] || 0)));
+  const maxRes = Math.max(1, ...RESOLUTION_ORDER.map((k) => Number(resMap[k] || 0)));
 
-  function layoutNodes(list, x, gap, minH = 36) {
-    const total = list.reduce((s, n) => s + n.weight, 0) || 1;
-    const avail = Math.max(0, usableH - gap * Math.max(0, list.length - 1));
-    const safeMin = Math.min(minH, list.length ? avail / list.length : minH);
-    const extra = Math.max(0, avail - safeMin * list.length);
-    let y = topPad;
-    return list.map((item) => {
-      const h = safeMin + (item.weight / total) * extra;
-      const node = { ...item, x, y, h, cy: y + h / 2 };
-      y += h + gap;
-      return node;
-    });
-  }
-
-  const totalComments = Number(summary.comments || 1);
-  const totalPosts = Number(summary.posts || 1);
-  const issueNodes = layoutNodes(
-    issues.map((i, idx) => ({
-      id: `iss-${i.key}`,
-      col: "issue",
-      key: i.key,
-      label: pretty(i.label),
-      sub: `${num(i.actionable_recommendations)} actionable`,
-      weight: Math.max(1, Number(i.comments || 1)),
-      color: idx === 0 ? "var(--color-accent)" : idx < 3 ? "var(--color-info)" : "var(--color-series-val)",
-      href: `#/issues?selected=${encodeURIComponent(i.key)}`,
-      detail: `${num(i.posts)} threads, ${num(i.comments)} comments (${num(i.solutions_proposed)} solution, ${num(i.advice_comments)} advice, ${num(i.reported_successes)} reported success)`,
-    })),
-    colX.issue,
-    7
-  );
-
-  const responseNodes = layoutNodes(
-    CANONICAL_RESPONSE_TYPES.map((k, idx) => ({
-      id: `resp-${k}`,
-      col: "response",
-      key: k,
-      label: `${idx + 1}. ${RESPONSE_META[k].label}`,
-      sub: `${num(respMap[k] || 0)} comments`,
-      weight: respMap[k] || 1,
-      color: RESPONSE_META[k].color,
-      href: `#/explorer?response=${encodeURIComponent(k)}`,
-      detail: `${num(respMap[k] || 0)} predicted comments (${share(respMap[k] || 0, totalComments)}) in canonical slot #${idx + 1}`,
-    })),
-    colX.response,
-    10
-  );
-
-  const resolutionNodes = layoutNodes(
-    RESOLUTION_ORDER.map((k) => ({
-      id: `res-${k}`,
-      col: "resolution",
-      key: k,
-      label: RESOLUTION_META[k].label,
-      sub: `${num(resMap[k] || 0)} threads`,
-      weight: Math.max(1, (resMap[k] || 0) * 8),
-      color: RESOLUTION_META[k].color,
-      href: `#/resolution?state=${encodeURIComponent(k)}`,
-      detail: `${num(resMap[k] || 0)} of ${num(totalPosts)} threads (${share(resMap[k] || 0, totalPosts)}): ${RESOLUTION_META[k].description}`,
-    })),
-    colX.resolution,
-    16
-  );
-
-  // Build smooth proportional Sankey ribbons (Issue -> Response, and Response -> Resolution)
-  const ribbons = [];
-  const respTotal = responseNodes.reduce((s, r) => s + r.weight, 0) || 1;
-  const resTotal = resolutionNodes.reduce((s, r) => s + r.weight, 0) || 1;
-
-  // Stage 1 -> Stage 2 ribbons (Issue -> top 2 actionable + aggregate flow ribbons cleanly distributed)
-  const respInY = Object.fromEntries(responseNodes.map((n) => [n.id, n.y]));
-  for (const iss of issueNodes) {
-    let outY = iss.y;
-    for (const resp of responseNodes) {
-      const shareRatio = resp.weight / respTotal;
-      const strokeW = Math.max(1.8, iss.h * shareRatio);
-      const y1 = outY + strokeW / 2;
-      const y2 = respInY[resp.id] + (resp.h * (iss.weight / (summary.comments || 1280))) / 2;
-      outY += iss.h * shareRatio;
-      respInY[resp.id] += resp.h * (iss.weight / (summary.comments || 1280));
-      const x1 = iss.x + nodeW;
-      const x2 = resp.x;
-      const mx = (x1 + x2) / 2;
-      ribbons.push({
-        from: iss.id,
-        to: resp.id,
-        color: resp.color,
-        strokeW,
-        d: `M ${x1} ${y1.toFixed(1)} C ${mx} ${y1.toFixed(1)}, ${mx} ${y2.toFixed(1)}, ${x2} ${y2.toFixed(1)}`,
-        title: `${iss.label} to ${resp.label}`,
-        detail: `Proportional corpus flow across ${num(iss.weight)} issue comments`,
-      });
-    }
-  }
-
-  // Stage 2 -> Stage 3 ribbons (depart from RIGHT edge of Column-2 opaque pill so zero ribbons cross behind text!)
-  const resInY = Object.fromEntries(resolutionNodes.map((n) => [n.id, n.y]));
-  for (const resp of responseNodes) {
-    let outY = resp.y;
-    for (const res of resolutionNodes) {
-      const shareRatio = res.weight / resTotal;
-      const strokeW = Math.max(2.5, resp.h * shareRatio);
-      const y1 = outY + strokeW / 2;
-      const y2 = resInY[res.id] + (res.h * (resp.weight / respTotal)) / 2;
-      outY += resp.h * shareRatio;
-      resInY[res.id] += res.h * (resp.weight / respTotal);
-      const x1 = resp.x + midPillW;
-      const x2 = res.x;
-      const mx = (x1 + x2) / 2;
-      ribbons.push({
-        from: resp.id,
-        to: res.id,
-        color: res.color,
-        strokeW,
-        d: `M ${x1} ${y1.toFixed(1)} C ${mx} ${y1.toFixed(1)}, ${mx} ${y2.toFixed(1)}, ${x2} ${y2.toFixed(1)}`,
-        title: `${resp.label} to ${res.label}`,
-        detail: `${res.label} (${res.sub}) across corpus threads`,
-      });
-    }
-  }
-
-  const renderNode = (n, align) => {
-    if (align === "center") {
-      return `
-        <g class="sankey-node" tabindex="0" role="link" data-sankey-node="${esc(n.id)}" data-href="${esc(n.href)}" data-tip-title="${esc(n.label)}" data-tip-detail="${esc(n.detail)}" aria-label="${esc(n.label)}: ${esc(n.detail)}">
-          <rect x="${n.x}" y="${n.y.toFixed(1)}" width="${midPillW}" height="${n.h.toFixed(1)}" rx="8" fill="var(--color-surface-solid)" stroke="var(--color-rule-2)" stroke-width="1"/>
-          <rect x="${n.x}" y="${n.y.toFixed(1)}" width="8" height="${n.h.toFixed(1)}" rx="4" fill="${n.color}"/>
-          <text x="${n.x + 18}" y="${(n.cy - 2).toFixed(1)}" text-anchor="start" class="sankey-node-label">${esc(n.label)}</text>
-          <text x="${n.x + 18}" y="${(n.cy + 14).toFixed(1)}" text-anchor="start" class="sankey-node-count">${esc(n.sub)}</text>
-        </g>
-      `;
-    }
-    const labelX = align === "left" ? n.x - 12 : n.x + nodeW + 12;
-    const anchor = align === "left" ? "end" : "start";
+  const issueItems = issues.map((i, idx) => {
+    const c = Number(i.comments || 0);
+    const act = Number(i.actionable_recommendations || 0);
+    const wPct = (c / maxIssueComments) * 100;
+    const actPctOfBar = c > 0 ? (act / c) * 100 : 0;
+    const rows = JSON.stringify([
+      ["Comments", `${num(c)} (${share(c, totalComments)})`],
+      ["Threads", `${num(i.posts)}`],
+      ["Actionable replies", `${num(act)} (${share(act, c)})`],
+      ["Reported success", `${num(i.reported_successes)} / ${num(i.posts)} threads`],
+    ]);
     return `
-      <g class="sankey-node" tabindex="0" role="link" data-sankey-node="${esc(n.id)}" data-href="${esc(n.href)}" data-tip-title="${esc(n.label)}" data-tip-detail="${esc(n.detail)}" aria-label="${esc(n.label)}: ${esc(n.detail)}">
-        <rect x="${n.x}" y="${n.y.toFixed(1)}" width="${nodeW}" height="${n.h.toFixed(1)}" rx="5" fill="${n.color}"/>
-        <text x="${labelX}" y="${(n.cy - 2).toFixed(1)}" text-anchor="${anchor}" class="sankey-node-label">${esc(n.label)}</text>
-        <text x="${labelX}" y="${(n.cy + 14).toFixed(1)}" text-anchor="${anchor}" class="sankey-node-count">${esc(n.sub)}</text>
-      </g>
+      <a class="pipe-row"
+         href="#/issues?selected=${encodeURIComponent(i.key)}"
+         data-chart-tip-title="${esc(pretty(i.label))}"
+         data-chart-tip-rows="${esc(rows)}"
+         data-chart-tip-hint="Click to open Issues deep dive">
+        <div class="pipe-row-head">
+          <span class="pipe-row-label">${esc(pretty(i.label))}</span>
+          <span class="pipe-row-stat num">${num(c)} <span class="muted">(${share(c, totalComments, 0)})</span></span>
+        </div>
+        <div class="pipe-track">
+          <span class="pipe-fill" style="width:${wPct.toFixed(1)}%;background:${idx === 0 ? "var(--color-accent)" : "var(--color-series-val)"}">
+            <span class="pipe-fill-inner" style="width:${actPctOfBar.toFixed(1)}%;background:var(--color-role-advice)" title="Actionable share"></span>
+          </span>
+        </div>
+      </a>
     `;
-  };
+  }).join("");
+
+  const responseItems = CANONICAL_RESPONSE_TYPES.map((k, idx) => {
+    const c = Number(respMap[k] || 0);
+    const wPct = (c / maxResp) * 100;
+    const meta = RESPONSE_META[k];
+    const isActionable = meta.group === "actionable";
+    const rows = JSON.stringify([
+      ["Predicted replies", `${num(c)} (${share(c, totalComments)})`],
+      ["Group", isActionable ? "Actionable intervention" : "Community discourse"],
+      ["Canonical slot", `#${idx + 1} of 6`],
+    ]);
+    return `
+      <a class="pipe-row"
+         href="#/explorer?response=${encodeURIComponent(k)}"
+         data-chart-tip-title="${esc(`${idx + 1}. ${meta.label}`)}"
+         data-chart-tip-body="${esc(meta.definition)}"
+         data-chart-tip-rows="${esc(rows)}"
+         data-chart-tip-hint="Click to filter discussions">
+        <div class="pipe-row-head">
+          <span class="pipe-row-label">
+            <span class="swatch-inline" style="background:${meta.color}" aria-hidden="true"></span>
+            ${esc(`${idx + 1}. ${meta.label}`)}
+          </span>
+          <span class="pipe-row-stat num">${num(c)} <span class="muted">(${share(c, totalComments, 0)})</span></span>
+        </div>
+        <div class="pipe-track">
+          <span class="pipe-fill" style="width:${wPct.toFixed(1)}%;background:${meta.color}"></span>
+        </div>
+      </a>
+    `;
+  }).join("");
+
+  const resolutionItems = RESOLUTION_ORDER.map((k) => {
+    const c = Number(resMap[k] || 0);
+    const wPct = (c / maxRes) * 100;
+    const meta = RESOLUTION_META[k];
+    const rows = JSON.stringify([
+      ["Threads", `${num(c)} of ${num(totalPosts)} (${share(c, totalPosts)})`],
+    ]);
+    return `
+      <a class="pipe-row"
+         href="#/resolution?state=${encodeURIComponent(k)}"
+         data-chart-tip-title="${esc(meta.label)}"
+         data-chart-tip-body="${esc(meta.description)}"
+         data-chart-tip-rows="${esc(rows)}"
+         data-chart-tip-hint="Click to audit threads in this state">
+        <div class="pipe-row-head">
+          <span class="pipe-row-label">
+            <span class="swatch-inline" style="background:${meta.color}" aria-hidden="true"></span>
+            ${esc(meta.label)}
+          </span>
+          <span class="pipe-row-stat num">${num(c)} <span class="muted">(${share(c, totalPosts, 0)})</span></span>
+        </div>
+        <div class="pipe-track">
+          <span class="pipe-fill" style="width:${wPct.toFixed(1)}%;background:${meta.color}"></span>
+        </div>
+      </a>
+    `;
+  }).join("");
 
   return `
-    <div class="sankey-wrap" data-sankey-root>
-      <svg class="sankey-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive research flow diagram from ${issues.length} issue categories through 6 canonical community response classes to 4 explicit resolution evidence states">
-        <text x="${colX.issue + nodeW}" y="20" text-anchor="end" class="sankey-col-head">1. Issue categories (${issues.length})</text>
-        <text x="${colX.response}" y="20" text-anchor="start" class="sankey-col-head">2. Canonical response roles (1 to 6)</text>
-        <text x="${colX.resolution}" y="20" text-anchor="start" class="sankey-col-head">3. Resolution evidence (4 states)</text>
+    <div class="pipeline-flow" data-sankey-root role="region" aria-label="Three-stage corpus summary from issue domains through canonical response roles to resolution evidence states">
+      <div class="pipe-stage">
+        <div class="pipe-stage-head">
+          <span class="pipe-step-num num">01</span>
+          <div>
+            <h3 class="pipe-stage-title">Issue domains (${issues.length})</h3>
+            <p class="pipe-stage-sub">By comment volume · teal inset = actionable replies</p>
+          </div>
+        </div>
+        <div class="pipe-list">${issueItems}</div>
+      </div>
 
-        <g class="sankey-ribbons">
-          ${ribbons.map((r) => `
-            <path
-              class="sankey-ribbon"
-              data-from="${esc(r.from)}"
-              data-to="${esc(r.to)}"
-              data-tip-title="${esc(r.title)}"
-              data-tip-detail="${esc(r.detail)}"
-              data-draw-path
-              d="${r.d}"
-              stroke="${r.color}"
-              stroke-width="${r.strokeW.toFixed(1)}"
-            />
-          `).join("")}
-        </g>
+      <div class="pipe-arrow" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 10H15M15 10L10.5 5.5M15 10L10.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
 
-        <g class="sankey-nodes">
-          ${issueNodes.map((n) => renderNode(n, "left")).join("")}
-          ${responseNodes.map((n) => renderNode(n, "center")).join("")}
-          ${resolutionNodes.map((n) => renderNode(n, "right")).join("")}
-        </g>
-      </svg>
+      <div class="pipe-stage">
+        <div class="pipe-stage-head">
+          <span class="pipe-step-num num">02</span>
+          <div>
+            <h3 class="pipe-stage-title">Canonical response roles (6)</h3>
+            <p class="pipe-stage-sub">All ${num(totalComments)} comments · fixed 1–6 order</p>
+          </div>
+        </div>
+        <div class="pipe-list">${responseItems}</div>
+      </div>
+
+      <div class="pipe-arrow" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 10H15M15 10L10.5 5.5M15 10L10.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <div class="pipe-stage">
+        <div class="pipe-stage-head">
+          <span class="pipe-step-num num">03</span>
+          <div>
+            <h3 class="pipe-stage-title">Resolution evidence (4 states)</h3>
+            <p class="pipe-stage-sub">All ${num(totalPosts)} threads · explicit outcomes only</p>
+          </div>
+        </div>
+        <div class="pipe-list">${resolutionItems}</div>
+      </div>
     </div>
+    <p class="chart-footnote">Each column shows true observed counts scaled from 0% within its stage (comments for stages 1–2; threads for stage 3). Click any bar to drill into the matching slice.</p>
   `;
 }
 
 export function bindSankeyInteractions(container) {
-  const root = container.querySelector("[data-sankey-root]");
-  if (!root) return;
-  const nodes = [...root.querySelectorAll("[data-sankey-node]")];
-  const ribbons = [...root.querySelectorAll(".sankey-ribbon")];
-
-  const reset = () => {
-    nodes.forEach((n) => n.classList.remove("is-dimmed"));
-    ribbons.forEach((r) => r.classList.remove("is-dimmed", "is-active"));
-    hideVizTooltip();
-  };
-
-  const highlightNode = (nodeId, evt) => {
-    const connectedIds = new Set([nodeId]);
-    ribbons.forEach((r) => {
-      const hit = r.dataset.from === nodeId || r.dataset.to === nodeId;
-      r.classList.toggle("is-active", hit);
-      r.classList.toggle("is-dimmed", !hit);
-      if (hit) {
-        connectedIds.add(r.dataset.from);
-        connectedIds.add(r.dataset.to);
-      }
-    });
-    nodes.forEach((n) => {
-      n.classList.toggle("is-dimmed", !connectedIds.has(n.dataset.sankeyNode));
-    });
-    if (evt) {
-      const target = root.querySelector(`[data-sankey-node="${CSS.escape(nodeId)}"]`);
-      if (target) {
-        showVizTooltip(
-          `<strong>${esc(target.dataset.tipTitle)}</strong><div>${esc(target.dataset.tipDetail)}</div><div class="muted">Click to drill into matching records</div>`,
-          evt.clientX,
-          evt.clientY
-        );
-      }
-    }
-  };
-
-  nodes.forEach((node) => {
-    const id = node.dataset.sankeyNode;
-    node.addEventListener("mouseenter", (e) => highlightNode(id, e));
-    node.addEventListener("mousemove", (e) => highlightNode(id, e));
-    node.addEventListener("mouseleave", reset);
-    node.addEventListener("focus", () => highlightNode(id, null));
-    node.addEventListener("blur", reset);
-    node.addEventListener("click", () => {
-      if (node.dataset.href) window.location.hash = node.dataset.href;
-    });
-    node.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        if (node.dataset.href) window.location.hash = node.dataset.href;
-      }
-    });
-  });
-
-  ribbons.forEach((r) => {
-    r.addEventListener("mouseenter", (e) => {
-      ribbons.forEach((other) => {
-        other.classList.toggle("is-active", other === r);
-        other.classList.toggle("is-dimmed", other !== r);
-      });
-      showVizTooltip(
-        `<strong>${esc(r.dataset.tipTitle)}</strong><div>${esc(r.dataset.tipDetail)}</div>`,
-        e.clientX,
-        e.clientY
-      );
-    });
-    r.addEventListener("mousemove", (e) => {
-      showVizTooltip(
-        `<strong>${esc(r.dataset.tipTitle)}</strong><div>${esc(r.dataset.tipDetail)}</div>`,
-        e.clientX,
-        e.clientY
-      );
-    });
-    r.addEventListener("mouseleave", reset);
-  });
+  bindChartTooltips(container);
 }
 
 /* ==========================================================================
-   2. Smooth Multi-Series Spline Area Chart with Live Crosshair Scrubbing
+   2. Zero-Overshoot Monotone Cubic Timeline (Fritsch-Carlson)
+   Strictly prevents cubic spline overshoot below 0 or past local extrema.
    ========================================================================== */
-function catmullRomPath(pts) {
-  if (!pts.length) return "";
-  if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+function monotoneCubicPath(pts, minY, maxY) {
+  const n = pts.length;
+  if (!n) return "";
+  if (n === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  if (n === 2) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`;
+
+  const dx = new Array(n - 1);
+  const dy = new Array(n - 1);
+  const slope = new Array(n - 1);
+  for (let i = 0; i < n - 1; i += 1) {
+    dx[i] = Math.max(1e-6, pts[i + 1].x - pts[i].x);
+    dy[i] = pts[i + 1].y - pts[i].y;
+    slope[i] = dy[i] / dx[i];
+  }
+
+  const m = new Array(n);
+  m[0] = slope[0];
+  m[n - 1] = slope[n - 2];
+  for (let i = 1; i < n - 1; i += 1) {
+    if (slope[i - 1] * slope[i] <= 0) {
+      m[i] = 0;
+    } else {
+      const w1 = 2 * dx[i] + dx[i - 1];
+      const w2 = dx[i] + 2 * dx[i - 1];
+      m[i] = (w1 + w2) / (w1 / slope[i - 1] + w2 / slope[i]);
+    }
+  }
+
+  // Enforce Fritsch-Carlson monotonicity constraint
+  for (let i = 0; i < n - 1; i += 1) {
+    if (Math.abs(slope[i]) < 1e-9) {
+      m[i] = 0;
+      m[i + 1] = 0;
+    } else {
+      const a = m[i] / slope[i];
+      const b = m[i + 1] / slope[i];
+      const mag = Math.hypot(a, b);
+      if (mag > 3) {
+        const t = 3 / mag;
+        m[i] = t * a * slope[i];
+        m[i + 1] = t * b * slope[i];
+      }
+    }
+  }
+
+  const clampY = (y) => Math.max(minY, Math.min(maxY, y));
   let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-  for (let i = 0; i < pts.length - 1; i += 1) {
-    const p0 = pts[i - 1] || pts[i];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2] || p2;
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  for (let i = 0; i < n - 1; i += 1) {
+    const h = dx[i] / 3;
+    const cp1x = pts[i].x + h;
+    const cp1y = clampY(pts[i].y + m[i] * h);
+    const cp2x = pts[i + 1].x - h;
+    const cp2y = clampY(pts[i + 1].y - m[i + 1] * h);
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${pts[i + 1].x.toFixed(1)} ${pts[i + 1].y.toFixed(1)}`;
   }
   return d;
+}
+
+function niceAxisMax(rawMax, steps = 4) {
+  if (rawMax <= 0) return steps;
+  const rough = rawMax / steps;
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+  const frac = rough / pow;
+  const niceFrac = frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10;
+  return Math.ceil(rawMax / (niceFrac * pow)) * niceFrac * pow;
 }
 
 export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } = {}) {
@@ -327,14 +293,14 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
   }
 
   const W = 720;
-  const H = 264;
-  const pad = { top: 24, right: 20, bottom: 38, left: 42 };
+  const H = 252;
+  const pad = { top: 20, right: 20, bottom: 36, left: 46 };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
 
   const seriesMeta = [
+    { key: "neutral", label: "Neutral", color: "var(--color-neutral-bar)" },
     { key: "positive", label: "Positive", color: "var(--color-positive)" },
-    { key: "neutral", label: "Neutral", color: "var(--color-accent)" },
     { key: "negative", label: "Negative", color: "var(--color-negative)" },
   ];
 
@@ -354,7 +320,7 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
     1,
     ...normalized.flatMap((m) => seriesMeta.map((s) => Number(m[s.key] || 0)))
   );
-  const yMax = Math.ceil(maxVal / 16) * 16;
+  const yMax = niceAxisMax(maxVal, 4);
   const ticks = [0, Math.round(yMax * 0.25), Math.round(yMax * 0.5), Math.round(yMax * 0.75), yMax];
 
   const xAt = (idx) => pad.left + (normalized.length > 1 ? (idx / (normalized.length - 1)) * plotW : plotW / 2);
@@ -362,24 +328,26 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
 
   const defs = seriesMeta.map((s) => `
     <linearGradient id="${esc(chartId)}-grad-${s.key}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${s.color}" stop-opacity="0.30"/>
-      <stop offset="100%" stop-color="${s.color}" stop-opacity="0.01"/>
+      <stop offset="0%" stop-color="${s.color}" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="${s.color}" stop-opacity="0"/>
     </linearGradient>
   `).join("");
 
-  const gridLines = ticks.map((t) => {
+  const gridLines = ticks.map((t, i) => {
     const y = yAt(t);
     return `
-      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
-      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="12" font-family="var(--font-body)">${t}</text>
+      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${i === 0 ? "none" : "2 4"}" opacity="${i === 0 ? "0.9" : "0.65"}"/>
+      <text x="${pad.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${num(t)}</text>
     `;
   }).join("");
 
-  const xStep = normalized.length > 10 ? Math.ceil(normalized.length / 8) : 1;
+  const xStep = normalized.length > 9 ? Math.ceil(normalized.length / 7) : 1;
   const xLabels = normalized.map((m, idx) => {
     const show = idx === 0 || idx === normalized.length - 1 || idx % xStep === 0;
     if (!show) return "";
-    return `<text x="${xAt(idx).toFixed(1)}" y="${(H - 12).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="12" font-family="var(--font-body)">${esc(monthLabel(m.month))}</text>`;
+    // Avoid crowding the penultimate label against the final label
+    if (idx !== normalized.length - 1 && normalized.length - 1 - idx < Math.max(1, Math.floor(xStep * 0.6))) return "";
+    return `<text x="${xAt(idx).toFixed(1)}" y="${(H - 10).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${esc(monthLabel(m.month))}</text>`;
   }).join("");
 
   const seriesGroups = seriesMeta.map((s) => {
@@ -388,7 +356,7 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
       y: yAt(Number(m[s.key] || 0)),
       val: Number(m[s.key] || 0),
     }));
-    const linePath = catmullRomPath(pts);
+    const linePath = monotoneCubicPath(pts, pad.top, pad.top + plotH);
     const areaPath = `${linePath} L ${pts[pts.length - 1].x.toFixed(1)} ${(pad.top + plotH).toFixed(1)} L ${pts[0].x.toFixed(1)} ${(pad.top + plotH).toFixed(1)} Z`;
 
     return `
@@ -396,7 +364,7 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
         <path class="spline-area" d="${areaPath}" fill="url(#${esc(chartId)}-grad-${s.key})"/>
         <path class="spline-line" d="${linePath}" stroke="${s.color}" data-draw-path/>
         ${pts.map((p, idx) => `
-          <circle class="spline-dot" data-dot-idx="${idx}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="${s.color}" stroke="var(--color-surface-solid)" stroke-width="2"/>
+          <circle class="spline-dot" data-dot-idx="${idx}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${s.color}" stroke="var(--color-surface-solid)" stroke-width="2"/>
         `).join("")}
       </g>
     `;
@@ -431,7 +399,7 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
 
   return `
     <div class="spline-container" data-spline-root="${esc(chartId)}">
-      <div class="spline-controls" role="group" aria-label="Filter sentiment spline curves">
+      <div class="spline-controls" role="group" aria-label="Filter sentiment curves">
         <button type="button" class="series-pill is-active" data-series-filter="all">All polarities</button>
         ${seriesMeta.map((s) => `
           <button type="button" class="series-pill" data-series-filter="${s.key}">
@@ -441,7 +409,7 @@ export function interactiveSplineAreaChart(monthly, { chartId = "sent-spline" } 
         `).join("")}
       </div>
       <div class="spacer-xs"></div>
-      <svg class="spline-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive smooth spline area chart of predicted comment sentiment counts by month">
+      <svg class="spline-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly predicted comment sentiment counts on a zero-anchored monotone line chart">
         <defs>${defs}</defs>
         ${gridLines}
         ${seriesGroups}
@@ -466,7 +434,9 @@ export function bindSplineInteractions(container) {
         const mode = btn.dataset.seriesFilter;
         filterBtns.forEach((b) => b.classList.toggle("is-active", b === btn));
         seriesEls.forEach((el) => {
-          el.classList.toggle("is-hidden", mode !== "all" && el.dataset.splineSeries !== mode);
+          const isFocus = mode !== "all" && el.dataset.splineSeries === mode;
+          el.classList.toggle("is-hidden", mode !== "all" && !isFocus);
+          el.classList.toggle("is-isolated", isFocus);
         });
       });
     });
@@ -489,7 +459,7 @@ export function bindSplineInteractions(container) {
         dots.forEach((d) => d.classList.toggle("is-visible", d.dataset.dotIdx === idx));
         const tot = Number(rect.dataset.tot || 1);
         showVizTooltip(
-          `<strong>${esc(rect.dataset.month)} (${num(tot)} comments)</strong>
+          `<strong>${esc(rect.dataset.month)} · ${num(tot)} comments</strong>
            <div class="viz-tip-row"><span>Positive</span><span class="num">${num(rect.dataset.pos)} (${share(rect.dataset.pos, tot, 0)})</span></div>
            <div class="viz-tip-row"><span>Neutral</span><span class="num">${num(rect.dataset.neu)} (${share(rect.dataset.neu, tot, 0)})</span></div>
            <div class="viz-tip-row"><span>Negative</span><span class="num">${num(rect.dataset.neg)} (${share(rect.dataset.neg, tot, 0)})</span></div>`,
@@ -505,71 +475,60 @@ export function bindSplineInteractions(container) {
 }
 
 /* ==========================================================================
-   3. Interactive NMF Topic Constellation SVG (8 Proportional Clickable Orbs)
+   3. Honest Area-Proportional NMF Topic Grid (Zero Fake Orbital Spokes)
+   Area of every circle scales directly with document_count (r = sqrt(c/max)*R).
    ========================================================================== */
 export function topicConstellationSvg(topics, selectedId) {
-  const W = 560;
-  const H = 376;
-  const cx = 280;
-  const cy = 188;
-
-  // Deterministic well-spaced orbital layout sized cleanly around largest topic
   const sorted = [...topics].sort((a, b) => Number(b.document_count) - Number(a.document_count));
   const maxCount = Math.max(1, ...sorted.map((t) => Number(t.document_count || 0)));
+  const totalDocs = Math.max(1, sorted.reduce((s, t) => s + Number(t.document_count || 0), 0));
 
-  const positions = [
-    { x: 280, y: 188 },
-    { x: 432, y: 122 },
-    { x: 126, y: 124 },
-    { x: 446, y: 254 },
-    { x: 118, y: 262 },
-    { x: 284, y: 318 },
-    { x: 368, y: 58 },
-    { x: 196, y: 58 },
-    { x: 504, y: 186 },
-    { x: 64, y: 194 },
-  ];
+  const cols = Math.min(5, Math.max(2, Math.ceil(sorted.length / 2)));
+  const rows = Math.ceil(sorted.length / cols);
+  const cellW = 112;
+  const cellH = 136;
+  const padX = 16;
+  const padY = 18;
+  const W = cols * cellW + padX * 2;
+  const H = rows * cellH + padY * 2 + 12;
+  const maxR = 40;
 
-  const orbs = sorted.map((t, idx) => {
-    const pos = idx < positions.length
-      ? positions[idx]
-      : {
-          x: Math.round(cx + 158 * Math.cos((idx / sorted.length) * Math.PI * 2)),
-          y: Math.round(cy + 132 * Math.sin((idx / sorted.length) * Math.PI * 2)),
-        };
-    const ratio = Math.sqrt(Number(t.document_count || 1) / maxCount);
-    const r = Math.round(24 + ratio * 30);
+  const cells = sorted.map((t, idx) => {
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const cx = padX + col * cellW + cellW / 2;
+    const cy = padY + row * cellH + 50;
+    const count = Number(t.document_count || 0);
+    // Strict area proportionality (r ~ sqrt(count)), minimum 11px for clickability
+    const r = Math.max(11, Math.sqrt(count / maxCount) * maxR);
     const color = t.character.script === "devanagari"
       ? "var(--color-accent-2)"
       : t.character.tone === "info"
         ? "var(--color-role-advice)"
         : "var(--color-accent)";
     const isSel = Number(t.topic_id) === Number(selectedId);
-    const rawKw = (t.keywords || []).slice(0, 2).join(", ");
-    const shortKw = rawKw.length > 12 ? `${rawKw.slice(0, 11)}…` : rawKw;
-    return { t, pos, r, color, isSel, shortKw };
-  });
+    const kw1 = (t.keywords || [])[0] || "";
+    const kw2 = (t.keywords || [])[1] || "";
+    const kwLine = [kw1, kw2].filter(Boolean).join(" · ");
+    const shortKw = kwLine.length > 16 ? `${kwLine.slice(0, 15)}…` : kwLine;
 
-  // Subtle connecting spokes to center
-  const spokes = orbs.slice(1).map((o) => `
-    <line x1="${orbs[0].pos.x}" y1="${orbs[0].pos.y}" x2="${o.pos.x}" y2="${o.pos.y}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
-  `).join("");
+    return `
+      <g class="topic-orb ${isSel ? "is-selected" : ""}" tabindex="0" role="button" data-select-topic="${t.topic_id}" aria-label="Topic ${t.topic_id}, ${num(count)} comments (${share(count, totalDocs)}), ${esc(kwLine)}">
+        <circle class="topic-orb-ring" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${(r + 6).toFixed(1)}"/>
+        <circle class="topic-orb-circle" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${color}" fill-opacity="${isSel ? "0.28" : "0.16"}" stroke="${color}" stroke-width="${isSel ? "2.2" : "1.6"}"/>
+        <text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11.5" font-weight="600" font-family="var(--font-body)">T${t.topic_id}</text>
+        <text x="${cx.toFixed(1)}" y="${(padY + row * cellH + 104).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11" font-weight="500" font-family="var(--font-body)">${esc(shortKw)}</text>
+        <text x="${cx.toFixed(1)}" y="${(padY + row * cellH + 120).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${num(count)} (${share(count, totalDocs, 0)})</text>
+      </g>
+    `;
+  }).join("");
 
   return `
     <div class="constellation-stage">
-      <svg class="constellation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Interactive constellation of ${orbs.length} unsupervised NMF topic clusters sized by comment count">
-        <circle cx="${cx}" cy="${cy}" r="96" fill="none" stroke="var(--color-rule)" stroke-width="1" opacity="0.45"/>
-        <circle cx="${cx}" cy="${cy}" r="168" fill="none" stroke="var(--color-rule)" stroke-width="1" opacity="0.32"/>
-        ${spokes}
-        ${orbs.map(({ t, pos, r, color, isSel, shortKw }) => `
-          <g class="topic-orb ${isSel ? "is-selected" : ""}" tabindex="0" role="button" data-select-topic="${t.topic_id}" aria-label="Topic ${t.topic_id}, ${num(t.document_count)} comments, ${esc(t.character.tag)}">
-            <circle class="topic-orb-ring" cx="${pos.x}" cy="${pos.y}" r="${r + 7}"/>
-            <circle class="topic-orb-circle" cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-width="2"/>
-            <text x="${pos.x}" y="${pos.y - 5}" text-anchor="middle" fill="var(--color-ink)" font-size="12.5" font-weight="600" font-family="var(--font-body)">Topic ${t.topic_id}</text>
-            <text x="${pos.x}" y="${pos.y + 11}" text-anchor="middle" fill="var(--color-ink-2)" font-size="12" font-family="var(--font-body)">${num(t.document_count)}</text>
-          </g>
-        `).join("")}
+      <svg class="constellation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Area-proportional grid of ${sorted.length} unsupervised NMF topic clusters ordered by comment volume">
+        ${cells}
       </svg>
+      <p class="chart-footnote" style="margin-top:var(--space-xs)">Circle area is proportional to assigned comments (ordered largest to smallest). Positions are grid-aligned, not semantic distances.</p>
     </div>
   `;
 }
@@ -578,7 +537,7 @@ export function topicConstellationSvg(topics, selectedId) {
    4. Animated Radial Canonical Response Wheel (6 Fixed Classes)
    ========================================================================== */
 export function radialResponseWheel(orderedItems, total) {
-  const r = 96;
+  const r = 98;
   const circ = 2 * Math.PI * r;
   let offsetAcc = 0;
 
@@ -607,7 +566,7 @@ export function radialResponseWheel(orderedItems, total) {
   return `
     <div class="wheel-wrap" data-wheel-root>
       <svg class="wheel-svg" viewBox="0 0 260 260" role="img" aria-label="Canonical six-class response distribution ring">
-        <circle cx="130" cy="130" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="24"/>
+        <circle cx="130" cy="130" r="${r}" fill="none" stroke="var(--color-track)" stroke-width="18"/>
         ${arcs}
       </svg>
       <div class="wheel-center">
@@ -646,7 +605,7 @@ export function bindWheelInteractions(container, total) {
 }
 
 /* ==========================================================================
-   5. Shared Charts: Stacked Bar, Horizontal Bars, Matrix, Mini-Strip, Benchmarks
+   5. Shared Bars, Stacked Matrices & Mini Strips
    ========================================================================== */
 export function stackedCompositionBar(segments, { total, unit = "items", ariaLabel = "Distribution bar" } = {}) {
   const safeTotal = total || segments.reduce((s, x) => s + Number(x.count || 0), 0);
@@ -659,7 +618,7 @@ export function stackedCompositionBar(segments, { total, unit = "items", ariaLab
     if (val <= 0) return "";
     const w = (val / safeTotal) * viewW;
     const rect = `
-      <rect x="${cursor.toFixed(2)}" y="0" width="${Math.max(w, 1).toFixed(2)}" height="12" fill="${esc(seg.color)}">
+      <rect x="${cursor.toFixed(2)}" y="0" width="${Math.max(w, 1).toFixed(2)}" height="10" fill="${esc(seg.color)}">
         <title>${esc(seg.label)}: ${num(val)} ${esc(unit)} (${share(val, safeTotal)})</title>
       </rect>
     `;
@@ -680,8 +639,8 @@ export function stackedCompositionBar(segments, { total, unit = "items", ariaLab
 
   return `
     <div class="stack-viz">
-      <svg class="stack-bar-svg" viewBox="0 0 ${viewW} 12" preserveAspectRatio="none" role="img" aria-label="${esc(ariaLabel)}">
-        <rect x="0" y="0" width="${viewW}" height="12" fill="var(--color-track)"/>
+      <svg class="stack-bar-svg" viewBox="0 0 ${viewW} 10" preserveAspectRatio="none" role="img" aria-label="${esc(ariaLabel)}">
+        <rect x="0" y="0" width="${viewW}" height="10" fill="var(--color-track)"/>
         ${rects}
       </svg>
       <div class="chart-legend">${legend}</div>
@@ -738,7 +697,7 @@ export function stackedMatrixRows(rows, { legendItems = [], unit = "comments" } 
       const val = Number(seg.count || 0);
       if (val <= 0 || total <= 0) return "";
       const w = (val / total) * viewW;
-      const rect = `<rect x="${cursor.toFixed(2)}" y="0" width="${Math.max(w, 1).toFixed(2)}" height="10" fill="${esc(seg.color)}"><title>${esc(row.label)}, ${esc(seg.label)}: ${num(val)} (${share(val, total)})</title></rect>`;
+      const rect = `<rect x="${cursor.toFixed(2)}" y="0" width="${Math.max(w, 1).toFixed(2)}" height="8" fill="${esc(seg.color)}"><title>${esc(row.label)}, ${esc(seg.label)}: ${num(val)} (${share(val, total)})</title></rect>`;
       cursor += w;
       return rect;
     }).join("");
@@ -757,8 +716,8 @@ export function stackedMatrixRows(rows, { legendItems = [], unit = "comments" } 
     return `
       <div class="matrix-row">
         <div class="matrix-row-head">${titleEl}<span class="num matrix-row-total">${num(total)} ${esc(unit)}</span></div>
-        <svg class="matrix-bar-svg" viewBox="0 0 ${viewW} 10" preserveAspectRatio="none" role="img" aria-label="${esc(row.label)}">
-          <rect x="0" y="0" width="${viewW}" height="10" fill="var(--color-track)"/>
+        <svg class="matrix-bar-svg" viewBox="0 0 ${viewW} 8" preserveAspectRatio="none" role="img" aria-label="${esc(row.label)}">
+          <rect x="0" y="0" width="${viewW}" height="8" fill="var(--color-track)"/>
           ${rects}
         </svg>
         <div class="matrix-stats">${stats}</div>
@@ -777,19 +736,19 @@ export function responseMiniStrip(responseCounts) {
   if (!total) return `<span class="muted">No response predictions</span>`;
 
   let cursor = 0;
-  const viewW = 108;
+  const viewW = 100;
   const rects = CANONICAL_RESPONSE_TYPES.map((key) => {
     const val = Number(counts[key] || 0);
     if (!val) return "";
     const w = (val / total) * viewW;
-    const r = `<rect x="${cursor.toFixed(1)}" y="0" width="${Math.max(w, 1).toFixed(1)}" height="6" fill="${RESPONSE_META[key].color}"><title>${RESPONSE_META[key].label}: ${val}</title></rect>`;
+    const r = `<rect x="${cursor.toFixed(1)}" y="0" width="${Math.max(w, 1).toFixed(1)}" height="5" fill="${RESPONSE_META[key].color}"><title>${RESPONSE_META[key].label}: ${val}</title></rect>`;
     cursor += w;
     return r;
   }).join("");
   const actionable = Number(counts.advice || 0) + Number(counts.solution || 0);
   return `
     <div class="mini-response-strip" title="${CANONICAL_RESPONSE_TYPES.map((k) => `${RESPONSE_META[k].label}: ${counts[k] || 0}`).join(", ")}">
-      <svg class="mini-strip-svg" viewBox="0 0 ${viewW} 6" aria-hidden="true">${rects}</svg>
+      <svg class="mini-strip-svg" viewBox="0 0 ${viewW} 5" aria-hidden="true">${rects}</svg>
       <span class="num mini-strip-caption">${actionable} actionable / ${total}</span>
     </div>
   `;
@@ -797,71 +756,55 @@ export function responseMiniStrip(responseCounts) {
 
 export function modelComparisonSvgChart(tasks) {
   if (!tasks || !tasks.length) return `<div class="chart-empty">No model benchmarks available.</div>`;
-  const W = 820;
-  const H = 264;
-  const pad = { top: 44, right: 24, bottom: 50, left: 48 };
+  const W = 760;
+  const rowH = 40;
+  const pad = { top: 34, right: 112, bottom: 32, left: 112 };
+  const H = pad.top + tasks.length * rowH + pad.bottom;
   const plotW = W - pad.left - pad.right;
-  const plotH = H - pad.top - pad.bottom;
+  const xAt = (v) => pad.left + Math.max(0, Math.min(1, v)) * plotW;
 
-  const ticks = [0, 0.25, 0.5, 0.75, 1.0];
-  const grid = ticks.map((t) => {
-    const y = pad.top + plotH - t * plotH;
+  const grid = [0, 0.25, 0.5, 0.75, 1].map((t) => {
+    const x = xAt(t);
     return `
-      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
-      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${Math.round(t * 100)}%</text>
+      <line x1="${x.toFixed(1)}" y1="${pad.top}" x2="${x.toFixed(1)}" y2="${(H - pad.bottom).toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${t === 0 ? "none" : "2 4"}" opacity="0.7"/>
+      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${Math.round(t * 100)}%</text>
     `;
   }).join("");
 
-  const slotW = plotW / tasks.length;
-  const barW = Math.min(28, slotW * 0.2);
-  const gap = 20;
-
-  const groups = tasks.map((t, idx) => {
-    const cx = pad.left + slotW * idx + slotW / 2;
-    const valRatio = Number.isFinite(Number(t.valF1)) ? Number(t.valF1) : 0;
-    const testRatio = Number.isFinite(Number(t.testF1)) ? Number(t.testF1) : 0;
-    const valH = valRatio * plotH;
-    const testH = testRatio * plotH;
-    const valY = pad.top + plotH - valH;
-    const testY = pad.top + plotH - testH;
-    const valX = cx - barW - gap / 2;
-    const testX = cx + gap / 2;
-
+  const rows = tasks.map((t, i) => {
+    const cy = pad.top + i * rowH + rowH / 2;
+    const vVal = Number.isFinite(Number(t.valF1)) ? Number(t.valF1) : 0;
+    const tVal = Number.isFinite(Number(t.testF1)) ? Number(t.testF1) : 0;
+    const x1 = xAt(Math.min(vVal, tVal));
+    const x2 = xAt(Math.max(vVal, tVal));
     return `
       <g>
-        <rect x="${valX.toFixed(1)}" y="${valY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(valH, 2).toFixed(1)}" rx="5" fill="var(--color-series-val)">
-          <title>${esc(t.label)}, validation macro F1: ${percent(t.valF1)}</title>
-        </rect>
-        <text x="${(valX + barW / 2 - 4).toFixed(1)}" y="${(valY - 7).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${percent(t.valF1, 1, "N/A")}</text>
-
-        <rect x="${testX.toFixed(1)}" y="${testY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(testH, 2).toFixed(1)}" rx="5" fill="var(--color-accent)">
-          <title>${esc(t.label)}, held-out test macro F1: ${percent(t.testF1)}</title>
-        </rect>
-        <text x="${(testX + barW / 2 + 4).toFixed(1)}" y="${(testY - 7).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11.5" font-weight="600" font-family="var(--font-body)">${percent(t.testF1, 1, "N/A")}</text>
-
-        <text x="${cx.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="12" font-weight="600" font-family="var(--font-body)">${esc(t.label)}</text>
-        <text x="${cx.toFixed(1)}" y="${(H - pad.bottom + 34).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${t.multilabel ? "Multi-label" : t.binary ? "Binary" : "Single-label"}</text>
+        <text x="${pad.left - 12}" y="${(cy + 4).toFixed(1)}" text-anchor="end" fill="var(--color-ink)" font-size="12" font-weight="500" font-family="var(--font-body)">${esc(t.label)}</text>
+        <line x1="${pad.left}" y1="${cy.toFixed(1)}" x2="${W - pad.right}" y2="${cy.toFixed(1)}" stroke="var(--color-track)" stroke-width="1.5"/>
+        <line x1="${x1.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${cy.toFixed(1)}" stroke="var(--color-accent)" stroke-width="3" opacity="0.4"/>
+        <circle cx="${xAt(vVal).toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5" fill="var(--color-surface-solid)" stroke="var(--color-muted)" stroke-width="2"/>
+        <circle cx="${xAt(tVal).toFixed(1)}" cy="${cy.toFixed(1)}" r="5.5" fill="var(--color-accent)"/>
+        <text x="${W - pad.right + 12}" y="${(cy + 4).toFixed(1)}" text-anchor="start" fill="var(--color-ink)" font-size="12" font-weight="600" font-family="var(--font-body)">${percent(t.testF1, 1, "N/A")}</text>
       </g>
     `;
   }).join("");
 
   return `
     <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Held-out validation and test macro F1 comparison across all five active NLP models">
-        <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">Held-out macro F1 (%) on thread-grouped validation and test splits</text>
+      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Validation versus held-out test macro F1 across all five active models">
+        <text x="${pad.left}" y="16" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">Macro F1 on thread-grouped splits (honest 0%–100% scale)</text>
         ${grid}
-        ${groups}
+        ${rows}
       </svg>
-      <div class="spacer-xs"></div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-series-val)"></span><span>Validation macro F1</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Held-out test macro F1</span></span>
+      <div class="chart-legend" style="margin-top:var(--space-xs)">
+        <span class="legend-item"><span class="legend-swatch" style="background:transparent;border:2px solid var(--color-muted)"></span><span>Validation Macro F1</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Held-out Test Macro F1</span></span>
       </div>
     </div>
   `;
 }
 
-export function confusionMatrixTable(matrix, labels) {
+export function confusionMatrixTable(matrix, labels, { openByDefault = false } = {}) {
   if (!Array.isArray(matrix) || !matrix.length || !Array.isArray(labels) || !labels.length) return "";
   const flat = matrix.flat().map((v) => Number(v || 0));
   const total = flat.reduce((a, b) => a + b, 0);
@@ -882,11 +825,11 @@ export function confusionMatrixTable(matrix, labels) {
   }).join("");
 
   return `
-    <details class="confusion-details">
-      <summary>Confusion matrix: actual (rows) vs. predicted (columns), n = ${num(total)}</summary>
+    <details class="confusion-details" ${openByDefault ? "open" : ""}>
+      <summary>Confusion matrix · actual (rows) vs. predicted (columns), n = ${num(total)}</summary>
       <div class="table-scroll">
         <table class="confusion-table" aria-label="Held-out test confusion matrix">
-          <thead><tr><th scope="col">Actual / Predicted</th>${head}</tr></thead>
+          <thead><tr><th scope="col">Actual / Pred</th>${head}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -895,91 +838,167 @@ export function confusionMatrixTable(matrix, labels) {
 }
 
 /* ==========================================================================
-   6. 4-Architecture Head-to-Head Grouped Chart (LogReg vs ANN vs CNN vs Transformer)
+   6. 4-Architecture Head-to-Head Dumbbell Dot-Plot (Honest 0%–100% Scale)
+   Replaces the 25-bar visual wall with 5 crisp horizontal range tracks.
+   Shows best non-Transformer baseline -> MuRIL-DAPT v3 gain in 0.5 seconds.
    ========================================================================== */
 const ARCH_SERIES = [
-  { key: "logistic_regression", short: "LogReg", color: "var(--color-muted)" },
-  { key: "ann_mlp", short: "ANN (MLP)", color: "var(--color-warning)" },
-  { key: "cnn_textcnn", short: "1D CNN", color: "var(--color-info)" },
-  { key: "transformer_muril_dapt_v3", short: "MuRIL-DAPT v3", color: "var(--color-accent)" },
-  { key: "production_hybrid", short: "Prod Hybrid", color: "var(--color-positive)" },
+  { key: "logistic_regression", short: "LogReg", color: "var(--color-muted)", shape: "hollow" },
+  { key: "ann_mlp", short: "ANN (MLP)", color: "var(--color-warning)", shape: "diamond" },
+  { key: "cnn_textcnn", short: "1D CNN", color: "var(--color-info)", shape: "square" },
+  { key: "transformer_muril_dapt_v3", short: "MuRIL-DAPT v3", color: "var(--color-accent)", shape: "solid" },
+  { key: "production_hybrid", short: "Prod Hybrid", color: "var(--color-positive)", shape: "ring" },
 ];
 
-export function architectureComparisonChart(archComp, mode = "probe") {
+function renderArchMarker(shape, cx, cy, color) {
+  const x = cx.toFixed(1);
+  const y = cy.toFixed(1);
+  if (shape === "hollow") {
+    return `<circle cx="${x}" cy="${y}" r="4.5" fill="var(--color-surface-solid)" stroke="${color}" stroke-width="1.8"/>`;
+  }
+  if (shape === "diamond") {
+    const r = 5.2;
+    return `<polygon points="${x},${(cy - r).toFixed(1)} ${(cx + r).toFixed(1)},${y} ${x},${(cy + r).toFixed(1)} ${(cx - r).toFixed(1)},${y}" fill="var(--color-surface-solid)" stroke="${color}" stroke-width="1.6"/>`;
+  }
+  if (shape === "square") {
+    const s = 8;
+    return `<rect x="${(cx - s / 2).toFixed(1)}" y="${(cy - s / 2).toFixed(1)}" width="${s}" height="${s}" rx="1.5" fill="var(--color-surface-solid)" stroke="${color}" stroke-width="1.6"/>`;
+  }
+  if (shape === "ring") {
+    return `<circle cx="${x}" cy="${y}" r="5.5" fill="var(--color-surface-solid)" stroke="${color}" stroke-width="2.4"/>`;
+  }
+  return `<circle cx="${x}" cy="${y}" r="6.2" fill="${color}" stroke="var(--color-surface-solid)" stroke-width="1.6"/>`;
+}
+
+export function architectureComparisonChart(archComp, mode = "test") {
   const perTask = archComp?.per_task || {};
   const taskOrder = ["issue", "solution", "sentiment", "response", "emotion"].filter((t) => t in perTask);
   if (!taskOrder.length) return `<div class="chart-empty">4-architecture comparison not emitted in this artifact.</div>`;
 
   const field = mode === "test" ? "test_macro_f1" : "probe_macro_f1";
   const subtitle = mode === "test"
-    ? "Real held-out Reddit test Macro F1 (%) — n = 92 unseen-thread comments (0 synthetic rows)"
-    : "Auxiliary 54-probe stress diagnostic Macro F1 (%) — observational only, never used for model selection";
+    ? "Real held-out Reddit test Macro F1 (honest 0%–100% scale · n = 92 unseen-thread comments, 0 synthetic rows)"
+    : "Auxiliary 54-probe stress diagnostic Macro F1 (honest 0%–100% scale · observational only, never used for selection)";
 
-  const W = 940;
-  const H = 304;
-  const pad = { top: 44, right: 20, bottom: 54, left: 48 };
+  const W = 880;
+  const rowH = 48;
+  const pad = { top: 44, right: 156, bottom: 36, left: 108 };
+  const H = pad.top + taskOrder.length * rowH + pad.bottom;
   const plotW = W - pad.left - pad.right;
-  const plotH = H - pad.top - pad.bottom;
+  const xAt = (v) => pad.left + Math.max(0, Math.min(1, v)) * plotW;
 
   const grid = [0, 0.25, 0.5, 0.75, 1.0].map((t) => {
-    const y = pad.top + plotH - t * plotH;
+    const x = xAt(t);
     return `
-      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
-      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${Math.round(t * 100)}%</text>
+      <line x1="${x.toFixed(1)}" y1="${pad.top}" x2="${x.toFixed(1)}" y2="${(H - pad.bottom).toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${t === 0 ? "none" : "2 4"}" opacity="${t === 0 ? "0.9" : "0.6"}"/>
+      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 20).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${Math.round(t * 100)}%</text>
     `;
   }).join("");
 
-  const slotW = plotW / taskOrder.length;
-  const barW = 20;
-  const gap = 5;
-  const groupW = ARCH_SERIES.length * barW + (ARCH_SERIES.length - 1) * gap;
-
-  const groups = taskOrder.map((taskKey, idx) => {
-    const cx = pad.left + slotW * idx + slotW / 2;
-    const startX = cx - groupW / 2;
+  const rows = taskOrder.map((taskKey, idx) => {
+    const cy = pad.top + idx * rowH + rowH / 2;
     const tModels = perTask[taskKey] || {};
-    const bars = ARCH_SERIES.map((series, sIdx) => {
-      const val = Number(tModels[series.key]?.[field] ?? 0);
-      const clamped = Math.max(0, Math.min(1, val));
-      const bh = Math.max(2, clamped * plotH);
-      const bx = startX + sIdx * (barW + gap);
-      const by = pad.top + plotH - bh;
-      const isHighlight = series.key === "transformer_muril_dapt_v3" || series.key === "production_hybrid";
-      return `
-        <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${bh.toFixed(1)}" rx="4" fill="${series.color}" opacity="${isHighlight ? "1" : "0.78"}">
-          <title>${esc(pretty(taskKey))} · ${esc(series.short)}: ${(clamped * 100).toFixed(1)}% (${mode === "test" ? "held-out test" : "54-probe unseen OOD"})</title>
-        </rect>
-        <text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 5).toFixed(1)}" text-anchor="middle" fill="${isHighlight ? "var(--color-ink)" : "var(--color-muted)"}" font-size="9.5" font-weight="${isHighlight ? "600" : "400"}" font-family="var(--font-body)">${Math.round(clamped * 100)}</text>
-      `;
-    }).join("");
+    const vals = Object.fromEntries(
+      ARCH_SERIES.map((s) => [s.key, Math.max(0, Math.min(1, Number(tModels[s.key]?.[field] ?? 0)))])
+    );
+
+    const lr = vals.logistic_regression;
+    const ann = vals.ann_mlp;
+    const cnn = vals.cnn_textcnn;
+    const muril = vals.transformer_muril_dapt_v3;
+    const hyb = vals.production_hybrid;
+
+    const minBase = Math.min(lr, ann, cnn);
+    const maxBase = Math.max(lr, ann, cnn);
+    const gainPp = (muril - maxBase) * 100;
+    const gainSign = gainPp >= 0 ? "+" : "";
+
+    // Gentle vertical micro-offset only when Hybrid sits right on top of MuRIL so both markers stay crisp
+    const hybridOffsetY = Math.abs(hyb - muril) < 0.015 ? -7 : 0;
+    const murilOffsetY = Math.abs(hyb - muril) < 0.015 ? 4 : 0;
+
+    const tipRows = JSON.stringify([
+      ["MuRIL-DAPT v3", `${(muril * 100).toFixed(1)}%`],
+      ["Production Hybrid", `${(hyb * 100).toFixed(1)}%`],
+      ["Logistic Regression", `${(lr * 100).toFixed(1)}%`],
+      ["ANN (2-layer MLP)", `${(ann * 100).toFixed(1)}%`],
+      ["1D TextCNN", `${(cnn * 100).toFixed(1)}%`],
+      ["MuRIL vs. Best Non-Trans.", `${gainSign}${gainPp.toFixed(1)} pp`],
+    ]);
 
     return `
-      <g>
-        ${bars}
-        <text x="${cx.toFixed(1)}" y="${(H - pad.bottom + 20).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="12" font-weight="600" font-family="var(--font-body)">${esc(pretty(taskKey))}</text>
+      <g class="dumbbell-row"
+         data-chart-tip-title="${esc(`${pretty(taskKey)} · ${mode === "test" ? "Real Held-Out Test" : "54-Probe Stress"}`)}"
+         data-chart-tip-rows="${esc(tipRows)}">
+        <rect class="dumbbell-hit" x="0" y="${(cy - rowH / 2 + 2).toFixed(1)}" width="${W}" height="${rowH - 4}" rx="8" fill="transparent"/>
+        <text x="${pad.left - 14}" y="${(cy + 4).toFixed(1)}" text-anchor="end" fill="var(--color-ink)" font-size="12.5" font-weight="600" font-family="var(--font-body)">${esc(pretty(taskKey))}</text>
+
+        <!-- Full 0-100% quiet track -->
+        <line x1="${pad.left}" y1="${cy.toFixed(1)}" x2="${W - pad.right}" y2="${cy.toFixed(1)}" stroke="var(--color-track)" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Baseline spread span -->
+        <line x1="${xAt(minBase).toFixed(1)}" y1="${cy.toFixed(1)}" x2="${xAt(maxBase).toFixed(1)}" y2="${cy.toFixed(1)}" stroke="var(--color-rule-2)" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Highlighted Transformer gain bridge from best baseline -> MuRIL -->
+        <line x1="${xAt(Math.min(maxBase, muril)).toFixed(1)}" y1="${cy.toFixed(1)}" x2="${xAt(Math.max(maxBase, muril)).toFixed(1)}" y2="${cy.toFixed(1)}" stroke="${gainPp >= 0 ? "var(--color-accent)" : "var(--color-warning)"}" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+
+        <!-- Non-transformer baseline markers (muted) -->
+        ${renderArchMarker("hollow", xAt(lr), cy, "var(--color-muted)")}
+        ${renderArchMarker("diamond", xAt(ann), cy, "var(--color-warning)")}
+        ${renderArchMarker("square", xAt(cnn), cy, "var(--color-info)")}
+
+        <!-- Highlighted MuRIL-DAPT v3 & Hybrid markers -->
+        ${renderArchMarker("ring", xAt(hyb), cy + hybridOffsetY, "var(--color-positive)")}
+        ${renderArchMarker("solid", xAt(muril), cy + murilOffsetY, "var(--color-accent)")}
+
+        <!-- Direct right-margin readout (zero overlaps) -->
+        <text x="${W - pad.right + 16}" y="${(cy + 4).toFixed(1)}" text-anchor="start" fill="var(--color-ink)" font-size="12.5" font-weight="600" font-family="var(--font-body)">${(muril * 100).toFixed(1)}%</text>
+        <text x="${W - pad.right + 72}" y="${(cy + 4).toFixed(1)}" text-anchor="start" fill="${gainPp >= 0 ? "var(--color-positive)" : "var(--color-muted)"}" font-size="11.5" font-weight="600" font-family="var(--font-body)">${gainSign}${gainPp.toFixed(1)} pp</text>
       </g>
     `;
   }).join("");
 
-  const legend = ARCH_SERIES.map((s) =>
-    `<span class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span><span>${esc(s.short)}</span></span>`
-  ).join("");
+  const legend = `
+    <div class="chart-legend" style="margin-top:var(--space-xs)">
+      <span class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="var(--color-accent)"/></svg>
+        <span><strong>MuRIL-DAPT v3</strong></span>
+      </span>
+      <span class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.2" fill="none" stroke="var(--color-positive)" stroke-width="2.2"/></svg>
+        <span>Production Hybrid</span>
+      </span>
+      <span class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.8" fill="none" stroke="var(--color-muted)" stroke-width="1.8"/></svg>
+        <span>LogReg</span>
+      </span>
+      <span class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><polygon points="6,1.5 10.5,6 6,10.5 1.5,6" fill="none" stroke="var(--color-warning)" stroke-width="1.6"/></svg>
+        <span>ANN (MLP)</span>
+      </span>
+      <span class="legend-item">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="var(--color-info)" stroke-width="1.6"/></svg>
+        <span>1D CNN</span>
+      </span>
+    </div>
+  `;
 
   return `
     <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(subtitle)}">
+      <svg class="responsive-svg arch-dumbbell-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(subtitle)}">
         <text x="${pad.left}" y="16" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${esc(subtitle)}</text>
+        <text x="${W - pad.right + 16}" y="16" text-anchor="start" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">MuRIL</text>
+        <text x="${W - pad.right + 72}" y="16" text-anchor="start" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">vs. Best Base</text>
         ${grid}
-        ${groups}
+        ${rows}
       </svg>
-      <div class="spacer-xs"></div>
-      <div class="chart-legend">${legend}</div>
+      ${legend}
     </div>
   `;
 }
 
 /* ==========================================================================
-   7. 8-Category Robustness Matrix ("Where & Why Transformer Beats Baselines")
+   7. 8-Category Auxiliary 54-Probe Stress Table (Restrained Tonal Contrast)
    ========================================================================== */
 const PROBE_CAT_LABELS = {
   code_mixed_language: "Hinglish & code-mix",
@@ -1005,8 +1024,7 @@ export function robustnessCategoryHeatmap(archComp) {
     const cells = ARCH_SERIES.map((s, idx) => {
       const val = scores[idx];
       const isWinner = val >= maxScore - 0.002;
-      const cls = val >= 0.72 ? "hm-high" : val >= 0.55 ? "hm-mid" : "hm-low";
-      return `<td class="num hm-cell ${cls} ${isWinner ? "hm-winner" : ""}" title="${esc(PROBE_CAT_LABELS[cat])} · ${esc(s.short)}: ${(val * 100).toFixed(1)}%">${(val * 100).toFixed(1)}%</td>`;
+      return `<td class="num hm-cell ${isWinner ? "hm-winner" : "hm-plain"}" title="${esc(PROBE_CAT_LABELS[cat])} · ${esc(s.short)}: ${(val * 100).toFixed(1)}%">${(val * 100).toFixed(1)}%</td>`;
     }).join("");
     const bestBaseline = Math.max(scores[0], scores[1], scores[2]);
     const transDelta = (scores[3] - bestBaseline) * 100;
@@ -1015,7 +1033,7 @@ export function robustnessCategoryHeatmap(archComp) {
       <tr>
         <th scope="row">${esc(PROBE_CAT_LABELS[cat])}</th>
         ${cells}
-        <td class="num"><span class="tag ${transDelta >= 0 ? "tag-positive" : "tag-neutral"}">${deltaSign}${transDelta.toFixed(1)} pp</span></td>
+        <td class="num"><span class="delta-inline ${transDelta >= 0 ? "is-pos" : "is-muted"}">${deltaSign}${transDelta.toFixed(1)} pp</span></td>
       </tr>
     `;
   }).join("");
@@ -1025,9 +1043,9 @@ export function robustnessCategoryHeatmap(archComp) {
       <table class="data-table robustness-hm-table" aria-label="Mean 5-task F1 across all 8 unseen stress categories by architecture">
         <thead>
           <tr>
-            <th scope="col">Unseen Stress Category</th>
+            <th scope="col">Linguistic stress category</th>
             ${ARCH_SERIES.map((s) => `<th scope="col" class="num">${esc(s.short)}</th>`).join("")}
-            <th scope="col" class="num">MuRIL vs. Best Non-Trans.</th>
+            <th scope="col" class="num">MuRIL vs. Best Base</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1037,363 +1055,344 @@ export function robustnessCategoryHeatmap(archComp) {
 }
 
 /* ==========================================================================
-   8. DAPT Perplexity & MLM Loss Convergence Curve ("How DAPT Adapts MuRIL")
+   8. DAPT Held-Out Validation Perplexity Curve (Single-Axis, Zero-Anchored)
+   Eliminates redundant dual Y-axis (MLM loss = ln(perplexity) sits in tooltip).
    ========================================================================== */
 export function daptConvergenceChart(daptSummary) {
   const hist = daptSummary?.history || [];
   if (!hist.length) return `<div class="chart-empty">DAPT epoch history not available.</div>`;
 
   const W = 520;
-  const H = 228;
-  const pad = { top: 34, right: 54, bottom: 42, left: 52 };
+  const H = 236;
+  const pad = { top: 34, right: 24, bottom: 38, left: 46 };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
 
   const ppls = hist.map((h) => Number(h.perplexity));
-  const losses = hist.map((h) => Number(h.mlm_loss));
-  const minPpl = Math.max(0, Math.floor(Math.min(...ppls) * 0.8));
-  const maxPpl = Math.ceil(Math.max(...ppls) * 1.12);
-  const pplSpan = Math.max(1, maxPpl - minPpl);
-
-  const minLoss = Math.max(0, Math.min(...losses) * 0.85);
-  const maxLoss = Math.max(...losses) * 1.1;
-  const lossSpan = Math.max(0.1, maxLoss - minLoss);
+  const maxPpl = niceAxisMax(Math.max(...ppls, 10), 4);
+  const ticks = [0, Math.round(maxPpl * 0.25), Math.round(maxPpl * 0.5), Math.round(maxPpl * 0.75), maxPpl];
 
   const xOf = (i) => pad.left + (hist.length === 1 ? plotW / 2 : (i / (hist.length - 1)) * plotW);
-  const yPpl = (v) => pad.top + plotH - ((v - minPpl) / pplSpan) * plotH;
-  const yLoss = (v) => pad.top + plotH - ((v - minLoss) / lossSpan) * plotH;
+  const yOf = (v) => pad.top + plotH - (Math.max(0, v) / maxPpl) * plotH;
 
-  const pplPts = hist.map((h, i) => `${xOf(i).toFixed(1)},${yPpl(h.perplexity).toFixed(1)}`).join(" ");
-  const lossPts = hist.map((h, i) => `${xOf(i).toFixed(1)},${yLoss(h.mlm_loss).toFixed(1)}`).join(" ");
-  const areaPts = `${xOf(0).toFixed(1)},${(pad.top + plotH).toFixed(1)} ${pplPts} ${xOf(hist.length - 1).toFixed(1)},${(pad.top + plotH).toFixed(1)}`;
+  const pts = hist.map((h, i) => ({ x: xOf(i), y: yOf(Number(h.perplexity)), h }));
+  const linePath = monotoneCubicPath(pts, pad.top, pad.top + plotH);
+  const areaPath = `${linePath} L ${pts[pts.length - 1].x.toFixed(1)} ${(pad.top + plotH).toFixed(1)} L ${pts[0].x.toFixed(1)} ${(pad.top + plotH).toFixed(1)} Z`;
 
-  const grid = [0, 0.33, 0.66, 1].map((r) => {
-    const y = pad.top + plotH - r * plotH;
-    const vPpl = minPpl + r * pplSpan;
-    const vLoss = minLoss + r * lossSpan;
+  const initPpl = Number(daptSummary.initial_perplexity || ppls[0] || 0);
+  const finalPpl = Number(daptSummary.final_perplexity || ppls[ppls.length - 1] || 0);
+  const dropPct = initPpl > 0 ? ((initPpl - finalPpl) / initPpl) * 100 : 0;
+
+  const grid = ticks.map((t, i) => {
+    const y = yOf(t);
     return `
-      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
-      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-accent)" font-size="10.5" font-family="var(--font-body)">${vPpl.toFixed(0)}</text>
-      <text x="${W - pad.right + 8}" y="${(y + 4).toFixed(1)}" text-anchor="start" fill="var(--color-info)" font-size="10.5" font-family="var(--font-body)">${vLoss.toFixed(2)}</text>
+      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${i === 0 ? "none" : "2 4"}" opacity="${i === 0 ? "0.9" : "0.6"}"/>
+      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${t}</text>
     `;
   }).join("");
 
-  const dots = hist.map((h, i) => {
-    const x = xOf(i);
-    const yp = yPpl(h.perplexity);
-    const yl = yLoss(h.mlm_loss);
-    // Choose above vs below perplexity dot to stay farthest from the MLM loss line/dot
-    const aboveY = yp - 12;
-    const belowY = yp + 18;
-    const distAbove = Math.abs(aboveY - yl);
-    const distBelow = Math.abs(belowY - yl);
-    const labelY = (aboveY < pad.top + 8 || (distBelow > distAbove + 4 && belowY < pad.top + plotH - 4))
-      ? belowY
-      : aboveY;
-    const pplTxt = Number(h.perplexity).toFixed(1);
-    const pillW = pplTxt.length * 6.8 + 8;
+  const dots = pts.map((p, i) => {
+    const h = p.h;
+    const epLabel = Number(h.epoch) === 0 ? "Pre-DAPT" : `Epoch ${h.epoch}`;
+    const isFirstNearTop = i === 0 && p.y - 11 < pad.top + 8;
+    const labelX = isFirstNearTop ? p.x + 22 : p.x;
+    const labelY = isFirstNearTop ? p.y + 4 : (p.y - 11 < pad.top + 8 ? p.y + 18 : p.y - 11);
+    const tipRows = JSON.stringify([
+      ["Held-out Val Perplexity", Number(h.perplexity).toFixed(2)],
+      ["Held-out MLM Loss", Number(h.mlm_loss).toFixed(4)],
+      ["vs. Pre-DAPT", i === 0 ? "Baseline" : `${((Number(h.perplexity) - initPpl) / initPpl * 100).toFixed(1)}%`],
+    ]);
     return `
-      <circle cx="${x.toFixed(1)}" cy="${yl.toFixed(1)}" r="3.5" fill="var(--color-info)" stroke="var(--color-surface-solid)" stroke-width="1.2"/>
-      <circle cx="${x.toFixed(1)}" cy="${yp.toFixed(1)}" r="4.5" fill="var(--color-accent)" stroke="var(--color-surface-solid)" stroke-width="1.5">
-        <title>Epoch ${h.epoch}: Perplexity ${h.perplexity} (MLM loss ${h.mlm_loss})</title>
-      </circle>
-      <rect x="${(x - pillW / 2).toFixed(1)}" y="${(labelY - 10).toFixed(1)}" width="${pillW.toFixed(1)}" height="13" rx="3" fill="var(--color-surface-solid)" fill-opacity="0.92"/>
-      <text x="${x.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="10.5" font-weight="600" font-family="var(--font-body)">${pplTxt}</text>
-      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${Number(h.epoch) === 0 ? "Pre-DAPT" : `Epoch ${h.epoch}`}</text>
+      <g class="chart-point-hover"
+         data-chart-tip-title="${esc(`MuRIL-DAPT · ${epLabel}`)}"
+         data-chart-tip-rows="${esc(tipRows)}">
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="14" fill="transparent"/>
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="var(--color-accent)" stroke="var(--color-surface-solid)" stroke-width="2"/>
+        <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11" font-weight="600" font-family="var(--font-body)">${Number(h.perplexity).toFixed(1)}</text>
+        <text x="${p.x.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${epLabel}</text>
+      </g>
     `;
   }).join("");
 
   const isHeldout = daptSummary?.perplexity_split === "heldout_validation";
-  const pplCaption = isHeldout
-    ? `Held-out val perplexity (n=${num(daptSummary.val_documents || 0)} unseen texts)`
-    : "Perplexity (lower = better domain fit)";
+  const caption = isHeldout
+    ? `Held-out val perplexity (0-anchored · n = ${num(daptSummary.val_documents || 0)} unseen texts)`
+    : "MLM Perplexity (lower = better domain fit)";
 
   return `
     <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Unsupervised MuRIL-DAPT masked language modeling held-out validation perplexity and loss curve">
-        <text x="${pad.left}" y="15" fill="var(--color-accent)" font-size="10.5" font-weight="600" font-family="var(--font-body)">${esc(pplCaption)}</text>
-        <text x="${W - pad.right}" y="15" text-anchor="end" fill="var(--color-info)" font-size="10.5" font-family="var(--font-body)">Val MLM Loss</text>
+      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Single-axis zero-anchored held-out validation perplexity curve across DAPT epochs">
+        <defs>
+          <linearGradient id="dapt-ppl-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${esc(caption)}</text>
+        <text x="${W - pad.right}" y="15" text-anchor="end" fill="var(--color-positive)" font-size="11" font-weight="600" font-family="var(--font-body)">−${dropPct.toFixed(1)}%</text>
         ${grid}
-        <polygon points="${areaPts}" fill="var(--color-accent)" opacity="0.10"/>
-        <polyline points="${pplPts}" fill="none" stroke="var(--color-accent)" stroke-width="2.4" stroke-linejoin="round"/>
-        <polyline points="${lossPts}" fill="none" stroke="var(--color-info)" stroke-width="1.8" stroke-dasharray="5,3" stroke-linejoin="round"/>
+        <path d="${areaPath}" fill="url(#dapt-ppl-grad)"/>
+        <path d="${linePath}" fill="none" stroke="var(--color-accent)" stroke-width="2.4" stroke-linecap="round"/>
         ${dots}
       </svg>
-      <div class="chart-legend" style="margin-top:var(--space-xs)">
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>${isHeldout ? "Held-out val perplexity" : "Perplexity"} (${esc(daptSummary.initial_perplexity)} → ${esc(daptSummary.final_perplexity)})</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-info)"></span><span>Held-out MLM cross-entropy loss</span></span>
-      </div>
+      <p class="chart-footnote">Hover any epoch for held-out MLM cross-entropy loss (<code>${Number(hist[0].mlm_loss).toFixed(2)} → ${Number(hist[hist.length - 1].mlm_loss).toFixed(2)}</code>). Single axis avoids redundant dual-scale clutter.</p>
     </div>
   `;
 }
 
 /* ==========================================================================
-   9. Calibration Reliability Diagram (Predicted Confidence vs Empirical Accuracy)
+   9. True 1:1 Square Calibration Reliability Diagram (Visible Bin Sample n=)
+   Equal X/Y proportions guarantee a true 45-degree y = x calibration diagonal.
    ========================================================================== */
 export function calibrationReliabilityChart(calData) {
   const bins = (calData?.bins || []).filter((b) => b.count > 0 && b.mean_confidence !== null);
   const rawBins = (calData?.uncalibrated_bins || []).filter((b) => b.count > 0 && b.mean_confidence !== null);
   if (!bins.length) return `<div class="chart-empty">Calibration bins not available.</div>`;
 
-  const W = 520;
-  const H = 228;
-  const pad = { top: 30, right: 24, bottom: 42, left: 52 };
-  const plotW = W - pad.left - pad.right;
-  const plotH = H - pad.top - pad.bottom;
+  // Square plotting area (220 x 220) so y = x is a true 45-degree diagonal
+  const side = 204;
+  const pad = { top: 28, right: 34, bottom: 42, left: 54 };
+  const W = pad.left + side + pad.right;
+  const H = pad.top + side + pad.bottom;
 
-  const xOf = (v) => pad.left + Math.max(0, Math.min(1, v)) * plotW;
-  const yOf = (v) => pad.top + plotH - Math.max(0, Math.min(1, v)) * plotH;
+  const xOf = (v) => pad.left + Math.max(0, Math.min(1, v)) * side;
+  const yOf = (v) => pad.top + side - Math.max(0, Math.min(1, v)) * side;
 
-  const grid = [0, 0.25, 0.5, 0.75, 1.0].map((v) => {
+  const grid = [0, 0.25, 0.5, 0.75, 1.0].map((v, idx) => {
     const x = xOf(v);
     const y = yOf(v);
     return `
-      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
+      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${pad.left + side}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${idx === 0 ? "none" : "2 4"}" opacity="0.6"/>
+      <line x1="${x.toFixed(1)}" y1="${pad.top}" x2="${x.toFixed(1)}" y2="${pad.top + side}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${idx === 0 ? "none" : "2 4"}" opacity="0.45"/>
       <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${Math.round(v * 100)}%</text>
-      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 17).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${Math.round(v * 100)}%</text>
+      <text x="${x.toFixed(1)}" y="${(pad.top + side + 16).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${Math.round(v * 100)}%</text>
     `;
   }).join("");
 
   const calPts = bins.map((b) => `${xOf(b.mean_confidence).toFixed(1)},${yOf(b.empirical_accuracy).toFixed(1)}`).join(" ");
   const rawPts = rawBins.map((b) => `${xOf(b.mean_confidence).toFixed(1)},${yOf(b.empirical_accuracy).toFixed(1)}`).join(" ");
 
-  const calDots = bins.map((b) => `
-    <circle cx="${xOf(b.mean_confidence).toFixed(1)}" cy="${yOf(b.empirical_accuracy).toFixed(1)}" r="${Math.min(7, 3.2 + Math.sqrt(b.count) * 0.65).toFixed(1)}" fill="var(--color-positive)" stroke="var(--color-surface-solid)" stroke-width="1.5">
-      <title>Calibrated bin (${Math.round(b.lower*100)}-${Math.round(b.upper*100)}%): mean conf ${(b.mean_confidence*100).toFixed(1)}% vs accuracy ${(b.empirical_accuracy*100).toFixed(1)}% (n=${b.count})</title>
-    </circle>
-  `).join("");
+  // Gap whiskers visually show exact |accuracy - confidence| distance to y = x
+  const whiskers = bins.map((b) => {
+    const x = xOf(b.mean_confidence);
+    const yAcc = yOf(b.empirical_accuracy);
+    const yIdeal = yOf(b.mean_confidence);
+    return `<line x1="${x.toFixed(1)}" y1="${yAcc.toFixed(1)}" x2="${x.toFixed(1)}" y2="${yIdeal.toFixed(1)}" stroke="var(--color-positive)" stroke-width="1.4" opacity="0.4"/>`;
+  }).join("");
+
+  const calDots = bins.map((b) => {
+    const cx = xOf(b.mean_confidence);
+    const cy = yOf(b.empirical_accuracy);
+    const r = Math.min(7.5, 3.2 + Math.sqrt(b.count) * 0.55);
+    const aboveIdeal = b.empirical_accuracy >= b.mean_confidence;
+    const labelY = aboveIdeal ? Math.max(pad.top + 11, cy - r - 6) : Math.min(pad.top + side - 5, cy + r + 12);
+    const gap = Math.abs(b.empirical_accuracy - b.mean_confidence) * 100;
+    const tipRows = JSON.stringify([
+      ["Mean predicted confidence", `${(b.mean_confidence * 100).toFixed(1)}%`],
+      ["Empirical accuracy", `${(b.empirical_accuracy * 100).toFixed(1)}%`],
+      ["Calibration gap", `${gap.toFixed(1)} pp`],
+      ["Sample count", `n = ${num(b.count)}`],
+    ]);
+    return `
+      <g class="chart-point-hover"
+         data-chart-tip-title="${esc(`Confidence bin ${Math.round(b.lower * 100)}–${Math.round(b.upper * 100)}%`)}"
+         data-chart-tip-rows="${esc(tipRows)}">
+        <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="13" fill="transparent"/>
+        <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="var(--color-positive)" stroke="var(--color-surface-solid)" stroke-width="1.6"/>
+        <text x="${cx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="9.5" font-weight="500" font-family="var(--font-body)">n=${b.count}</text>
+      </g>
+    `;
+  }).join("");
 
   return `
-    <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Calibration reliability diagram comparing predicted confidence with empirical accuracy">
-        <text x="${pad.left}" y="14" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">Empirical accuracy (Y) vs. predicted confidence (X)</text>
+    <div class="reliability-wrap">
+      <svg class="reliability-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Square 1:1 calibration reliability diagram comparing predicted confidence against empirical accuracy with bin sample sizes">
+        <text x="${(pad.left + side / 2).toFixed(1)}" y="14" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">Empirical accuracy vs. confidence (1:1)</text>
         ${grid}
-        <line x1="${xOf(0).toFixed(1)}" y1="${yOf(0).toFixed(1)}" x2="${xOf(1).toFixed(1)}" y2="${yOf(1).toFixed(1)}" stroke="var(--color-muted)" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.65"/>
-        ${rawPts ? `<polyline points="${rawPts}" fill="none" stroke="var(--color-warning)" stroke-width="1.8" stroke-dasharray="4,3" opacity="0.85"/>` : ""}
-        <polyline points="${calPts}" fill="none" stroke="var(--color-positive)" stroke-width="2.4" stroke-linejoin="round"/>
+        <text x="${pad.left + 8}" y="${pad.top + 16}" fill="var(--color-muted)" font-size="9.5" opacity="0.7" font-family="var(--font-body)">Underconfident</text>
+        <text x="${pad.left + side - 8}" y="${pad.top + side - 8}" text-anchor="end" fill="var(--color-muted)" font-size="9.5" opacity="0.7" font-family="var(--font-body)">Overconfident</text>
+        <line x1="${xOf(0).toFixed(1)}" y1="${yOf(0).toFixed(1)}" x2="${xOf(1).toFixed(1)}" y2="${yOf(1).toFixed(1)}" stroke="var(--color-muted)" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.7"/>
+        ${whiskers}
+        ${rawPts ? `<polyline points="${rawPts}" fill="none" stroke="var(--color-warning)" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.75"/>` : ""}
+        <polyline points="${calPts}" fill="none" stroke="var(--color-positive)" stroke-width="2.2" stroke-linejoin="round"/>
         ${calDots}
+        <text x="${(pad.left + side / 2).toFixed(1)}" y="${(H - 6).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">Predicted confidence (bin mean)</text>
       </svg>
       <div class="chart-legend" style="margin-top:var(--space-xs)">
         <span class="legend-item"><span class="legend-swatch" style="background:var(--color-positive)"></span><span>Calibrated (ECE ${Number(calData.calibrated_ece ?? 0).toFixed(3)}, T=${esc(calData.temperature)})</span></span>
-        ${calData.uncalibrated_ece !== undefined ? `<span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Uncalibrated T=1.0 (ECE ${Number(calData.uncalibrated_ece).toFixed(3)})</span></span>` : ""}
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-muted)"></span><span>Perfect calibration (y = x)</span></span>
+        ${calData.uncalibrated_ece !== undefined ? `<span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Raw T=1.0 (ECE ${Number(calData.uncalibrated_ece).toFixed(3)})</span></span>` : ""}
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-muted)"></span><span>Ideal (y = x)</span></span>
       </div>
     </div>
   `;
 }
 
 /* ==========================================================================
-   10. Corpus Prediction Confidence Distribution Histogram
+   10. Corpus Confidence Distribution Histogram (Honest 0-Anchored Y-Axis)
+   Calm background zone washes + clean headroom counts + zero floating boxes.
    ========================================================================== */
 export function confidenceHistogramChart(confSummary) {
   const hist = confSummary?.histogram || [];
   if (!hist.length) return "";
   const W = 520;
-  const H = 212;
-  const pad = { top: 38, right: 16, bottom: 38, left: 42 };
+  const H = 236;
+  const pad = { top: 34, right: 16, bottom: 38, left: 46 };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
-  const maxC = Math.max(1, ...hist.map((b) => Number(b.count || 0)));
+
+  const totalCount = Math.max(1, hist.reduce((s, b) => s + Number(b.count || 0), 0));
+  const rawMax = Math.max(1, ...hist.map((b) => Number(b.count || 0)));
+  const yMax = niceAxisMax(rawMax, 4);
+  const ticks = [0, Math.round(yMax * 0.5), yMax];
+
   const slotW = plotW / hist.length;
-  const barW = slotW - 6;
-
-  const tierColor = (tier) =>
-    tier === "high" ? "var(--color-positive)" : tier === "medium" ? "var(--color-info)" : "var(--color-warning)";
-
+  const barW = slotW - 8;
   const xLow = pad.left + 5.5 * slotW;
   const xHigh = pad.left + 8.0 * slotW;
+  const yOf = (v) => pad.top + plotH - (v / yMax) * plotH;
+
+  const tierColor = (tier) =>
+    tier === "high" ? "var(--color-positive)" : tier === "medium" ? "var(--color-accent)" : "var(--color-warning)";
+
+  const grid = ticks.map((t, i) => {
+    const y = yOf(t);
+    return `
+      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="${i === 0 ? "none" : "2 4"}" opacity="${i === 0 ? "0.9" : "0.55"}"/>
+      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${num(t)}</text>
+    `;
+  }).join("");
 
   const bars = hist.map((b, i) => {
     const cnt = Number(b.count || 0);
-    const bh = (cnt / maxC) * plotH;
-    const x = pad.left + i * slotW + 3;
+    const bh = (cnt / yMax) * plotH;
+    const x = pad.left + i * slotW + 4;
     const y = pad.top + plotH - bh;
     const cx = x + barW / 2;
-    const cntText = num(cnt);
-    const pillW = cntText.length * 6.0 + 8;
-    const labelY = y - 5;
+    const tipRows = JSON.stringify([
+      ["Comments", `${num(cnt)} (${share(cnt, totalCount)})`],
+      ["Confidence tier", pretty(b.tier)],
+    ]);
     return `
-      <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1.5, bh).toFixed(1)}" rx="3" fill="${tierColor(b.tier)}">
-        <title>${esc(b.label)} confidence: ${cntText} comments (${esc(b.tier)} tier)</title>
-      </rect>
-      ${cnt > 0 ? `
-        <rect x="${(cx - pillW / 2).toFixed(1)}" y="${(labelY - 9.5).toFixed(1)}" width="${pillW.toFixed(1)}" height="12" rx="3" fill="var(--color-surface-solid)" fill-opacity="0.94"/>
-        <text x="${cx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="9.5" font-weight="500" font-family="var(--font-body)">${cntText}</text>
-      ` : ""}
-      <text x="${cx.toFixed(1)}" y="${(H - pad.bottom + 15).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="9.5" font-family="var(--font-body)">${Math.round(b.lower * 100)}%</text>
+      <g class="chart-bar-hover"
+         data-chart-tip-title="${esc(`Confidence ${b.label}`)}"
+         data-chart-tip-rows="${esc(tipRows)}">
+        <rect x="${(pad.left + i * slotW).toFixed(1)}" y="${pad.top}" width="${slotW.toFixed(1)}" height="${plotH}" fill="transparent"/>
+        <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(cnt > 0 ? 2 : 0, bh).toFixed(1)}" rx="3" fill="${tierColor(b.tier)}" opacity="0.86"/>
+        ${cnt > 0 ? `<text x="${cx.toFixed(1)}" y="${(y - 6).toFixed(1)}" text-anchor="middle" fill="var(--color-ink-2)" font-size="9.5" font-weight="500" font-family="var(--font-body)">${num(cnt)}</text>` : ""}
+        <text x="${cx.toFixed(1)}" y="${(H - pad.bottom + 16).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10" font-family="var(--font-body)">${Math.round(b.lower * 100)}%</text>
+      </g>
     `;
   }).join("");
 
   return `
     <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Distribution of calibrated prediction confidence across all corpus comments">
-        <text x="${pad.left}" y="14" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">Comment count by mean 5-task confidence bin</text>
-        <line x1="${pad.left}" y1="${(pad.top + plotH).toFixed(1)}" x2="${W - pad.right}" y2="${(pad.top + plotH).toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
-        <line x1="${xLow.toFixed(1)}" y1="${pad.top - 6}" x2="${xLow.toFixed(1)}" y2="${(pad.top + plotH).toFixed(1)}" stroke="var(--color-warning)" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.8"/>
-        <text x="${(xLow - 4).toFixed(1)}" y="${pad.top - 10}" text-anchor="end" fill="var(--color-warning)" font-size="9" font-weight="600" font-family="var(--font-body)">55% review</text>
-        <line x1="${xHigh.toFixed(1)}" y1="${pad.top - 6}" x2="${xHigh.toFixed(1)}" y2="${(pad.top + plotH).toFixed(1)}" stroke="var(--color-positive)" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.8"/>
-        <text x="${(xHigh + 4).toFixed(1)}" y="${pad.top - 10}" text-anchor="start" fill="var(--color-positive)" font-size="9" font-weight="600" font-family="var(--font-body)">80% high</text>
+      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Zero-anchored histogram of calibrated prediction confidence across all live corpus comments">
+        <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">Live comments by mean 5-task confidence (n = ${num(totalCount)})</text>
+        <!-- Subtle zone background tints -->
+        <rect x="${pad.left}" y="${pad.top}" width="${(xLow - pad.left).toFixed(1)}" height="${plotH}" fill="var(--color-warning)" opacity="0.06"/>
+        <rect x="${xHigh.toFixed(1)}" y="${pad.top}" width="${(W - pad.right - xHigh).toFixed(1)}" height="${plotH}" fill="var(--color-positive)" opacity="0.06"/>
+        ${grid}
+        <line x1="${xLow.toFixed(1)}" y1="${pad.top}" x2="${xLow.toFixed(1)}" y2="${(pad.top + plotH).toFixed(1)}" stroke="var(--color-warning)" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>
+        <text x="${(xLow - 5).toFixed(1)}" y="${pad.top + 12}" text-anchor="end" fill="var(--color-warning)" font-size="9.5" font-weight="600" font-family="var(--font-body)">Review &lt;55%</text>
+        <line x1="${xHigh.toFixed(1)}" y1="${pad.top}" x2="${xHigh.toFixed(1)}" y2="${(pad.top + plotH).toFixed(1)}" stroke="var(--color-positive)" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>
+        <text x="${(xHigh + 5).toFixed(1)}" y="${pad.top + 12}" text-anchor="start" fill="var(--color-positive)" font-size="9.5" font-weight="600" font-family="var(--font-body)">High &ge;80%</text>
         ${bars}
       </svg>
       <div class="chart-legend" style="margin-top:var(--space-xs)">
         <span class="legend-item"><span class="legend-swatch" style="background:var(--color-positive)"></span><span>High &ge;80% (${num(confSummary.high_count)})</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-info)"></span><span>Medium 55–79% (${num(confSummary.medium_count)})</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Low / Review &lt;55% (${num(confSummary.low_count)})</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Medium 55–79% (${num(confSummary.medium_count)})</span></span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Review &lt;55% (${num(confSummary.low_count)})</span></span>
       </div>
     </div>
   `;
 }
 
 /* ==========================================================================
-   11. Overview Issue Friction & Resolution Quadrant (Multi-Signal Synthesis)
+   11. Honest Linear Issue Triage Visual (0%–100% Paired Bars)
+   Replaces the non-linear sqrt-X + zoomed-Y bubble cloud with a single unified,
+   zero-distortion linear comparison of Negative Sentiment % and Unconfirmed %.
    ========================================================================== */
 export function issueFrictionQuadrantChart(matrix) {
   if (!matrix || !matrix.length) return "";
-  const W = 640;
-  const H = 316;
-  const pad = { top: 38, right: 44, bottom: 46, left: 58 };
-  const plotW = W - pad.left - pad.right;
-  const plotH = H - pad.top - pad.bottom;
-
-  const negs = matrix.map((m) => Math.max(0, Number(m.negative_share || 0)));
-  const unresList = matrix.map((m) => Math.max(0, Math.min(1, Number(m.unresolved_share || 0))));
-  const maxNeg = Math.max(0.25, Math.ceil(Math.max(...negs, 0.2) * 1.15 * 20) / 20);
-  // Zoom Y-axis tightly to empirical range when all issues sit high on unconfirmed resolution
-  const rawMinY = Math.min(...unresList);
-  const yMin = rawMinY >= 0.7 ? Math.max(0, Math.floor((rawMinY - 0.06) * 20) / 20) : 0;
-  const yMax = 1.0;
-  const ySpan = Math.max(0.05, yMax - yMin);
-
-  const maxC = Math.max(1, ...matrix.map((m) => Number(m.comments || 1)));
-  // Power-0.5 X-scale prevents low-negativity domains (2-10%) from collapsing into a single pixel cluster
-  const xOf = (neg) => pad.left + Math.sqrt(Math.max(0, Math.min(1, neg / maxNeg))) * plotW;
-  const yOf = (unres) => pad.top + plotH - Math.max(0, Math.min(1, (unres - yMin) / ySpan)) * plotH;
 
   const bandColor = (b) =>
-    b === "critical" ? "var(--color-negative)" : b === "elevated" ? "var(--color-warning)" : b === "moderate" ? "var(--color-accent)" : "var(--color-positive)";
+    b === "critical"
+      ? "var(--color-negative)"
+      : b === "elevated"
+        ? "var(--color-warning)"
+        : b === "moderate"
+          ? "var(--color-accent)"
+          : "var(--color-positive)";
 
-  const yTicks = [0, 0.25, 0.5, 0.75, 1.0].map((r) => yMin + r * ySpan);
-  const yGrid = yTicks.map((yv) => {
-    const y = yOf(yv);
+  const rows = matrix.map((m) => {
+    const negPct = Math.max(0, Math.min(100, Number(m.negative_share || 0) * 100));
+    const unresPct = Math.max(0, Math.min(100, Number(m.unresolved_share || 0) * 100));
+    const col = bandColor(m.priority_band);
+    const tipRows = JSON.stringify([
+      ["Friction index", `${Number(m.friction_score || 0).toFixed(1)} / 100 (${pretty(m.priority_band)})`],
+      ["Negative sentiment", `${negPct.toFixed(1)}% of comments`],
+      ["Unconfirmed resolution", `${unresPct.toFixed(0)}% of threads`],
+      ["Volume", `${plural(m.posts, "thread")} · ${plural(m.comments, "comment")}`],
+      ["Dominant emotion", pretty(m.dominant_emotion)],
+      ["Mean confidence", percent(m.mean_confidence)],
+      ["Top NMF cluster", m.top_topic || "—"],
+    ]);
     return `
-      <line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${W - pad.right}" y2="${y.toFixed(1)}" stroke="var(--color-rule)" stroke-width="1"/>
-      <text x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${Math.round(yv * 100)}%</text>
-    `;
-  }).join("");
+      <a class="triage-row"
+         href="#/issues?selected=${encodeURIComponent(m.key)}"
+         data-chart-tip-title="${esc(m.label)}"
+         data-chart-tip-rows="${esc(tipRows)}"
+         data-chart-tip-hint="Click to open Issues deep dive">
+        <div class="triage-col-issue">
+          <span class="triage-title">${esc(m.label)}</span>
+          <span class="triage-meta num">${plural(m.posts, "thread")} · ${plural(m.comments, "comment")} · ${esc(pretty(m.dominant_emotion))}</span>
+        </div>
 
-  const xTickVals = [0, 0.03, 0.1, 0.25, maxNeg].filter((v, idx, arr) => v <= maxNeg + 1e-6 && (idx === 0 || v - arr[idx - 1] >= 0.02));
-  const xGrid = xTickVals.map((xv) => {
-    const x = xOf(xv);
-    return `
-      <line x1="${x.toFixed(1)}" y1="${pad.top}" x2="${x.toFixed(1)}" y2="${(pad.top + plotH).toFixed(1)}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="2,4" opacity="0.6"/>
-      <text x="${x.toFixed(1)}" y="${(H - pad.bottom + 17).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${Math.round(xv * 100)}%</text>
-    `;
-  }).join("");
+        <div class="triage-col-bar">
+          <div class="triage-bar-track" aria-hidden="true">
+            <span class="triage-tick" style="left:25%"></span>
+            <span class="triage-tick" style="left:50%"></span>
+            <span class="triage-tick" style="left:75%"></span>
+            <span class="triage-bar-fill" style="width:${negPct.toFixed(1)}%;background:var(--color-negative)"></span>
+          </div>
+          <span class="triage-val num">${negPct.toFixed(1)}%</span>
+        </div>
 
-  // Compute node positions + deterministic collision-free label layout with leader lines
-  const nodes = matrix.map((m) => {
-    const cx = xOf(Number(m.negative_share || 0));
-    const cy = yOf(Number(m.unresolved_share || 0));
-    const r = 8 + Math.sqrt(Number(m.comments || 1) / maxC) * 14;
-    const shortName = String(m.label || "").split(" ")[0].replace(/,$/, "");
-    const pillW = shortName.length * 6.4 + 12;
-    return {
-      m,
-      cx,
-      cy,
-      r,
-      shortName,
-      pillW,
-      col: bandColor(m.priority_band),
-      lx: cx,
-      ly: cy,
-    };
-  });
+        <div class="triage-col-bar">
+          <div class="triage-bar-track" aria-hidden="true">
+            <span class="triage-tick" style="left:25%"></span>
+            <span class="triage-tick" style="left:50%"></span>
+            <span class="triage-tick" style="left:75%"></span>
+            <span class="triage-bar-fill" style="width:${unresPct.toFixed(1)}%;background:var(--color-series-val)"></span>
+          </div>
+          <span class="triage-val num">${unresPct.toFixed(0)}%</span>
+        </div>
 
-  // Sort by Y then X so crowded bubbles fan out cleanly across non-overlapping horizontal/vertical slots
-  const placed = [];
-  const sorted = [...nodes].sort((a, b) => a.cy - b.cy || a.cx - b.cx);
-  const boxH = 17;
-  const collides = (lx, ly, w) =>
-    placed.some((p) => Math.abs(ly - p.ly) < boxH && Math.abs(lx - p.lx) < (w + p.w) / 2 + 6);
-
-  for (const n of sorted) {
-    const candidates = [
-      [n.cx, n.cy - n.r - 11],
-      [n.cx + n.r + n.pillW / 2 + 8, n.cy],
-      [n.cx, n.cy + n.r + 13],
-      [n.cx - n.r - n.pillW / 2 - 8, n.cy],
-      [n.cx + n.r + n.pillW / 2 + 12, n.cy - 18],
-      [n.cx + n.r + n.pillW / 2 + 12, n.cy + 18],
-      [n.cx + n.r + n.pillW / 2 + 18, n.cy + 36],
-      [n.cx + n.r + n.pillW / 2 + 18, n.cy + 54],
-      [n.cx + n.r + n.pillW / 2 + 18, n.cy + 72],
-      [n.cx + n.r + n.pillW / 2 + 18, n.cy + 90],
-      [n.cx + n.r + n.pillW / 2 + 18, n.cy + 108],
-    ];
-    let chosen = null;
-    for (const [tx, ty] of candidates) {
-      const clampedX = Math.max(pad.left + n.pillW / 2 + 2, Math.min(W - pad.right - n.pillW / 2 - 2, tx));
-      const clampedY = Math.max(pad.top + 10, Math.min(pad.top + plotH - 8, ty));
-      if (!collides(clampedX, clampedY, n.pillW)) {
-        chosen = [clampedX, clampedY];
-        break;
-      }
-    }
-    if (!chosen) {
-      // Fallback: step downward in safe free lane inside right-of-bubble corridor
-      let fy = Math.max(pad.top + 14, n.cy + 16);
-      const fx = Math.min(W - pad.right - n.pillW / 2 - 4, Math.max(pad.left + n.pillW / 2 + 4, n.cx + 56));
-      while (collides(fx, fy, n.pillW) && fy < pad.top + plotH - 8) fy += boxH;
-      chosen = [fx, fy];
-    }
-    n.lx = chosen[0];
-    n.ly = chosen[1];
-    placed.push({ lx: n.lx, ly: n.ly, w: n.pillW });
-  }
-
-  const bubbles = nodes.map((n) => {
-    const m = n.m;
-    const dist = Math.hypot(n.lx - n.cx, n.ly - n.cy);
-    const leader = dist > n.r + 3
-      ? `<line x1="${n.cx.toFixed(1)}" y1="${n.cy.toFixed(1)}" x2="${n.lx.toFixed(1)}" y2="${n.ly.toFixed(1)}" stroke="${n.col}" stroke-width="1" stroke-dasharray="2,2" opacity="0.72"/>`
-      : "";
-    return `
-      <a href="#/issues?selected=${encodeURIComponent(m.key)}">
-        ${leader}
-        <circle cx="${n.cx.toFixed(1)}" cy="${n.cy.toFixed(1)}" r="${n.r.toFixed(1)}" fill="${n.col}" fill-opacity="0.24" stroke="${n.col}" stroke-width="1.8">
-          <title>${esc(m.label)} — Friction ${m.friction_score}/100 | ${num(m.posts)} threads, ${num(m.comments)} comments | ${(m.negative_share*100).toFixed(1)}% negative | ${(m.unresolved_share*100).toFixed(0)}% unconfirmed | Mean conf ${(m.mean_confidence*100).toFixed(1)}%</title>
-        </circle>
-      </a>
-    `;
-  }).join("");
-
-  // Draw all label pills on top of all bubbles so no circle ever obscures text
-  const labels = nodes.map((n) => {
-    const m = n.m;
-    return `
-      <a href="#/issues?selected=${encodeURIComponent(m.key)}">
-        <rect x="${(n.lx - n.pillW / 2).toFixed(1)}" y="${(n.ly - 8).toFixed(1)}" width="${n.pillW.toFixed(1)}" height="16" rx="4" fill="var(--color-surface-solid)" fill-opacity="0.94" stroke="${n.col}" stroke-opacity="0.45" stroke-width="0.9"/>
-        <text x="${n.lx.toFixed(1)}" y="${(n.ly + 3.5).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="10" font-weight="600" font-family="var(--font-body)">${esc(n.shortName)}</text>
+        <div class="triage-col-score num">
+          <span class="swatch-inline" style="background:${col}" aria-hidden="true"></span>
+          <strong>${Number(m.friction_score || 0).toFixed(0)}</strong>
+        </div>
       </a>
     `;
   }).join("");
 
   return `
-    <div>
-      <svg class="responsive-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Issue friction quadrant plotting negative sentiment share against unconfirmed resolution rate, sized by comment volume">
-        <text x="${pad.left}" y="15" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">Unconfirmed resolution % (Y, zoomed ${Math.round(yMin * 100)}–100%) vs. negative sentiment % (X, sqrt scale)</text>
-        ${yGrid}
-        ${xGrid}
-        <text x="${(W - pad.right).toFixed(1)}" y="15" text-anchor="end" fill="var(--color-negative)" font-size="9.5" font-weight="600" font-family="var(--font-body)" opacity="0.9">TOP-RIGHT = HIGHEST FRICTION</text>
-        ${bubbles}
-        ${labels}
-      </svg>
-      <div class="chart-legend" style="margin-top:var(--space-xs)">
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-negative)"></span><span>Critical (&ge;62)</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Elevated (48–61)</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Moderate (34–47)</span></span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--color-positive)"></span><span>Healthy (&lt;34)</span></span>
+    <div class="triage-matrix" role="region" aria-label="Issue friction triage matrix on honest 0 to 100 percent linear scales">
+      <div class="triage-head">
+        <span>Issue domain &amp; dominant emotion</span>
+        <span>Negative sentiment (0–100%)</span>
+        <span>Unconfirmed resolution (0–100%)</span>
+        <span class="triage-head-right">Friction</span>
+      </div>
+      <div class="triage-body">${rows}</div>
+      <div class="triage-foot">
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-negative)"></span><span>Critical (&ge;62)</span></span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-warning)"></span><span>Elevated (48–61)</span></span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-accent)"></span><span>Moderate (34–47)</span></span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--color-positive)"></span><span>Healthy (&lt;34)</span></span>
+        </div>
+        <span class="muted" style="font-size:var(--text-xs)">All tracks span true 0%–100% linear scale · Friction = 40% Neg + 35% Unconfirmed + 25% Volume</span>
       </div>
     </div>
   `;

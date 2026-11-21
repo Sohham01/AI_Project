@@ -69,16 +69,16 @@
   --color-subtle: oklch(62% 0.018 262);
 
   /* Dusk edges & glass highlights */
-  --color-rule: oklch(29% 0.018 266);
-  --color-rule-2: oklch(38% 0.022 266);
+  --color-rule: oklch(26% 0.015 266);
+  --color-rule-2: oklch(35% 0.018 266);
   --color-light: oklch(100% 0 0);
   --color-shade: oklch(8% 0.022 268);
   --glass: oklch(20% 0.018 268 / 0.72);
-  --glass-strong: oklch(18% 0.018 268 / 0.88);
+  --glass-strong: oklch(18% 0.018 268 / 0.90);
   --glass-blur: 20px;
-  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.11), inset 0 0 0 1px oklch(100% 0 0 / 0.06);
-  --shadow-card: inset 0 1px 0 oklch(100% 0 0 / 0.09), 0 0 0 1px oklch(100% 0 0 / 0.06), 0 22px 44px -24px oklch(6% 0.025 268 / 0.78);
-  --shadow-float: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 0 0 1px oklch(100% 0 0 / 0.10), 0 28px 64px -18px oklch(4% 0.025 268 / 0.88);
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.08), inset 0 0 0 1px oklch(100% 0 0 / 0.05);
+  --shadow-card: inset 0 1px 0 oklch(100% 0 0 / 0.07), 0 0 0 1px oklch(100% 0 0 / 0.06);
+  --shadow-float: inset 0 1px 0 oklch(100% 0 0 / 0.12), 0 0 0 1px oklch(100% 0 0 / 0.10), 0 20px 48px -16px oklch(4% 0.025 268 / 0.85);
   --backdrop-scrim: oklch(8% 0.020 268 / 0.68);
 
   /* Dusk primary & secondary signals (periwinkle + warm apricot) */
@@ -180,13 +180,13 @@
   --color-muted: oklch(45% 0.018 264);
   --color-subtle: oklch(53% 0.016 264);
 
-  --color-rule: oklch(87% 0.010 260);
-  --color-rule-2: oklch(76% 0.014 260);
-  --glass: oklch(99.5% 0.002 80 / 0.84);
+  --color-rule: oklch(89% 0.008 260);
+  --color-rule-2: oklch(78% 0.012 260);
+  --glass: oklch(99.5% 0.002 80 / 0.86);
   --glass-strong: oklch(99.5% 0.002 80 / 0.96);
-  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.9), 0 0 0 1px oklch(18% 0.02 268 / 0.07);
-  --shadow-card: 0 0 0 1px oklch(18% 0.02 268 / 0.06), 0 2px 6px -1px oklch(18% 0.02 268 / 0.05), 0 12px 28px -12px oklch(18% 0.02 268 / 0.08);
-  --shadow-float: 0 0 0 1px oklch(18% 0.02 268 / 0.08), 0 24px 56px -12px oklch(18% 0.02 268 / 0.18);
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.9), 0 0 0 1px oklch(18% 0.02 268 / 0.06);
+  --shadow-card: 0 0 0 1px oklch(18% 0.02 268 / 0.06), 0 1px 2px -1px oklch(18% 0.02 268 / 0.05), 0 6px 16px -6px oklch(18% 0.02 268 / 0.06);
+  --shadow-float: 0 0 0 1px oklch(18% 0.02 268 / 0.08), 0 20px 44px -12px oklch(18% 0.02 268 / 0.16);
   --backdrop-scrim: oklch(16% 0.020 268 / 0.38);
 
   --color-accent: oklch(48% 0.155 274);

@@ -99,7 +99,6 @@ export async function renderResponses(container, ctx) {
             </div>
             <div style="margin-top:var(--space-xs);display:flex;gap:var(--space-xs);flex-wrap:wrap">
               ${badge(groupText, groupTone)}
-              <span class="tag tag-neutral">MuRIL 6-class prediction</span>
             </div>
           </div>
           <div class="response-role-stat">

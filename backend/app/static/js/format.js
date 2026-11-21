@@ -119,7 +119,9 @@ export const EMOTION_COLORS = Object.freeze({
 export const LANGUAGE_LABELS = Object.freeze({
   en: "English",
   hi: "Hindi (Devanagari)",
+  "hi-en": "Hinglish (code-mixed)",
   hinglish: "Hinglish (code-mixed)",
+  und: "Terse / undetermined",
 });
 
 export const GLOSSARY = Object.freeze({
@@ -156,6 +158,12 @@ export function num(value) {
   if (value === null || value === undefined || value === "") return "None";
   const parsed = Number(value);
   return Number.isFinite(parsed) ? new Intl.NumberFormat("en-US").format(parsed) : "None";
+}
+
+export function plural(count, singular, pluralForm = null) {
+  const n = Number(count || 0);
+  const label = n === 1 ? singular : (pluralForm || `${singular}s`);
+  return `${num(n)} ${label}`;
 }
 
 /**
@@ -216,7 +224,7 @@ export function truncate(text, maxLen = 140) {
 }
 
 export function shortCommentLabel(commentId) {
-  const match = String(commentId ?? "").match(/-(\d+)$/);
+  const match = String(commentId ?? "").match(/(?:[-_])0*(\d+)$/);
   return match ? `#${match[1]}` : String(commentId ?? "");
 }
 

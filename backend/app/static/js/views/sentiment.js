@@ -8,7 +8,6 @@ import {
   bindSplineInteractions,
   horizontalBarChart,
   interactiveSplineAreaChart,
-  stackedCompositionBar,
   stackedMatrixRows,
 } from "../charts.js";
 import { callout, deck, tallyStrip } from "../components.js";
@@ -161,9 +160,8 @@ export async function renderSentiment(container, ctx) {
         ${deck("Predicted sentiment polarity", {
           subtitle: `Mutually exclusive single-label classification (n = ${num(totalComments)}); click any polarity to filter discussions`,
           body: `
-            ${stackedCompositionBar(sentimentSegments, { total: totalComments, unit: "comments", ariaLabel: "Overall predicted sentiment mix" })}
-            <div class="spacer-md"></div>
-            ${horizontalBarChart(sentimentSegments, { total: totalComments, unit: "comments", showShare: true })}
+            ${horizontalBarChart(sentimentSegments, { total: totalComments, maxCount: totalComments, unit: "comments", showShare: true })}
+            <p class="chart-footnote">Bars scale honestly against all ${num(totalComments)} comments (0%–100%) so proportions read accurately at a glance.</p>
           `,
         })}
         ${deck("Predicted emotion prevalence", {
