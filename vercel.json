@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.py": {
-      "includeFiles": "{data/live_corpus/**,ml/artifacts/live_corpus/**,data/demo_synthetic/**,ml/artifacts/demo_synthetic_v2/**,backend/app/static/**}"
+      "includeFiles": "{data/live_corpus/**,ml/artifacts/live_corpus/**,backend/app/static/**}"
     }
   },
   "headers": [

@@ -105,6 +105,17 @@ export function badge(label, tone = "neutral", { title = "" } = {}) {
   return `<span class="tag tag-${esc(tone)}" ${title ? `title="${esc(title)}"` : ""}>${esc(label)}</span>`;
 }
 
+export function confidenceBadge(score, tier = null, { needsReview = false, prefix = "" } = {}) {
+  if (score === null || score === undefined || !Number.isFinite(Number(score))) return "";
+  const val = Number(score);
+  const resolvedTier = tier || (val >= 0.8 ? "high" : val >= 0.55 ? "medium" : "low");
+  const tone = resolvedTier === "high" ? "positive" : resolvedTier === "medium" ? "info" : "warning";
+  const pct = `${(val * 100).toFixed(0)}%`;
+  const suffix = needsReview || resolvedTier === "low" ? " · review" : "";
+  const title = `Calibrated prediction confidence: ${(val * 100).toFixed(1)}% (${resolvedTier} tier${suffix ? "; flagged for human review" : ""})`;
+  return `<span class="tag tag-${tone} tag-conf" title="${esc(title)}">${esc(prefix)}${pct} conf${esc(suffix)}</span>`;
+}
+
 export function resolutionBadge(state) {
   const meta = RESOLUTION_META[state] || { label: pretty(state), cls: "neutral", description: "" };
   return badge(meta.label, meta.cls, { title: meta.description });

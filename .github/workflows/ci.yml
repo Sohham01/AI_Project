@@ -54,6 +54,8 @@ jobs:
           assert data["posts"] >= 70
           assert data["comments"] >= 700
           assert data["provenance"].get("dapt_summary") is not None
+          assert data.get("confidence_summary") is not None
+          assert len(data.get("cross_model_insights") or []) >= 3
           first_id = data["recent_discussions"][0]["id"]
           for route in (
               "/",
@@ -69,6 +71,8 @@ jobs:
               "/api/demo/responses",
               "/api/demo/resolution",
               "/api/demo/models",
+              "/api/demo/error-analysis",
+              "/api/demo/insights",
           ):
               res = client.get(route)
               assert res.status_code == 200, f"{route} returned {res.status_code}"
@@ -76,6 +80,13 @@ jobs:
               assert res.headers.get("x-frame-options") == "DENY"
               assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
               assert "frame-ancestors 'none'" in res.headers.get("content-security-policy", "")
+
+          models_data = client.get("/api/demo/models").json()
+          ver = models_data.get("benchmark_verification") or {}
+          assert ver.get("verified") is True, f"Benchmark verification failed: {ver}"
+          arch_agg = (models_data.get("architecture_comparison") or {}).get("aggregate") or {}
+          for arch_key in ("logistic_regression", "ann_mlp", "cnn_textcnn", "transformer_muril_dapt_v3"):
+              assert arch_key in arch_agg, f"Missing architecture {arch_key}"
 
           raw = Path("data/live_corpus/corpus.json").read_text(encoding="utf-8")
           assert not re.search(r"(?<![A-Za-z0-9_])/?u/[A-Za-z0-9_-]{3,24}\b", raw)
@@ -105,7 +116,7 @@ jobs:
                   raise AssertionError(f"Potential secret token matched in {rel}")
 
           print(
-              f"Verified all 13 Vercel routes + security headers + zero-PII/secret/gitlink guards OK: "
+              f"Verified all 15 Vercel routes + 4-arch benchmark verifier + security headers + zero-PII/secret/gitlink guards OK: "
               f"v{data['dataset_version']} ({data['posts']} threads, {data['comments']} comments)."
           )
           PY

@@ -16,7 +16,15 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from app.services.nlp.cross_model_insights import (
+    build_confidence_summary,
+    build_cross_model_insights,
+    build_issue_priority_matrix,
+    comment_confidence_profile,
+    confidence_tier,
+)
 
 try:
     from app.services.nlp.response_classification.models.labels import RESPONSE_TYPES
@@ -34,23 +42,14 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def _resolve_dirs() -> tuple[Path, Path]:
-    mode = os.getenv("RCI_DATA_MODE", "auto").strip().lower()
     live_data = ROOT / "data" / "live_corpus"
     live_art = ROOT / "ml" / "artifacts" / "live_corpus"
-    if (
-        mode != "synthetic"
-        and (live_data / "corpus.json").is_file()
-        and (live_art / "evaluation.json").is_file()
-    ):
-        return live_data, live_art
-
-    syn_data = ROOT / "data" / "demo_synthetic"
-    syn_art = (
-        ROOT / "ml" / "artifacts" / "demo_synthetic_v2"
-        if (ROOT / "ml" / "artifacts" / "demo_synthetic_v2" / "evaluation.json").is_file()
-        else ROOT / "ml" / "artifacts" / "demo_synthetic"
-    )
-    return syn_data, syn_art
+    if not (live_data / "corpus.json").is_file() or not (live_art / "evaluation.json").is_file():
+        raise RuntimeError(
+            "Real anonymized live corpus artifacts are missing. Expected data/live_corpus/corpus.json "
+            "and ml/artifacts/live_corpus/evaluation.json."
+        )
+    return live_data, live_art
 
 
 DATA_DIR, ARTIFACT_DIR = _resolve_dirs()
@@ -87,6 +86,9 @@ class SummaryResponse(BaseModel):
     response_distribution: list[dict[str, Any]]
     resolution_summary: list[dict[str, Any]]
     recent_discussions: list[dict[str, Any]]
+    confidence_summary: dict[str, Any] = Field(default_factory=dict)
+    issue_priority_matrix: list[dict[str, Any]] = Field(default_factory=list)
+    cross_model_insights: dict[str, Any] = Field(default_factory=dict)
 
 
 class DiscussionListResponse(BaseModel):
@@ -121,6 +123,27 @@ class ModelsResponse(BaseModel):
     synthetic_only: bool
     evaluation_scope: str
     tasks: dict[str, Any]
+    dapt_summary: dict[str, Any] | None = None
+    architecture_comparison: dict[str, Any] | None = None
+    error_analysis: dict[str, Any] | None = None
+    benchmark_verification: dict[str, Any] | None = None
+    confidence_summary: dict[str, Any] | None = None
+
+
+class ErrorAnalysisResponse(BaseModel):
+    synthetic_only: bool
+    dataset_version: str
+    tasks: dict[str, Any]
+    architecture_comparison: dict[str, Any] | None = None
+    benchmark_verification: dict[str, Any] | None = None
+
+
+class InsightsResponse(BaseModel):
+    synthetic_only: bool
+    dataset_version: str
+    confidence_summary: dict[str, Any]
+    issue_priority_matrix: list[dict[str, Any]]
+    cross_model_insights: dict[str, Any]
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -165,6 +188,7 @@ def _data() -> dict[str, Any]:
                 task: predictions.get(task, {}).get(comment["document_id"], {})
                 for task in ("sentiment", "emotion", "issue", "response", "solution")
             }
+            row["confidence_profile"] = comment_confidence_profile(row["predictions"])
             flat.append(row)
     synthetic_only = bool(corpus["metadata"].get("synthetic", False))
     return {
@@ -173,6 +197,7 @@ def _data() -> dict[str, Any]:
         "posts": posts,
         "comments": flat,
         "evaluation": evaluation["tasks"],
+        "evaluation_raw": evaluation,
         "evaluation_scope": evaluation.get(
             "evaluation_scope",
             "Model evaluation metrics over thread-grouped splits.",
@@ -263,6 +288,27 @@ def _summary_data() -> dict[str, Any]:
     resolution_order = ["reported_success", "reported_pending", "proposed_only", "insufficient_evidence"]
     resolution_counts = Counter(p["resolution_state"] for p in posts)
     recent = sorted(posts, key=lambda p: p["created_at"], reverse=True)[:6]
+    by_post_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in rows:
+        by_post_rows[r["post_id"]].append(r)
+
+    def _post_conf_avg(post_id: str) -> float:
+        p_rows = by_post_rows.get(post_id) or []
+        if not p_rows:
+            return 0.0
+        return round(sum(float(r["confidence_profile"]["overall_confidence"]) for r in p_rows) / len(p_rows), 4)
+
+    conf_summary = build_confidence_summary(rows, posts)
+    priority_matrix = build_issue_priority_matrix(posts, rows, topics, data["topic_assignments"])
+    insights = build_cross_model_insights(
+        posts,
+        rows,
+        data["evaluation_raw"],
+        topics,
+        data["topic_assignments"],
+        confidence_summary=conf_summary,
+        priority_matrix=priority_matrix,
+    )
     return {
         "synthetic_only": synthetic_only,
         "dataset_version": data["metadata"]["dataset_version"],
@@ -303,7 +349,12 @@ def _summary_data() -> dict[str, Any]:
             "created_at": p["created_at"],
             "comment_count": len(p["comments"]),
             "resolution_state": p["resolution_state"],
+            "mean_confidence": (mc := _post_conf_avg(p["reddit_id"])),
+            "confidence_tier": confidence_tier(mc),
         } for p in recent],
+        "confidence_summary": conf_summary,
+        "issue_priority_matrix": priority_matrix,
+        "cross_model_insights": insights,
     }
 
 
@@ -336,6 +387,7 @@ def discussions(
     response: str = Query(default="", max_length=40),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1, le=100),
+    confidence: str = Query(default="", max_length=16),
 ) -> dict[str, Any]:
     data = _data()
     if community and community not in {p["subreddit"] for p in data["posts"]}:
@@ -351,6 +403,9 @@ def discussions(
     }
     if emotion and emotion not in valid_emotions:
         raise HTTPException(status_code=422, detail="Unknown emotion filter")
+    conf_filter = confidence if isinstance(confidence, str) else ""
+    if conf_filter and conf_filter not in {"high", "medium", "low", "review"}:
+        raise HTTPException(status_code=422, detail="Unknown confidence filter")
 
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in data["comments"]:
@@ -369,6 +424,17 @@ def discussions(
             continue
         if response and not any(r["predictions"]["response"].get("response_type") == response for r in rows):
             continue
+        mean_conf = (
+            round(sum(float(r["confidence_profile"]["overall_confidence"]) for r in rows) / len(rows), 4)
+            if rows
+            else 0.0
+        )
+        post_tier = confidence_tier(mean_conf)
+        low_conf_cnt = sum(1 for r in rows if r["confidence_profile"]["needs_review"])
+        if conf_filter == "review" and low_conf_cnt == 0:
+            continue
+        if conf_filter in {"high", "medium", "low"} and post_tier != conf_filter:
+            continue
         if query and not any(
             query in (value or "").casefold()
             for value in [post.get("title"), post.get("body"), *(r.get("body") for r in rows)]
@@ -384,6 +450,9 @@ def discussions(
             "created_at": post["created_at"],
             "comment_count": len(rows),
             "resolution_state": post["resolution_state"],
+            "mean_confidence": mean_conf,
+            "confidence_tier": post_tier,
+            "low_confidence_comments": low_conf_cnt,
             "response_counts": _counts(
                 [r["predictions"]["response"].get("response_type") or "" for r in rows],
                 list(RESPONSE_TYPES),
@@ -411,14 +480,28 @@ def discussion_detail(post_id: str) -> dict[str, Any]:
     by_id = {c["reddit_id"]: c for c in post["comments"]}
     flat_by_id = {r["reddit_id"]: r for r in data["comments"] if r["post_id"] == post_id}
     comments = []
+    confs = []
+    low_cnt = 0
     for comment in post["comments"]:
         flat = flat_by_id.get(comment["reddit_id"], {})
+        c_prof = flat.get("confidence_profile") or comment_confidence_profile(flat.get("predictions", {}))
+        confs.append(float(c_prof["overall_confidence"]))
+        if c_prof["needs_review"]:
+            low_cnt += 1
         comments.append({
             **comment,
             "parent_comment_text": by_id.get(comment.get("parent_reddit_id"), {}).get("body"),
             "predictions": flat.get("predictions", {}),
+            "confidence_profile": c_prof,
         })
-    return {"post": post, "comments": comments, "synthetic_only": data["synthetic_only"]}
+    mean_c = round(sum(confs) / len(confs), 4) if confs else 0.0
+    enriched_post = {
+        **post,
+        "mean_confidence": mean_c,
+        "confidence_tier": confidence_tier(mean_c),
+        "low_confidence_comments": low_cnt,
+    }
+    return {"post": enriched_post, "comments": comments, "synthetic_only": data["synthetic_only"]}
 
 
 @router.get("/issues", response_model=ItemsResponse)
@@ -534,8 +617,39 @@ def resolution() -> dict[str, Any]:
 @router.get("/models", response_model=ModelsResponse)
 def models() -> dict[str, Any]:
     data = _data()
+    ev_raw = data["evaluation_raw"]
     return {
         "synthetic_only": data["synthetic_only"],
         "evaluation_scope": data["evaluation_scope"],
         "tasks": data["evaluation"],
+        "dapt_summary": ev_raw.get("dapt_summary") or data["metadata"].get("dapt_summary"),
+        "architecture_comparison": ev_raw.get("architecture_comparison"),
+        "error_analysis": ev_raw.get("error_analysis"),
+        "benchmark_verification": ev_raw.get("benchmark_verification"),
+        "confidence_summary": build_confidence_summary(data["comments"], data["posts"]),
+    }
+
+
+@router.get("/error-analysis", response_model=ErrorAnalysisResponse)
+def error_analysis() -> dict[str, Any]:
+    data = _data()
+    ev_raw = data["evaluation_raw"]
+    return {
+        "synthetic_only": data["synthetic_only"],
+        "dataset_version": data["metadata"]["dataset_version"],
+        "tasks": ev_raw.get("error_analysis") or {},
+        "architecture_comparison": ev_raw.get("architecture_comparison"),
+        "benchmark_verification": ev_raw.get("benchmark_verification"),
+    }
+
+
+@router.get("/insights", response_model=InsightsResponse)
+def insights() -> dict[str, Any]:
+    summary_payload = _summary_data()
+    return {
+        "synthetic_only": summary_payload["synthetic_only"],
+        "dataset_version": summary_payload["dataset_version"],
+        "confidence_summary": summary_payload["confidence_summary"],
+        "issue_priority_matrix": summary_payload["issue_priority_matrix"],
+        "cross_model_insights": summary_payload["cross_model_insights"],
     }

@@ -1,9 +1,11 @@
 /**
- * View 1: Community Intelligence Studio (Overview — Built From Scratch on Dusk)
- * 1. Four Animated Ring-Gauge KPI Pods (cubic-out roll-ups + SVG arc sweeps)
- * 2. Full-Width Interactive 3-Stage Sankey Research Flow (Issues -> 6 Canonical Responses -> 4 Resolution States)
- * 3. Asymmetric Visual Split: Interactive Monthly Sentiment Spline (live crosshair) + Top Actionable Issues
- * 4. 3x2 Recent Thread Spotlight Grid + Compact Provenance Deck
+ * View 1: Community Intelligence Studio (Overview — Insightful Cross-Model Edition)
+ * 1. Four Ruled Tally Strip KPI Pods (including calibrated prediction confidence)
+ * 2. Cross-Model Insight Engine Briefings (synthesizing Issue x Sentiment x Emotion x Response x Resolution x Architecture)
+ * 3. Full-Width Interactive 3-Stage Sankey Research Flow
+ * 4. Issue Priority & Friction Matrix (Quadrant visual + Ranked Action Table)
+ * 5. Asymmetric Interactive Split: Monthly Sentiment Spline + Top Actionable Issues
+ * 6. Recent Thread Spotlight (with confidence pills) + Compact Provenance Deck
  */
 import { api } from "../api.js";
 import {
@@ -11,10 +13,18 @@ import {
   bindSplineInteractions,
   horizontalBarChart,
   interactiveSplineAreaChart,
+  issueFrictionQuadrantChart,
   sankeyFlowChart,
 } from "../charts.js";
-import { copyIdChip, deck, resolutionBadge, tallyStrip } from "../components.js";
-import { dateText, esc, monthLabel, num, pretty } from "../format.js";
+import {
+  badge,
+  confidenceBadge,
+  copyIdChip,
+  deck,
+  resolutionBadge,
+  tallyStrip,
+} from "../components.js";
+import { dateText, esc, monthLabel, num, percent, pretty } from "../format.js";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes] = await Promise.all([
@@ -43,7 +53,13 @@ export async function renderOverview(container, ctx) {
   const successPct = totalPosts ? (reportedSuccess / totalPosts) * 100 : 0;
   const communityCount = (summary.community_distribution || []).length;
 
-  // Row 1: Dusk Ruled Tally Strip (micro-arcs strictly for real ratios, zero fake 100% rings)
+  const conf = summary.confidence_summary || {};
+  const meanConfPct = Number(conf.mean_confidence || 0) * 100;
+  const insights = summary.cross_model_insights || {};
+  const insightCards = insights.cards || [];
+  const priorityMatrix = summary.issue_priority_matrix || [];
+
+  // Row 1: Dusk Ruled Tally Strip (now featuring Calibrated Confidence)
   const tallyRow = tallyStrip([
     {
       label: "Community corpus",
@@ -74,23 +90,93 @@ export async function renderOverview(container, ctx) {
       href: "#/resolution",
     },
     {
-      label: "Active ML pipeline",
-      valueText: "5",
-      countTo: 5,
-      unit: "models",
-      note: `GPU MuRIL + Word+Char TF-IDF classifiers, ${num(summary.topic_count)} NMF topics`,
+      label: "Calibrated confidence",
+      valueText: meanConfPct > 0 ? `${meanConfPct.toFixed(1)}%` : "5 models",
+      countTo: meanConfPct > 0 ? meanConfPct : 5,
+      decimals: meanConfPct > 0 ? 1 : 0,
+      suffix: meanConfPct > 0 ? "%" : "",
+      ratioPct: meanConfPct > 0 ? meanConfPct : null,
+      color: meanConfPct >= 75 ? "var(--color-positive)" : "var(--color-accent)",
+      note: meanConfPct > 0
+        ? `${percent(conf.high_share, 0)} high (>=80%), ${num(conf.needs_review_count)} flagged for review`
+        : `GPU MuRIL-DAPT v3 hybrid + ${num(summary.topic_count)} NMF topics`,
       href: "#/models",
     },
   ], "Community corpus headline figures");
 
-  // Row 2: Full-width Interactive 3-Stage Sankey Research Flow
+  // Row 2: Cross-Model Insight Engine Briefings
+  const insightsDeck = insightCards.length
+    ? deck("Cross-model insight engine", {
+        subtitle: "Synthesized evidence joining all 5 supervised NLP classifiers, 10 NMF topics, calibrated confidence tiers, and 4-architecture OOD telemetry",
+        action: `<a class="btn btn-quiet btn-sm" href="#/models">Why Transformer &amp; Error Audit</a>`,
+        body: `
+          <div class="insight-grid">
+            ${insightCards.map((card) => `
+              <article class="insight-card insight-tone-${esc(card.tone || "info")}">
+                <div class="insight-card-top">
+                  ${badge(card.category, card.tone === "accent" ? "info" : (card.tone || "neutral"))}
+                  <span class="insight-metric num">${esc(card.metric)}</span>
+                </div>
+                <h3 class="insight-headline">${esc(card.headline)}</h3>
+                <p class="insight-detail">${esc(card.detail)}</p>
+                ${card.href ? `<a class="insight-link" href="${esc(card.href)}">${esc(card.cta || "Drill in")} &rarr;</a>` : ""}
+              </article>
+            `).join("")}
+          </div>
+        `,
+      })
+    : "";
+
+  // Row 3: Full-width Interactive 3-Stage Sankey Research Flow
   const sankeyDeck = deck("Interactive issue-to-evidence flow", {
     subtitle: `Hover any node or ribbon to trace public discussions across ${num(issues.length)} issue domains, the 6 fixed canonical response classes, and 4 resolution states; click any node to drill in`,
     action: `<a class="btn btn-quiet btn-sm" href="#/resolution">Audit all ${num(totalPosts)} threads</a>`,
     body: sankeyFlowChart(summary),
   });
 
-  // Row 3: Asymmetric Interactive Split (Monthly Sentiment Spline + Top Actionable Issues)
+  // Row 4: Issue Priority & Friction Synthesis (Quadrant + Ranked Multi-Signal Table)
+  const priorityDeck = priorityMatrix.length
+    ? deck("Issue friction &amp; priority matrix", {
+        subtitle: "Cross-task triage ranking combining Negative Sentiment (40%), Unconfirmed Resolution (35%), and Corpus Volume (25%), paired with dominant emotion, NMF cluster, and prediction confidence",
+        action: `<a class="btn btn-quiet btn-sm" href="#/issues">Deep-dive issues</a>`,
+        body: `
+          <div class="priority-split">
+            <div>${issueFrictionQuadrantChart(priorityMatrix)}</div>
+            <div class="table-scroll">
+              <table class="data-table priority-table" aria-label="Cross-model issue friction priority ranking">
+                <thead>
+                  <tr>
+                    <th scope="col">Issue domain</th>
+                    <th scope="col" class="num">Friction</th>
+                    <th scope="col" class="num">Neg %</th>
+                    <th scope="col" class="num">Unresolved</th>
+                    <th scope="col">Top emotion</th>
+                    <th scope="col" class="num">Mean conf</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${priorityMatrix.map((m) => `
+                    <tr>
+                      <td>
+                        <a class="table-primary-link" href="#/issues?selected=${encodeURIComponent(m.key)}">${esc(m.label)}</a>
+                        <span class="table-subcode">${num(m.posts)} threads · ${num(m.comments)} comments · ${esc(m.top_topic)}</span>
+                      </td>
+                      <td class="num">${badge(`${m.friction_score.toFixed(0)}`, m.priority_band === "critical" ? "danger" : m.priority_band === "elevated" ? "warning" : m.priority_band === "moderate" ? "info" : "positive")}</td>
+                      <td class="num">${percent(m.negative_share, 0)}</td>
+                      <td class="num">${percent(m.unresolved_share, 0)}</td>
+                      <td><span class="tag tag-neutral">${esc(pretty(m.dominant_emotion))}</span></td>
+                      <td class="num">${confidenceBadge(m.mean_confidence)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `,
+      })
+    : "";
+
+  // Row 5: Asymmetric Interactive Split (Monthly Sentiment Spline + Top Actionable Issues)
   const sortedIssues = [...issues].sort(
     (a, b) => Number(b.actionable_recommendations || 0) - Number(a.actionable_recommendations || 0)
   );
@@ -119,12 +205,13 @@ export async function renderOverview(container, ctx) {
     }),
   });
 
-  // Row 4: Thread Spotlight Hairline List (flat, single containment layer)
+  // Row 6: Thread Spotlight Hairline List (with calibrated confidence badges)
   const spotlightRows = (summary.recent_discussions || []).map((post) => `
     <a class="spotlight-row" href="#/thread/${encodeURIComponent(post.id)}">
       <div class="spotlight-row-top">
         <span class="tag tag-neutral">${esc(pretty(post.issue))}</span>
         ${resolutionBadge(post.resolution_state)}
+        ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
       </div>
       <div class="spotlight-row-title">${esc(post.title)}</div>
       <div class="spotlight-row-foot">
@@ -135,19 +222,19 @@ export async function renderOverview(container, ctx) {
   `).join("");
 
   const spotlightDeck = deck("Recent community discussions", {
-    subtitle: "Latest anonymized public Reddit discussions ordered by post date; open any thread to inspect nested parent-child replies",
+    subtitle: "Latest anonymized public Reddit discussions with calibrated prediction confidence; open any thread to inspect nested replies",
     action: `<a class="btn btn-primary btn-sm" href="#/explorer">Open discussion workbench</a>`,
     body: `<div class="spotlight-grid">${spotlightRows}</div>`,
   });
 
   const prov = summary.provenance || {};
   const isSynthetic = Boolean(summary.synthetic_only);
-  const provenanceDeck = deck("Dataset provenance & methodology", {
+  const provenanceDeck = deck("Dataset provenance &amp; methodology", {
     subtitle: "Live corpus metadata read from /api/demo/summary",
     action: `<a class="btn btn-quiet btn-sm" href="#/models">Models &amp; evaluation</a>`,
     body: `
       <dl class="vault-kv-grid">
-        <div><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v2")}</dd></div>
+        <div><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v4")}</dd></div>
         <div><dt>Source &amp; version</dt><dd class="num">${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift public archive" : "Local corpus")}, v${esc(prov.dataset_version || summary.dataset_version)}</dd></div>
         <div><dt>Privacy &amp; access</dt><dd><span class="tag ${isSynthetic ? "tag-warning" : "tag-positive"}">${esc(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Anonymized public Reddit")}</span></dd></div>
         <div><dt>Archive time span</dt><dd>${esc(dateSpan)} (${num(communityCount)} subreddits)</dd></div>
@@ -157,7 +244,9 @@ export async function renderOverview(container, ctx) {
 
   container.innerHTML = `
     ${tallyRow}
+    ${insightsDeck}
     ${sankeyDeck}
+    ${priorityDeck}
     <div class="studio-grid-asymmetric">
       ${splineDeck}
       ${issuesDeck}

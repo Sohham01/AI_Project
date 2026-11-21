@@ -55,6 +55,8 @@ export const api = {
   responses: () => apiGet("/responses"),
   resolution: () => apiGet("/resolution"),
   models: () => apiGet("/models"),
+  errorAnalysis: () => apiGet("/error-analysis"),
+  insights: () => apiGet("/insights"),
   discussions: (params = {}) => {
     const sp = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {

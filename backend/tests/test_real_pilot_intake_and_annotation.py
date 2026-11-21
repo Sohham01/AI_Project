@@ -319,15 +319,15 @@ class TestDemoBoundaryIsolation(unittest.TestCase):
         self.assertGreaterEqual(payload["posts"], 70)
         self.assertGreaterEqual(payload["comments"], 700)
 
-        # Synthetic archive remains cleanly preserved & selectable via RCI_DATA_MODE=synthetic
+        # Synthetic demo bundles are retired; API remains strictly locked to real live_corpus
         prev = os.environ.get("RCI_DATA_MODE")
         os.environ["RCI_DATA_MODE"] = "synthetic"
         demo_mod._data.cache_clear()
         try:
-            syn_payload = demo_summary()
-            self.assertTrue(syn_payload["synthetic_only"])
-            self.assertEqual(syn_payload["posts"], 160)
-            self.assertEqual(syn_payload["comments"], 1280)
+            live_payload = demo_summary()
+            self.assertFalse(live_payload["synthetic_only"])
+            self.assertGreaterEqual(live_payload["posts"], 300)
+            self.assertGreaterEqual(live_payload["comments"], 3000)
         finally:
             if prev is None:
                 os.environ.pop("RCI_DATA_MODE", None)

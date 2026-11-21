@@ -5,6 +5,7 @@ import { api } from "../api.js";
 import { stackedCompositionBar } from "../charts.js";
 import {
   badge,
+  confidenceBadge,
   copyIdChip,
   deck,
   glossaryTip,
@@ -99,6 +100,7 @@ export async function renderThread(container, ctx, postId) {
     if (threadUiState.filter === "actionable") return c.is_solution || c.predictions?.solution?.is_solution || ["advice", "solution"].includes(c.predictions?.response?.response_type);
     if (threadUiState.filter === "evidence") return Boolean(c.resolution_evidence_type);
     if (threadUiState.filter === "multilingual") return c.language !== "en" || c.is_code_mixed;
+    if (threadUiState.filter === "review") return Boolean(c.confidence_profile?.needs_review);
     return true;
   }
 
@@ -131,6 +133,7 @@ export async function renderThread(container, ctx, postId) {
     const pSol = pred.solution?.is_solution;
     const pSolProb = pred.solution?.solution_probability;
     const pIssues = pred.issue?.predicted_issue_labels || [];
+    const cProf = comment.confidence_profile || {};
 
     const isEvidence = Boolean(comment.resolution_evidence_type);
     const visualDepth = threadUiState.layout === "tree" ? Math.min(depth, 4) : 0;
@@ -184,6 +187,7 @@ export async function renderThread(container, ctx, postId) {
 
         <div class="comment-predictions-strip" aria-label="Model predictions">
           <span class="strip-caption">Model output:</span>
+          ${confidenceBadge(cProf.overall_confidence, cProf.confidence_tier, { needsReview: cProf.needs_review })}
           ${pResp ? roleBadge(pResp) : ""}
           ${pSent ? sentimentBadge(pSent) : ""}
           ${pEmotions.length ? `<span class="meta-inline">Emotions: ${esc(pEmotions.map(pretty).join(", "))}</span>` : ""}
@@ -236,6 +240,7 @@ export async function renderThread(container, ctx, postId) {
 
     const actionableCount = comments.filter((c) => c.is_solution || c.predictions?.solution?.is_solution).length;
     const multilingualCount = comments.filter((c) => c.language !== "en" || c.is_code_mixed).length;
+    const reviewCount = comments.filter((c) => c.confidence_profile?.needs_review).length;
 
     const evidenceSidebarBody = `
       <div class="aside-section">
@@ -304,6 +309,7 @@ export async function renderThread(container, ctx, postId) {
               <div class="op-card-meta">
                 <a class="tag tag-neutral" href="#/explorer?issue=${encodeURIComponent(post.issue_key)}">${esc(pretty(post.issue_category))}</a>
                 ${resolutionBadge(post.resolution_state)}
+                ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
                 <span class="tag tag-neutral">${esc(formatSub(post.subreddit))}</span>
                 <span class="num muted" style="font-size:var(--text-xs)">${dateText(post.created_at)}</span>
               </div>
@@ -327,6 +333,7 @@ export async function renderThread(container, ctx, postId) {
               <button type="button" class="pill-btn ${threadUiState.filter === "actionable" ? "is-active" : ""}" data-thread-filter="actionable">Advice &amp; solutions (${actionableCount})</button>
               <button type="button" class="pill-btn ${threadUiState.filter === "evidence" ? "is-active" : ""}" data-thread-filter="evidence">Outcome evidence (${explicitEvidence ? 1 : 0})</button>
               <button type="button" class="pill-btn ${threadUiState.filter === "multilingual" ? "is-active" : ""}" data-thread-filter="multilingual">Hindi / Hinglish (${multilingualCount})</button>
+              <button type="button" class="pill-btn ${threadUiState.filter === "review" ? "is-active" : ""}" data-thread-filter="review">Review / low conf (${reviewCount})</button>
             </div>
 
             ${isSynthetic ? `

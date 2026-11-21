@@ -7,6 +7,7 @@ import { api } from "../api.js";
 import { responseMiniStrip, stackedCompositionBar } from "../charts.js";
 import {
   badge,
+  confidenceBadge,
   copyIdChip,
   emptyState,
   languageBadge,
@@ -30,7 +31,7 @@ import {
 } from "../format.js";
 import { icons } from "../icons.js";
 
-const FILTER_KEYS = ["q", "community", "issue", "sentiment", "emotion", "response"];
+const FILTER_KEYS = ["q", "community", "issue", "sentiment", "emotion", "response", "confidence"];
 
 export async function renderExplorer(container, ctx, params = {}) {
   const summary = ctx.summary || await api.summary();
@@ -69,6 +70,7 @@ export async function renderExplorer(container, ctx, params = {}) {
   if (filters.sentiment) activeChips.push({ key: "sentiment", label: `Sentiment: ${pretty(filters.sentiment)}` });
   if (filters.emotion) activeChips.push({ key: "emotion", label: `Emotion: ${pretty(filters.emotion)}` });
   if (filters.response) activeChips.push({ key: "response", label: `Response: ${RESPONSE_META[filters.response]?.label || pretty(filters.response)}` });
+  if (filters.confidence) activeChips.push({ key: "confidence", label: `Confidence: ${filters.confidence === "review" ? "Needs review" : pretty(filters.confidence)}` });
 
   const chipsHtml = activeChips.length
     ? `
@@ -140,6 +142,16 @@ export async function renderExplorer(container, ctx, params = {}) {
             ${communityOptions}
           </select>
         </div>
+        <div class="field">
+          <label for="ex-confidence">Prediction confidence</label>
+          <select id="ex-confidence" name="confidence">
+            <option value="">Any confidence tier</option>
+            <option value="high" ${filters.confidence === "high" ? "selected" : ""}>High (&ge;80%)</option>
+            <option value="medium" ${filters.confidence === "medium" ? "selected" : ""}>Medium (55–79%)</option>
+            <option value="low" ${filters.confidence === "low" ? "selected" : ""}>Low (&lt;55%)</option>
+            <option value="review" ${filters.confidence === "review" ? "selected" : ""}>Contains review comments</option>
+          </select>
+        </div>
       </div>
       <div class="filter-actions">
         <button type="submit" class="btn btn-primary btn-sm">Apply filters</button>
@@ -183,6 +195,7 @@ export async function renderExplorer(container, ctx, params = {}) {
                   <div class="discussion-card-badges">
                     <span class="tag tag-neutral">${esc(pretty(post.issue))}</span>
                     ${resolutionBadge(post.resolution_state)}
+                    ${confidenceBadge(post.mean_confidence, post.confidence_tier)}
                     <span class="num muted" style="font-size:var(--text-xs)">${dateText(post.created_at)}</span>
                   </div>
                   <h2 class="discussion-card-title">
