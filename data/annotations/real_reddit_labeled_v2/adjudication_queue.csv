@@ -1,0 +1,3 @@
+queue_index,document_id,post_id,comment_id,text,review_status,abstain_reason
+11,doc-v2-cmt_01823,post_0171,cmt_01823,This finna make my tt champ crash out,abstain,off_topic_noise
+103,doc-v2-cmt_03399,post_0354,cmt_03399,"*IIT and IIM are two* *Of the greatest joomlas of* *Modern India* \- Organic-Scholar-7909 --- ^(I detect haikus. And sometimes, successfully.) ^[Learn&#32;more&#32;about&#32;me.]([REDDIT_LINK] ^(Opt out of replies: ""haikusbot opt out"" | Delete my comment: ""haikusbot delete"")",abstain,off_topic_noise

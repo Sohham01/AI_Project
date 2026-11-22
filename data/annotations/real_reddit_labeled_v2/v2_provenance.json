@@ -1,0 +1,176 @@
+{
+  "dataset": "real_reddit_labeled_v2",
+  "v1_preserved_untouched": true,
+  "total_rows": 707,
+  "abstained_rows_excluded": 2,
+  "split_counts": {
+    "trainval_v1": 367,
+    "test_v5_frozen": 92,
+    "trainval_v2_new": 178,
+    "test_v2_new": 70
+  },
+  "thread_counts_by_corpus_post_id": {
+    "trainval_v2": 178,
+    "test_v5_frozen": 37,
+    "test_v2_new": 32,
+    "test_v2_expanded_total": 69
+  },
+  "annotation_sources": {
+    "rubric_curated_real_reddit_v1": 459,
+    "rubric_curated_real_reddit_v2_pending_human_iaa": 248
+  },
+  "class_support_trainval_v1": {
+    "sentiment": {
+      "negative": 132,
+      "neutral": 161,
+      "positive": 74
+    },
+    "response": {
+      "advice": 46,
+      "personal_experience": 66,
+      "opinion": 135,
+      "solution": 38,
+      "agreement": 38,
+      "counterargument": 44
+    },
+    "solution": {
+      "not_solution": 299,
+      "solution": 68
+    },
+    "issue": {
+      "campus_infrastructure": 30,
+      "financial_concerns": 84,
+      "placements": 99,
+      "administrative_communication": 155,
+      "hostel_facilities": 27,
+      "curriculum_teaching": 31,
+      "academic_workload": 16,
+      "extracurriculars": 27
+    },
+    "emotion": {
+      "curiosity": 96,
+      "frustration": 71,
+      "confidence": 32,
+      "hope": 35,
+      "stress": 26,
+      "gratitude": 22
+    }
+  },
+  "class_support_trainval_v2": {
+    "sentiment": {
+      "negative": 202,
+      "neutral": 250,
+      "positive": 93
+    },
+    "response": {
+      "advice": 69,
+      "personal_experience": 100,
+      "opinion": 182,
+      "solution": 56,
+      "agreement": 53,
+      "counterargument": 85
+    },
+    "solution": {
+      "not_solution": 452,
+      "solution": 93
+    },
+    "issue": {
+      "campus_infrastructure": 43,
+      "financial_concerns": 130,
+      "placements": 143,
+      "administrative_communication": 240,
+      "hostel_facilities": 40,
+      "curriculum_teaching": 41,
+      "academic_workload": 18,
+      "extracurriculars": 31
+    },
+    "emotion": {
+      "curiosity": 121,
+      "frustration": 114,
+      "confidence": 49,
+      "hope": 47,
+      "stress": 44,
+      "gratitude": 23
+    }
+  },
+  "class_support_test_v5_frozen": {
+    "sentiment": {
+      "negative": 30,
+      "neutral": 40,
+      "positive": 22
+    },
+    "response": {
+      "opinion": 28,
+      "counterargument": 9,
+      "advice": 18,
+      "agreement": 7,
+      "personal_experience": 20,
+      "solution": 10
+    },
+    "solution": {
+      "not_solution": 74,
+      "solution": 18
+    },
+    "issue": {
+      "curriculum_teaching": 5,
+      "administrative_communication": 34,
+      "placements": 29,
+      "academic_workload": 7,
+      "extracurriculars": 2,
+      "financial_concerns": 20,
+      "campus_infrastructure": 8,
+      "hostel_facilities": 6
+    },
+    "emotion": {
+      "frustration": 16,
+      "hope": 10,
+      "confidence": 10,
+      "curiosity": 22,
+      "gratitude": 9,
+      "stress": 5
+    }
+  },
+  "class_support_test_v2_expanded": {
+    "sentiment": {
+      "negative": 48,
+      "neutral": 77,
+      "positive": 37
+    },
+    "response": {
+      "opinion": 66,
+      "counterargument": 11,
+      "advice": 28,
+      "agreement": 11,
+      "personal_experience": 32,
+      "solution": 14
+    },
+    "solution": {
+      "not_solution": 138,
+      "solution": 24
+    },
+    "issue": {
+      "curriculum_teaching": 10,
+      "administrative_communication": 87,
+      "placements": 34,
+      "academic_workload": 8,
+      "extracurriculars": 2,
+      "financial_concerns": 25,
+      "campus_infrastructure": 10,
+      "hostel_facilities": 6
+    },
+    "emotion": {
+      "frustration": 28,
+      "hope": 17,
+      "confidence": 14,
+      "curiosity": 37,
+      "gratitude": 12,
+      "stress": 11
+    }
+  },
+  "leakage_checks": {
+    "trainval_v2_vs_test_v5_frozen": 0,
+    "trainval_v2_vs_test_v2_new": 0,
+    "test_v5_frozen_vs_test_v2_new": 0,
+    "frozen_test_sha256_exact_match": true
+  }
+}

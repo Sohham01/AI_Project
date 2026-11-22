@@ -1,0 +1,2183 @@
+{
+  "dataset_version": "6.1.0",
+  "synthetic_only": false,
+  "linker_summary": {
+    "model_name": "tfidf_cosine_issue_solution",
+    "model_version": "v1",
+    "same_post_only": true,
+    "link_threshold": 0.45,
+    "weights": {
+      "semantic_cosine": 0.45,
+      "solution_probability": 0.3,
+      "thread_relevance": 0.15,
+      "response_role": 0.05
+    },
+    "total_issue_evidences": 365,
+    "total_solution_candidates": 858,
+    "total_candidate_pairs": 1336,
+    "total_asserted_links": 859,
+    "unique_linked_solutions": 347,
+    "threads_with_linked_solutions": 162,
+    "mean_cosine_similarity": 0.1146,
+    "mean_link_score": 0.5218
+  },
+  "by_issue": {
+    "academic_workload": {
+      "issue_key": "academic_workload",
+      "issue_label": "Academic workload & exams",
+      "linked_solutions": 43,
+      "threads_with_linked_solution": 21,
+      "mean_cosine_similarity": 0.1339,
+      "mean_link_score": 0.5212,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0043",
+          "post_title": "Are the new/baby IIMs worth joining?",
+          "comment_id": "cmt_00428",
+          "solution_text": "Newer iims like jammu, bodh gaya, sirmaur, sambalpur have improving placements but significant gap versus old iims in alumni network, brand recognition, and median packages.Roi depends heavily on your alternatives and career goals.\n\nCurrent",
+          "cosine_similarity": 0.3006,
+          "link_score": 0.6259,
+          "solution_probability": 0.9521,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0132",
+          "post_title": "Finally got selected for IIM Sambalpur - MBA Core 🥹",
+          "comment_id": "cmt_01262",
+          "solution_text": "Looks very difficult now. I might be among the last few people to have gotten the offer letter. They have given us till today 5 PM to pay the 40K acceptance fee to confirm the admission. If most of them don't pay the fee then the next waitl",
+          "cosine_similarity": 0.2516,
+          "link_score": 0.6172,
+          "solution_probability": 0.9715,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0059",
+          "post_title": "9/8/8 GNEF, CAT 89.85%ile, Life Science background, Confused about MBA / gap / job, need advice",
+          "comment_id": "cmt_00551",
+          "solution_text": "If you convert Sambalpur, think about it, but your potential is still high. You can get a much better B-school, but the thing is, CAT is risky. If you don't prepare well this year, you might end up with 70s (percentile) next year. So, ask y",
+          "cosine_similarity": 0.2621,
+          "link_score": 0.6108,
+          "solution_probability": 0.9658,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0084",
+          "post_title": "T1/T2 vs T3 at 4.5/ 5 years work exp",
+          "comment_id": "cmt_00818",
+          "solution_text": "I would say whatever may be ur work experience, you should always target T1 colleges and give ur best..Rest all u should leave on ur fate..I have seen people with 5 years of work ex sitting at IIM A and graduating this year with a job offer",
+          "cosine_similarity": 0.2411,
+          "link_score": 0.5979,
+          "solution_probability": 0.9579,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0220",
+          "post_title": "3rd Merit list ???",
+          "comment_id": "cmt_02264",
+          "solution_text": "I got a mail regarding 3 rd list..check the website after July 25",
+          "cosine_similarity": 0.2497,
+          "link_score": 0.5895,
+          "solution_probability": 0.9653,
+          "response_type": "personal_experience"
+        }
+      ]
+    },
+    "administrative_communication": {
+      "issue_key": "administrative_communication",
+      "issue_label": "Admissions, waitlist & administration",
+      "linked_solutions": 257,
+      "threads_with_linked_solution": 124,
+      "mean_cosine_similarity": 0.1015,
+      "mean_link_score": 0.5199,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0196",
+          "post_title": "Guys good news",
+          "comment_id": "cmt_02078",
+          "solution_text": "They just said it's in process and will come in a day or two.",
+          "cosine_similarity": 0.5966,
+          "link_score": 0.7337,
+          "solution_probability": 0.7845,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0226",
+          "post_title": "SEM1 FEE Payment Deadline Removed",
+          "comment_id": "cmt_02337",
+          "solution_text": "There was an email about fee deadline extension to 29th July from 23rd.",
+          "cosine_similarity": 0.3597,
+          "link_score": 0.6721,
+          "solution_probability": 0.9742,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0142",
+          "post_title": "Where do I have to upload the receipt???",
+          "comment_id": "cmt_01349",
+          "solution_text": "Yea just got the receipt . I dont think we have to upload it right now. Might be needes at time of registration",
+          "cosine_similarity": 0.3499,
+          "link_score": 0.6602,
+          "solution_probability": 0.9508,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0122",
+          "post_title": "MBA EDUCATION LOAN REJECTED",
+          "comment_id": "cmt_01223",
+          "solution_text": "Usually they won't check your cibil. When I applied there was no cibil inquiry. Clear your dues and applied to banks like axis for now and then when your score improves shift your loan",
+          "cosine_similarity": 0.3259,
+          "link_score": 0.66,
+          "solution_probability": 0.99,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0036",
+          "post_title": "What to do?",
+          "comment_id": "cmt_00369",
+          "solution_text": "Right now iim sambalpur is better. But also if you convert IMI Delhi then take that. \nFore<sbp<Imi (in terms of placement, location and networking wise). You are at a very convertible number of 35 for imi Delhi, you will easily convert",
+          "cosine_similarity": 0.3204,
+          "link_score": 0.6473,
+          "solution_probability": 0.9904,
+          "response_type": "advice"
+        }
+      ]
+    },
+    "campus_infrastructure": {
+      "issue_key": "campus_infrastructure",
+      "issue_label": "Campus infrastructure & location",
+      "linked_solutions": 55,
+      "threads_with_linked_solution": 29,
+      "mean_cosine_similarity": 0.1118,
+      "mean_link_score": 0.5245,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0139",
+          "post_title": "Few questions",
+          "comment_id": "cmt_01338",
+          "solution_text": "1) Locals can speak hindi, language wont be a problem  \n2) There are 86 people in first batch  \n3) People are from all across India.",
+          "cosine_similarity": 0.3768,
+          "link_score": 0.6744,
+          "solution_probability": 0.9533,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0226",
+          "post_title": "SEM1 FEE Payment Deadline Removed",
+          "comment_id": "cmt_02337",
+          "solution_text": "There was an email about fee deadline extension to 29th July from 23rd.",
+          "cosine_similarity": 0.3597,
+          "link_score": 0.6721,
+          "solution_probability": 0.9742,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0139",
+          "post_title": "Few questions",
+          "comment_id": "cmt_01335",
+          "solution_text": "Yes,the local can understand and speak hindi.",
+          "cosine_similarity": 0.228,
+          "link_score": 0.6112,
+          "solution_probability": 0.9907,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0194",
+          "post_title": "Guys Help",
+          "comment_id": "cmt_02059",
+          "solution_text": "You can keep kettles and cook whatever you can do in that",
+          "cosine_similarity": 0.2079,
+          "link_score": 0.5973,
+          "solution_probability": 0.978,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0030",
+          "post_title": "Workshop Series: Thrive at B-School with Grad Partners",
+          "comment_id": "cmt_00289",
+          "solution_text": "Register here: https://gradpartners.in/e/Thrive-at-B-School-197",
+          "cosine_similarity": 0.2071,
+          "link_score": 0.5934,
+          "solution_probability": 0.9663,
+          "response_type": "solution"
+        }
+      ]
+    },
+    "curriculum_teaching": {
+      "issue_key": "curriculum_teaching",
+      "issue_label": "Curriculum, faculty & programs",
+      "linked_solutions": 167,
+      "threads_with_linked_solution": 68,
+      "mean_cosine_similarity": 0.1169,
+      "mean_link_score": 0.5183,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0196",
+          "post_title": "Guys good news",
+          "comment_id": "cmt_02078",
+          "solution_text": "They just said it's in process and will come in a day or two.",
+          "cosine_similarity": 0.5966,
+          "link_score": 0.7337,
+          "solution_probability": 0.7845,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0139",
+          "post_title": "Few questions",
+          "comment_id": "cmt_01338",
+          "solution_text": "1) Locals can speak hindi, language wont be a problem  \n2) There are 86 people in first batch  \n3) People are from all across India.",
+          "cosine_similarity": 0.3768,
+          "link_score": 0.6744,
+          "solution_probability": 0.9533,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0077",
+          "post_title": "Help me choose between Tier 2 MBA colleges",
+          "comment_id": "cmt_00763",
+          "solution_text": "FORE and Weli last in the order. SIBM and SCMHRD top, although can certain about BA courses but the colleges are top. Next NMIMS (If it's Mumbai, otherwise don't join). With the remaining colleges, IIM Sambalpur would just give you the tag ",
+          "cosine_similarity": 0.295,
+          "link_score": 0.6287,
+          "solution_probability": 0.9707,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0043",
+          "post_title": "Are the new/baby IIMs worth joining?",
+          "comment_id": "cmt_00428",
+          "solution_text": "Newer iims like jammu, bodh gaya, sirmaur, sambalpur have improving placements but significant gap versus old iims in alumni network, brand recognition, and median packages.Roi depends heavily on your alternatives and career goals.\n\nCurrent",
+          "cosine_similarity": 0.3006,
+          "link_score": 0.6259,
+          "solution_probability": 0.9521,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0139",
+          "post_title": "Few questions",
+          "comment_id": "cmt_01335",
+          "solution_text": "Yes,the local can understand and speak hindi.",
+          "cosine_similarity": 0.228,
+          "link_score": 0.6112,
+          "solution_probability": 0.9907,
+          "response_type": "solution"
+        }
+      ]
+    },
+    "extracurriculars": {
+      "issue_key": "extracurriculars",
+      "issue_label": "Clubs, committees & campus life",
+      "linked_solutions": 35,
+      "threads_with_linked_solution": 19,
+      "mean_cosine_similarity": 0.1313,
+      "mean_link_score": 0.5327,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0196",
+          "post_title": "Guys good news",
+          "comment_id": "cmt_02078",
+          "solution_text": "They just said it's in process and will come in a day or two.",
+          "cosine_similarity": 0.5966,
+          "link_score": 0.7337,
+          "solution_probability": 0.7845,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0139",
+          "post_title": "Few questions",
+          "comment_id": "cmt_01338",
+          "solution_text": "1) Locals can speak hindi, language wont be a problem  \n2) There are 86 people in first batch  \n3) People are from all across India.",
+          "cosine_similarity": 0.3768,
+          "link_score": 0.6744,
+          "solution_probability": 0.9533,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0036",
+          "post_title": "What to do?",
+          "comment_id": "cmt_00369",
+          "solution_text": "Right now iim sambalpur is better. But also if you convert IMI Delhi then take that. \nFore<sbp<Imi (in terms of placement, location and networking wise). You are at a very convertible number of 35 for imi Delhi, you will easily convert",
+          "cosine_similarity": 0.3204,
+          "link_score": 0.6473,
+          "solution_probability": 0.9904,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0139",
+          "post_title": "Few questions",
+          "comment_id": "cmt_01335",
+          "solution_text": "Yes,the local can understand and speak hindi.",
+          "cosine_similarity": 0.228,
+          "link_score": 0.6112,
+          "solution_probability": 0.9907,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0194",
+          "post_title": "Guys Help",
+          "comment_id": "cmt_02059",
+          "solution_text": "You can keep kettles and cook whatever you can do in that",
+          "cosine_similarity": 0.2079,
+          "link_score": 0.5973,
+          "solution_probability": 0.978,
+          "response_type": "solution"
+        }
+      ]
+    },
+    "financial_concerns": {
+      "issue_key": "financial_concerns",
+      "issue_label": "Fees, loans & ROI",
+      "linked_solutions": 140,
+      "threads_with_linked_solution": 53,
+      "mean_cosine_similarity": 0.1134,
+      "mean_link_score": 0.5266,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0226",
+          "post_title": "SEM1 FEE Payment Deadline Removed",
+          "comment_id": "cmt_02337",
+          "solution_text": "There was an email about fee deadline extension to 29th July from 23rd.",
+          "cosine_similarity": 0.3597,
+          "link_score": 0.6721,
+          "solution_probability": 0.9742,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0142",
+          "post_title": "Where do I have to upload the receipt???",
+          "comment_id": "cmt_01349",
+          "solution_text": "Yea just got the receipt . I dont think we have to upload it right now. Might be needes at time of registration",
+          "cosine_similarity": 0.3499,
+          "link_score": 0.6602,
+          "solution_probability": 0.9508,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0122",
+          "post_title": "MBA EDUCATION LOAN REJECTED",
+          "comment_id": "cmt_01223",
+          "solution_text": "Usually they won't check your cibil. When I applied there was no cibil inquiry. Clear your dues and applied to banks like axis for now and then when your score improves shift your loan",
+          "cosine_similarity": 0.3259,
+          "link_score": 0.66,
+          "solution_probability": 0.99,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0135",
+          "post_title": "IIM Sambalpur MBA EWS Waitlist 7 – Portal now shows “Your offer has been rejected”. What does this mean?",
+          "comment_id": "cmt_01319",
+          "solution_text": "That you paid the 50k on time but the portal shows rejected and ask them to confirm your seat status.",
+          "cosine_similarity": 0.2875,
+          "link_score": 0.635,
+          "solution_probability": 0.9707,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0122",
+          "post_title": "MBA EDUCATION LOAN REJECTED",
+          "comment_id": "cmt_01220",
+          "solution_text": "Pay the first trimester fees by arranging money from your parents, relatives, or friends for now.  \nAt the same time, take a small gold loan of around 10-20k in your name and make sure you pay the EMIs on time. This should help improve your",
+          "cosine_similarity": 0.2674,
+          "link_score": 0.6225,
+          "solution_probability": 0.9961,
+          "response_type": "advice"
+        }
+      ]
+    },
+    "hostel_facilities": {
+      "issue_key": "hostel_facilities",
+      "issue_label": "Hostel & mess facilities",
+      "linked_solutions": 8,
+      "threads_with_linked_solution": 5,
+      "mean_cosine_similarity": 0.1007,
+      "mean_link_score": 0.5232,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0194",
+          "post_title": "Guys Help",
+          "comment_id": "cmt_02059",
+          "solution_text": "You can keep kettles and cook whatever you can do in that",
+          "cosine_similarity": 0.2079,
+          "link_score": 0.5973,
+          "solution_probability": 0.978,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0194",
+          "post_title": "Guys Help",
+          "comment_id": "cmt_02054",
+          "solution_text": "U can’t cook inside room",
+          "cosine_similarity": 0.1888,
+          "link_score": 0.5768,
+          "solution_probability": 0.9412,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0194",
+          "post_title": "Guys Help",
+          "comment_id": "cmt_02061",
+          "solution_text": "Yes, we've mart in our campus. You'll find everything there. Also, our mess provides boiled eggs and sprouts everyday and you can take max 5-6 eggs",
+          "cosine_similarity": 0.175,
+          "link_score": 0.5753,
+          "solution_probability": 0.9595,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0016",
+          "post_title": "Why do IIM Amritsar and IIM Sambalpur have relatively fewer seats allocated for the General category compared to other IIMs?",
+          "comment_id": "cmt_00111",
+          "solution_text": "There's a separate sub[r/CATpreparation ]([REDDIT_LINK] for posts like this",
+          "cosine_similarity": 0.0136,
+          "link_score": 0.5031,
+          "solution_probability": 0.9878,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0267",
+          "post_title": "CANTEEN FOOD QUESTION",
+          "comment_id": "cmt_02630",
+          "solution_text": "Yeah, you will get both milk and egg, and there are no limitations.\nYou will get non-veg 3 times a week",
+          "cosine_similarity": 0.2094,
+          "link_score": 0.4961,
+          "solution_probability": 0.6715,
+          "response_type": "advice"
+        }
+      ]
+    },
+    "placements": {
+      "issue_key": "placements",
+      "issue_label": "Placements & internships",
+      "linked_solutions": 154,
+      "threads_with_linked_solution": 59,
+      "mean_cosine_similarity": 0.1273,
+      "mean_link_score": 0.521,
+      "top_linked_pairs": [
+        {
+          "post_id": "post_0122",
+          "post_title": "MBA EDUCATION LOAN REJECTED",
+          "comment_id": "cmt_01223",
+          "solution_text": "Usually they won't check your cibil. When I applied there was no cibil inquiry. Clear your dues and applied to banks like axis for now and then when your score improves shift your loan",
+          "cosine_similarity": 0.3259,
+          "link_score": 0.66,
+          "solution_probability": 0.99,
+          "response_type": "solution"
+        },
+        {
+          "post_id": "post_0036",
+          "post_title": "What to do?",
+          "comment_id": "cmt_00369",
+          "solution_text": "Right now iim sambalpur is better. But also if you convert IMI Delhi then take that. \nFore<sbp<Imi (in terms of placement, location and networking wise). You are at a very convertible number of 35 for imi Delhi, you will easily convert",
+          "cosine_similarity": 0.3204,
+          "link_score": 0.6473,
+          "solution_probability": 0.9904,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0077",
+          "post_title": "Help me choose between Tier 2 MBA colleges",
+          "comment_id": "cmt_00763",
+          "solution_text": "FORE and Weli last in the order. SIBM and SCMHRD top, although can certain about BA courses but the colleges are top. Next NMIMS (If it's Mumbai, otherwise don't join). With the remaining colleges, IIM Sambalpur would just give you the tag ",
+          "cosine_similarity": 0.295,
+          "link_score": 0.6287,
+          "solution_probability": 0.9707,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0043",
+          "post_title": "Are the new/baby IIMs worth joining?",
+          "comment_id": "cmt_00428",
+          "solution_text": "Newer iims like jammu, bodh gaya, sirmaur, sambalpur have improving placements but significant gap versus old iims in alumni network, brand recognition, and median packages.Roi depends heavily on your alternatives and career goals.\n\nCurrent",
+          "cosine_similarity": 0.3006,
+          "link_score": 0.6259,
+          "solution_probability": 0.9521,
+          "response_type": "advice"
+        },
+        {
+          "post_id": "post_0122",
+          "post_title": "MBA EDUCATION LOAN REJECTED",
+          "comment_id": "cmt_01220",
+          "solution_text": "Pay the first trimester fees by arranging money from your parents, relatives, or friends for now.  \nAt the same time, take a small gold loan of around 10-20k in your name and make sure you pay the EMIs on time. This should help improve your",
+          "cosine_similarity": 0.2674,
+          "link_score": 0.6225,
+          "solution_probability": 0.9961,
+          "response_type": "advice"
+        }
+      ]
+    }
+  },
+  "issue_solution_clusters": {
+    "academic_workload": {
+      "issue_key": "academic_workload",
+      "issue_label": "Academic workload & exams",
+      "linked_solution_count": 43,
+      "threads_covered": 21,
+      "mean_cosine_similarity": 0.1339,
+      "mean_link_score": 0.5212,
+      "clusters": [
+        {
+          "theme": "Exam, CGPA & Coursework Prioritization",
+          "count": 19,
+          "share": 0.4419,
+          "mean_link_score": 0.529,
+          "mean_cosine_similarity": 0.1535,
+          "top_terms": [
+            "good",
+            "mba",
+            "iim",
+            "give",
+            "cat",
+            "placements"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01049",
+              "post_id": "post_0104",
+              "post_title": "Tier 1 MBA/PGP alumni (2 Year Full Time): how did the 28-30 year olds with non-traditional profiles fare at placements vs the rest of the batch? Unplaced numbers, salary gaps, real stories welcome.",
+              "text": "Your case is indeed much worse. Your profile will be in the bottom 20% percentile of the batch in the schools you have converted and they can't even place half their batches in good roles. Not worth to join in my opinion.\n\nFirst thing you s",
+              "link_score": 0.587,
+              "cosine_similarity": 0.247,
+              "solution_probability": 0.913,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_01031",
+              "post_id": "post_0104",
+              "post_title": "Tier 1 MBA/PGP alumni (2 Year Full Time): how did the 28-30 year olds with non-traditional profiles fare at placements vs the rest of the batch? Unplaced numbers, salary gaps, real stories welcome.",
+              "text": "If your intention is honest and you are willing to work hard ,no one can stop you. You will get all the support you need . There is a group run by IIML folks who provide mentorship to CAT aspirants.  In your case I can personally forward yo",
+              "link_score": 0.557,
+              "cosine_similarity": 0.213,
+              "solution_probability": 0.868,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 16,
+          "share": 0.3721,
+          "mean_link_score": 0.5101,
+          "mean_cosine_similarity": 0.1098,
+          "top_terms": [
+            "now",
+            "life",
+            "people",
+            "workex",
+            "months",
+            "offer"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01262",
+              "post_id": "post_0132",
+              "post_title": "Finally got selected for IIM Sambalpur - MBA Core 🥹",
+              "text": "Looks very difficult now. I might be among the last few people to have gotten the offer letter. They have given us till today 5 PM to pay the 40K acceptance fee to confirm the admission. If most of them don't pay the fee then the next waitl",
+              "link_score": 0.617,
+              "cosine_similarity": 0.252,
+              "solution_probability": 0.972,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_02264",
+              "post_id": "post_0220",
+              "post_title": "3rd Merit list ???",
+              "text": "I got a mail regarding 3 rd list..check the website after July 25",
+              "link_score": 0.589,
+              "cosine_similarity": 0.25,
+              "solution_probability": 0.965,
+              "response_type": "personal_experience"
+            }
+          ]
+        },
+        {
+          "theme": "Time Management & Peer Study Groups",
+          "count": 8,
+          "share": 0.186,
+          "mean_link_score": 0.5249,
+          "mean_cosine_similarity": 0.1358,
+          "top_terms": [
+            "job",
+            "work",
+            "good",
+            "year",
+            "try",
+            "give"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00551",
+              "post_id": "post_0059",
+              "post_title": "9/8/8 GNEF, CAT 89.85%ile, Life Science background, Confused about MBA / gap / job, need advice",
+              "text": "If you convert Sambalpur, think about it, but your potential is still high. You can get a much better B-school, but the thing is, CAT is risky. If you don't prepare well this year, you might end up with 70s (percentile) next year. So, ask y",
+              "link_score": 0.611,
+              "cosine_similarity": 0.262,
+              "solution_probability": 0.966,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00224",
+              "post_id": "post_0028",
+              "post_title": "Need some help 🥰",
+              "text": "Try to assess why you couldn't convert T1 schools this time. Acads, CAT, WAT PI - what's the Achilles Heel? Analysis how much you can practically move the needle working on another attempt. Then decide.\n\nI can understand the job is rigorous",
+              "link_score": 0.461,
+              "cosine_similarity": 0.139,
+              "solution_probability": 0.672,
+              "response_type": "advice"
+            }
+          ]
+        }
+      ]
+    },
+    "administrative_communication": {
+      "issue_key": "administrative_communication",
+      "issue_label": "Admissions, waitlist & administration",
+      "linked_solution_count": 257,
+      "threads_covered": 124,
+      "mean_cosine_similarity": 0.1015,
+      "mean_link_score": 0.5199,
+      "clusters": [
+        {
+          "theme": "Monitor Official Portal & Waitlist Movement",
+          "count": 70,
+          "share": 0.2724,
+          "mean_link_score": 0.5125,
+          "mean_cosine_similarity": 0.0897,
+          "top_terms": [
+            "check",
+            "list",
+            "iim",
+            "offer",
+            "sambalpur",
+            "merit"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02470",
+              "post_id": "post_0239",
+              "post_title": "Anyone from Sambalpur data science and ai who got iim mumbai?",
+              "text": "it is not showing waitlist number they are saying u are not in merit and wait for the waitlist and check regularly on site",
+              "link_score": 0.497,
+              "cosine_similarity": 0.026,
+              "solution_probability": 0.981,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_02652",
+              "post_id": "post_0268",
+              "post_title": "Any update on Third Merit list",
+              "text": "IIIM MUMBAI merit list 2 released. For IIM SBP merit list 3 no update",
+              "link_score": 0.485,
+              "cosine_similarity": 0.312,
+              "solution_probability": 0.513,
+              "response_type": "opinion"
+            }
+          ]
+        },
+        {
+          "theme": "Contact Admissions Office / Escalate via Email",
+          "count": 55,
+          "share": 0.214,
+          "mean_link_score": 0.5163,
+          "mean_cosine_similarity": 0.082,
+          "top_terms": [
+            "call",
+            "ask",
+            "mail",
+            "phone",
+            "now",
+            "admission"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_03353",
+              "post_id": "post_0345",
+              "post_title": "heyya peers, i need to take a leave from college around sept 12, what are the formalities i need to follow.?",
+              "text": "take the leave application form from office, fill it up and submit it and also ask your parents to send a mail on the bsoffice id, that is all",
+              "link_score": 0.569,
+              "cosine_similarity": 0.142,
+              "solution_probability": 0.992,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_02684",
+              "post_id": "post_0274",
+              "post_title": "Update – IIM Sambalpur Third List",
+              "text": "I Called on <PHONE> they said that 31st is the Next List Releasing You Call also Call and Ask to this Number if you have doubt",
+              "link_score": 0.647,
+              "cosine_similarity": 0.305,
+              "solution_probability": 0.98,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 54,
+          "share": 0.2101,
+          "mean_link_score": 0.5096,
+          "mean_cosine_similarity": 0.0877,
+          "top_terms": [
+            "try",
+            "iim",
+            "years",
+            "want",
+            "sambalpur",
+            "take"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02078",
+              "post_id": "post_0196",
+              "post_title": "Guys good news",
+              "text": "They just said it's in process and will come in a day or two.",
+              "link_score": 0.734,
+              "cosine_similarity": 0.597,
+              "solution_probability": 0.784,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_01224",
+              "post_id": "post_0122",
+              "post_title": "MBA EDUCATION LOAN REJECTED",
+              "text": "Try HDFC Credila once. At score of 573, you won’t get loan from sarkari banks for sure.",
+              "link_score": 0.589,
+              "cosine_similarity": 0.215,
+              "solution_probability": 0.972,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "Document Verification & Refund Procedures",
+          "count": 38,
+          "share": 0.1479,
+          "mean_link_score": 0.5529,
+          "mean_cosine_similarity": 0.1554,
+          "top_terms": [
+            "pay",
+            "refund",
+            "date",
+            "fees",
+            "fee",
+            "time"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02189",
+              "post_id": "post_0211",
+              "post_title": "Refund Procedure",
+              "text": "Dear Admissions Office,\n\nI hope this email finds you well.\n\nI am writing to formally request the withdrawal of my admission from the BS in Management and Public Policy (BS MPP) Programme 2026 at IIM Sambalpur.\n\nAfter careful consideration, ",
+              "link_score": 0.516,
+              "cosine_similarity": 0.111,
+              "solution_probability": 0.95,
+              "response_type": "personal_experience"
+            },
+            {
+              "comment_id": "cmt_03332",
+              "post_id": "post_0342",
+              "post_title": "Help?",
+              "text": "pay the fee, bring the original documents and do all the tests u can within the time u have left, come to campus and submit an undertaking form that u will submit the rest later",
+              "link_score": 0.583,
+              "cosine_similarity": 0.169,
+              "solution_probability": 0.996,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Backup Offer & Alternative College Strategy",
+          "count": 31,
+          "share": 0.1206,
+          "mean_link_score": 0.5231,
+          "mean_cosine_similarity": 0.1303,
+          "top_terms": [
+            "join",
+            "sambalpur",
+            "better",
+            "iim",
+            "gim",
+            "option"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00763",
+              "post_id": "post_0077",
+              "post_title": "Help me choose between Tier 2 MBA colleges",
+              "text": "FORE and Weli last in the order. SIBM and SCMHRD top, although can certain about BA courses but the colleges are top. Next NMIMS (If it's Mumbai, otherwise don't join). With the remaining colleges, IIM Sambalpur would just give you the tag ",
+              "link_score": 0.629,
+              "cosine_similarity": 0.295,
+              "solution_probability": 0.971,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00780",
+              "post_id": "post_0077",
+              "post_title": "Help me choose between Tier 2 MBA colleges",
+              "text": "Nope, not GLIM atleast. But from what I know, IMI D has a great finance placements, and GIM has all the top banks (IB and otherwise) visiting too, so maybe check if IMT has those companies too or not. If yes, then it's better than GIM. If n",
+              "link_score": 0.584,
+              "cosine_similarity": 0.215,
+              "solution_probability": 0.956,
+              "response_type": "advice"
+            }
+          ]
+        }
+      ]
+    },
+    "campus_infrastructure": {
+      "issue_key": "campus_infrastructure",
+      "issue_label": "Campus infrastructure & location",
+      "linked_solution_count": 55,
+      "threads_covered": 29,
+      "mean_cosine_similarity": 0.1118,
+      "mean_link_score": 0.5245,
+      "clusters": [
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 38,
+          "share": 0.6909,
+          "mean_link_score": 0.5251,
+          "mean_cosine_similarity": 0.1051,
+          "top_terms": [
+            "call",
+            "deadline",
+            "laptop",
+            "good",
+            "check",
+            "first"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01338",
+              "post_id": "post_0139",
+              "post_title": "Few questions",
+              "text": "1) Locals can speak hindi, language wont be a problem  \n2) There are 86 people in first batch  \n3) People are from all across India.",
+              "link_score": 0.674,
+              "cosine_similarity": 0.377,
+              "solution_probability": 0.953,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_02337",
+              "post_id": "post_0226",
+              "post_title": "SEM1 FEE Payment Deadline Removed",
+              "text": "There was an email about fee deadline extension to 29th July from 23rd.",
+              "link_score": 0.672,
+              "cosine_similarity": 0.36,
+              "solution_probability": 0.974,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Campus Visit, Travel & Location Trade-offs",
+          "count": 16,
+          "share": 0.2909,
+          "mean_link_score": 0.5278,
+          "mean_cosine_similarity": 0.131,
+          "top_terms": [
+            "sambalpur",
+            "iim",
+            "campus",
+            "mba",
+            "time",
+            "work"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01776",
+              "post_id": "post_0170",
+              "post_title": "I completed 1 year at IIM Sambalpur, and now I’m building my own startup and making music. Ask Me Anything!",
+              "text": "As of now, no senior from our inaugural batch has availed of this specific scholarship simply because the first year just wrapped up, and the official application and verification cycles on the portal take time. However, since IIM Sambalpur",
+              "link_score": 0.522,
+              "cosine_similarity": 0.057,
+              "solution_probability": 0.98,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_01131",
+              "post_id": "post_0111",
+              "post_title": "IIM Sambalpur MBA OR IIT Kanpur MBA",
+              "text": "XIMB (tier 1.5 ) loves candidates with work experience in consultancy. Expected call 90-93.\nIITs love engineers with work experience , you might get a call from IIT R .\nAlso try SPJIMR , NOTE you must have 36 months of work experience by th",
+              "link_score": 0.512,
+              "cosine_similarity": 0.048,
+              "solution_probability": 0.994,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "Permanent Infrastructure & Facility Expectations",
+          "count": 1,
+          "share": 0.0182,
+          "mean_link_score": 0.4521,
+          "mean_cosine_similarity": 0.058,
+          "top_terms": [
+            "leave",
+            "3rd",
+            "year",
+            "yes",
+            "after",
+            "degree"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01744",
+              "post_id": "post_0170",
+              "post_title": "I completed 1 year at IIM Sambalpur, and now I’m building my own startup and making music. Ask Me Anything!",
+              "text": "Yes, you can leave after the 3rd year with a degree according to NEP 2020, and the institute does provide that option. In fact, many of my batchmates are planning to leave in the 3rd year to prepare for CAT. As for placements, since it's a ",
+              "link_score": 0.452,
+              "cosine_similarity": 0.058,
+              "solution_probability": 0.827,
+              "response_type": "counterargument"
+            }
+          ]
+        }
+      ]
+    },
+    "curriculum_teaching": {
+      "issue_key": "curriculum_teaching",
+      "issue_label": "Curriculum, faculty & programs",
+      "linked_solution_count": 167,
+      "threads_covered": 68,
+      "mean_cosine_similarity": 0.1169,
+      "mean_link_score": 0.5183,
+      "clusters": [
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 59,
+          "share": 0.3533,
+          "mean_link_score": 0.5146,
+          "mean_cosine_similarity": 0.0986,
+          "top_terms": [
+            "check",
+            "want",
+            "good",
+            "companies",
+            "call",
+            "sure"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02078",
+              "post_id": "post_0196",
+              "post_title": "Guys good news",
+              "text": "They just said it's in process and will come in a day or two.",
+              "link_score": 0.734,
+              "cosine_similarity": 0.597,
+              "solution_probability": 0.784,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_01335",
+              "post_id": "post_0139",
+              "post_title": "Few questions",
+              "text": "Yes,the local can understand and speak hindi.",
+              "link_score": 0.611,
+              "cosine_similarity": 0.228,
+              "solution_probability": 0.991,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Program & Specialization Comparison (MBA vs. UG/BS)",
+          "count": 55,
+          "share": 0.3293,
+          "mean_link_score": 0.5142,
+          "mean_cosine_similarity": 0.1203,
+          "top_terms": [
+            "iim",
+            "mba",
+            "sambalpur",
+            "join",
+            "iims",
+            "want"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00812",
+              "post_id": "post_0083",
+              "post_title": "T1/T2 vs T3 for high work experience.",
+              "text": "U need to join only the older IIMs dat too ABCL alone. All 4 places, u'll be a bit sad during the summers. But, laterals is ur target which makes the others envy u. So either improve ur score more than 97%le or do GMAT n target other instit",
+              "link_score": 0.537,
+              "cosine_similarity": 0.117,
+              "solution_probability": 0.962,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_03211",
+              "post_id": "post_0323",
+              "post_title": "Shall I join IIM SAMBALPUR FOR BS IN AI,DS PROGRAM?",
+              "text": "Bro can you tell me whats your future goals, do you want to pursue bachelors from abroad, if yes then you should look at the curriculum first of the bs DsAi program, its a hybrid of tech and management, suppose if you want to pursue masters",
+              "link_score": 0.505,
+              "cosine_similarity": 0.079,
+              "solution_probability": 0.918,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "CAT / IPMAT / Entrance Prep & Study Resources",
+          "count": 40,
+          "share": 0.2395,
+          "mean_link_score": 0.5275,
+          "mean_cosine_similarity": 0.1424,
+          "top_terms": [
+            "cat",
+            "try",
+            "job",
+            "good",
+            "give",
+            "better"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00551",
+              "post_id": "post_0059",
+              "post_title": "9/8/8 GNEF, CAT 89.85%ile, Life Science background, Confused about MBA / gap / job, need advice",
+              "text": "If you convert Sambalpur, think about it, but your potential is still high. You can get a much better B-school, but the thing is, CAT is risky. If you don't prepare well this year, you might end up with 70s (percentile) next year. So, ask y",
+              "link_score": 0.611,
+              "cosine_similarity": 0.262,
+              "solution_probability": 0.966,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00646",
+              "post_id": "post_0066",
+              "post_title": "Which gdpi course is best for preparation????",
+              "text": "# CAT ’25 aspirants: What actually helps convert PI calls (insights from SJMSOM IIT Bombay seniors)\n\n[](/r/CATpreparation/?f=flair_name%3A%22GDPI-WAT%20%3Asnoo_feelsbadman%3A%22)\n\n# One thing we learned mentoring CAT aspirants last year is ",
+              "link_score": 0.482,
+              "cosine_similarity": 0.089,
+              "solution_probability": 0.874,
+              "response_type": "counterargument"
+            }
+          ]
+        },
+        {
+          "theme": "Faculty & Senior Consultation",
+          "count": 13,
+          "share": 0.0778,
+          "mean_link_score": 0.5246,
+          "mean_cosine_similarity": 0.1077,
+          "top_terms": [
+            "ask",
+            "linkedin",
+            "date",
+            "batch",
+            "students",
+            "year"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00839",
+              "post_id": "post_0087",
+              "post_title": "I graduated from IIM Sambalpur. Aspirants deserve a more honest picture of placements.",
+              "text": "Go on linkedin. connect with the students graduating this year, and ask them if this is fake or not.  \nIts upto you to believe this or not.",
+              "link_score": 0.562,
+              "cosine_similarity": 0.153,
+              "solution_probability": 0.985,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00959",
+              "post_id": "post_0093",
+              "post_title": "Advice needed",
+              "text": "for 4 years exp you’re kind of in middle ground, not fresher not exp hire, so you’ll compete with everyone for same roles. mostly gen man + it services pm/ba type stuff at baby iims. do a strict roi calc vs your current ctc and ask seniors ",
+              "link_score": 0.542,
+              "cosine_similarity": 0.151,
+              "solution_probability": 0.922,
+              "response_type": "advice"
+            }
+          ]
+        }
+      ]
+    },
+    "extracurriculars": {
+      "issue_key": "extracurriculars",
+      "issue_label": "Clubs, committees & campus life",
+      "linked_solution_count": 35,
+      "threads_covered": 19,
+      "mean_cosine_similarity": 0.1313,
+      "mean_link_score": 0.5327,
+      "clusters": [
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 27,
+          "share": 0.7714,
+          "mean_link_score": 0.5344,
+          "mean_cosine_similarity": 0.1425,
+          "top_terms": [
+            "https",
+            "iim",
+            "take",
+            "stunning",
+            "naiad",
+            "40e5c2"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02078",
+              "post_id": "post_0196",
+              "post_title": "Guys good news",
+              "text": "They just said it's in process and will come in a day or two.",
+              "link_score": 0.734,
+              "cosine_similarity": 0.597,
+              "solution_probability": 0.784,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_00369",
+              "post_id": "post_0036",
+              "post_title": "What to do?",
+              "text": "Right now iim sambalpur is better. But also if you convert IMI Delhi then take that. \nFore<sbp<Imi (in terms of placement, location and networking wise). You are at a very convertible number of 35 for imi Delhi, you will easily convert",
+              "link_score": 0.647,
+              "cosine_similarity": 0.32,
+              "solution_probability": 0.99,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "Peer Mentoring & Alumni Networking",
+          "count": 7,
+          "share": 0.2,
+          "mean_link_score": 0.5276,
+          "mean_cosine_similarity": 0.0962,
+          "top_terms": [
+            "batch",
+            "scholarship",
+            "portal",
+            "join",
+            "grp",
+            "senior"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01710",
+              "post_id": "post_0166",
+              "post_title": "I have got shortlisted for MPP program and I have some queries",
+              "text": "Join the wp grp, we got senior there, get all your questions answered there",
+              "link_score": 0.541,
+              "cosine_similarity": 0.096,
+              "solution_probability": 0.977,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_01776",
+              "post_id": "post_0170",
+              "post_title": "I completed 1 year at IIM Sambalpur, and now I’m building my own startup and making music. Ask Me Anything!",
+              "text": "As of now, no senior from our inaugural batch has availed of this specific scholarship simply because the first year just wrapped up, and the official application and verification cycles on the portal take time. However, since IIM Sambalpur",
+              "link_score": 0.522,
+              "cosine_similarity": 0.057,
+              "solution_probability": 0.98,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Clubs, Committees & Case Competitions",
+          "count": 1,
+          "share": 0.0286,
+          "mean_link_score": 0.5218,
+          "mean_cosine_similarity": 0.0764,
+          "top_terms": [
+            "cat",
+            "edge",
+            "give",
+            "building",
+            "weighing",
+            "pros"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01782",
+              "post_id": "post_0170",
+              "post_title": "I completed 1 year at IIM Sambalpur, and now I’m building my own startup and making music. Ask Me Anything!",
+              "text": "Weighing all the pros and cons campus life is decent. Yes i will recommend it to someone who wants to exit after 3 years plus you get a public policy edge too. My personal suggestion would be to get work ex then give cat. And start preparin",
+              "link_score": 0.522,
+              "cosine_similarity": 0.076,
+              "solution_probability": 0.979,
+              "response_type": "advice"
+            }
+          ]
+        }
+      ]
+    },
+    "financial_concerns": {
+      "issue_key": "financial_concerns",
+      "issue_label": "Fees, loans & ROI",
+      "linked_solution_count": 140,
+      "threads_covered": 53,
+      "mean_cosine_similarity": 0.1134,
+      "mean_link_score": 0.5266,
+      "clusters": [
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 66,
+          "share": 0.4714,
+          "mean_link_score": 0.5125,
+          "mean_cosine_similarity": 0.0825,
+          "top_terms": [
+            "call",
+            "try",
+            "mail",
+            "now",
+            "ask",
+            "admission"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01349",
+              "post_id": "post_0142",
+              "post_title": "Where do I have to upload the receipt???",
+              "text": "Yea just got the receipt . I dont think we have to upload it right now. Might be needes at time of registration",
+              "link_score": 0.66,
+              "cosine_similarity": 0.35,
+              "solution_probability": 0.951,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_01319",
+              "post_id": "post_0135",
+              "post_title": "IIM Sambalpur MBA EWS Waitlist 7 – Portal now shows “Your offer has been rejected”. What does this mean?",
+              "text": "That you paid the 50k on time but the portal shows rejected and ask them to confirm your seat status.",
+              "link_score": 0.635,
+              "cosine_similarity": 0.288,
+              "solution_probability": 0.971,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "ROI Evaluation & Lower-Fee Alternatives",
+          "count": 53,
+          "share": 0.3786,
+          "mean_link_score": 0.5345,
+          "mean_cosine_similarity": 0.1331,
+          "top_terms": [
+            "iim",
+            "pay",
+            "refund",
+            "better",
+            "college",
+            "time"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00016",
+              "post_id": "post_0004",
+              "post_title": "TAPMI OR IIM Sambalpur",
+              "text": "If you are withdrawing 15 days before classes start, they have to do a full refund except for charges to the tune of 1k for withdrawl and processing. There are also guidelines for how much they can deduct till 15 days after classes start an",
+              "link_score": 0.582,
+              "cosine_similarity": 0.166,
+              "solution_probability": 0.996,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_00391",
+              "post_id": "post_0039",
+              "post_title": "IIM Sambalpur PGP vs FMS BHU MBA-IB",
+              "text": "You can pay off the debt in max 2-3 years, don’t keep that as a criterion. Look at brand value and network that you can build. I would suggest IIM Sam looks better + in long run for an IIM to improve on rankings is more probable than FMS BH",
+              "link_score": 0.565,
+              "cosine_similarity": 0.163,
+              "solution_probability": 0.979,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "Scholarship & Need-Based Financial Aid",
+          "count": 15,
+          "share": 0.1071,
+          "mean_link_score": 0.5404,
+          "mean_cosine_similarity": 0.1467,
+          "top_terms": [
+            "fee",
+            "date",
+            "registration",
+            "payment",
+            "fees",
+            "withdraw"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00809",
+              "post_id": "post_0083",
+              "post_title": "T1/T2 vs T3 for high work experience.",
+              "text": "ISB does offer scholarships to promising candidates. Approximately 25% of students receive financial aid, with some scholarships even covering 100% of the tuition fee. It doesn't hurt to apply, the decision to join will lie in your hands ul",
+              "link_score": 0.544,
+              "cosine_similarity": 0.1,
+              "solution_probability": 0.979,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_02325",
+              "post_id": "post_0226",
+              "post_title": "SEM1 FEE Payment Deadline Removed",
+              "text": "The deadline for fee payment has been extended to August 21st, coinciding with the registration period. They informed me that fees must be paid by August 21st, before physical verification",
+              "link_score": 0.58,
+              "cosine_similarity": 0.174,
+              "solution_probability": 0.976,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Education Loan & Bank Financing Options",
+          "count": 6,
+          "share": 0.0429,
+          "mean_link_score": 0.5779,
+          "mean_cosine_similarity": 0.1966,
+          "top_terms": [
+            "loan",
+            "cibil",
+            "take",
+            "first",
+            "time",
+            "score"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01230",
+              "post_id": "post_0122",
+              "post_title": "MBA EDUCATION LOAN REJECTED",
+              "text": "Bro take personal loan or something from nbfc.. for first 2 trimester..by that time if your cobil improve..  then take educational loan from sbi or from other bank... This is best you can do..",
+              "link_score": 0.574,
+              "cosine_similarity": 0.174,
+              "solution_probability": 0.991,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_01220",
+              "post_id": "post_0122",
+              "post_title": "MBA EDUCATION LOAN REJECTED",
+              "text": "Pay the first trimester fees by arranging money from your parents, relatives, or friends for now.  \nAt the same time, take a small gold loan of around 10-20k in your name and make sure you pay the EMIs on time. This should help improve your",
+              "link_score": 0.623,
+              "cosine_similarity": 0.267,
+              "solution_probability": 0.996,
+              "response_type": "advice"
+            }
+          ]
+        }
+      ]
+    },
+    "hostel_facilities": {
+      "issue_key": "hostel_facilities",
+      "issue_label": "Hostel & mess facilities",
+      "linked_solution_count": 8,
+      "threads_covered": 5,
+      "mean_cosine_similarity": 0.1007,
+      "mean_link_score": 0.5232,
+      "clusters": [
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 6,
+          "share": 0.75,
+          "mean_link_score": 0.5056,
+          "mean_cosine_similarity": 0.0736,
+          "top_terms": [
+            "reddit_link",
+            "yeah",
+            "opt",
+            "haikusbot",
+            "delete",
+            "keep"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02059",
+              "post_id": "post_0194",
+              "post_title": "Guys Help",
+              "text": "You can keep kettles and cook whatever you can do in that",
+              "link_score": 0.597,
+              "cosine_similarity": 0.208,
+              "solution_probability": 0.978,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_00111",
+              "post_id": "post_0016",
+              "post_title": "Why do IIM Amritsar and IIM Sambalpur have relatively fewer seats allocated for the General category compared to other IIMs?",
+              "text": "There's a separate sub[r/CATpreparation ]([REDDIT_LINK] for posts like this",
+              "link_score": 0.503,
+              "cosine_similarity": 0.014,
+              "solution_probability": 0.988,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Hostel Room & Campus Living Adjustments",
+          "count": 2,
+          "share": 0.25,
+          "mean_link_score": 0.576,
+          "mean_cosine_similarity": 0.1819,
+          "top_terms": [
+            "eggs",
+            "cook",
+            "inside",
+            "room",
+            "yes",
+            "mart"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_02054",
+              "post_id": "post_0194",
+              "post_title": "Guys Help",
+              "text": "U can’t cook inside room",
+              "link_score": 0.577,
+              "cosine_similarity": 0.189,
+              "solution_probability": 0.941,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_02061",
+              "post_id": "post_0194",
+              "post_title": "Guys Help",
+              "text": "Yes, we've mart in our campus. You'll find everything there. Also, our mess provides boiled eggs and sprouts everyday and you can take max 5-6 eggs",
+              "link_score": 0.575,
+              "cosine_similarity": 0.175,
+              "solution_probability": 0.96,
+              "response_type": "solution"
+            }
+          ]
+        }
+      ]
+    },
+    "placements": {
+      "issue_key": "placements",
+      "issue_label": "Placements & internships",
+      "linked_solution_count": 154,
+      "threads_covered": 59,
+      "mean_cosine_similarity": 0.1273,
+      "mean_link_score": 0.521,
+      "clusters": [
+        {
+          "theme": "Alternative B-School / Retake CAT Comparison",
+          "count": 80,
+          "share": 0.5195,
+          "mean_link_score": 0.5243,
+          "mean_cosine_similarity": 0.1384,
+          "top_terms": [
+            "iim",
+            "sambalpur",
+            "better",
+            "cat",
+            "take",
+            "try"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00428",
+              "post_id": "post_0043",
+              "post_title": "Are the new/baby IIMs worth joining?",
+              "text": "Newer iims like jammu, bodh gaya, sirmaur, sambalpur have improving placements but significant gap versus old iims in alumni network, brand recognition, and median packages.Roi depends heavily on your alternatives and career goals.\n\nCurrent",
+              "link_score": 0.626,
+              "cosine_similarity": 0.301,
+              "solution_probability": 0.952,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00403",
+              "post_id": "post_0040",
+              "post_title": "Urgent Guidance Needed on IIM Sambalpur Admit Decision",
+              "text": "9/9/9 is a great profile and as a GEF she will be getting great opportunities once she crosses 95 around and tbh she is already scoring in the borderline of 90s .\n\nThe best option would be to take a drop and go for a reattempt next year bec",
+              "link_score": 0.556,
+              "cosine_similarity": 0.257,
+              "solution_probability": 0.793,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "General Peer Guidance & Experience",
+          "count": 28,
+          "share": 0.1818,
+          "mean_link_score": 0.5246,
+          "mean_cosine_similarity": 0.1219,
+          "top_terms": [
+            "try",
+            "score",
+            "loan",
+            "take",
+            "cibil",
+            "banks"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01223",
+              "post_id": "post_0122",
+              "post_title": "MBA EDUCATION LOAN REJECTED",
+              "text": "Usually they won't check your cibil. When I applied there was no cibil inquiry. Clear your dues and applied to banks like axis for now and then when your score improves shift your loan",
+              "link_score": 0.66,
+              "cosine_similarity": 0.326,
+              "solution_probability": 0.99,
+              "response_type": "solution"
+            },
+            {
+              "comment_id": "cmt_00289",
+              "post_id": "post_0030",
+              "post_title": "Workshop Series: Thrive at B-School with Grad Partners",
+              "text": "Register here: https://gradpartners.in/e/Thrive-at-B-School-197",
+              "link_score": 0.593,
+              "cosine_similarity": 0.207,
+              "solution_probability": 0.966,
+              "response_type": "solution"
+            }
+          ]
+        },
+        {
+          "theme": "Skills, Profile & Interview Preparation",
+          "count": 26,
+          "share": 0.1688,
+          "mean_link_score": 0.5084,
+          "mean_cosine_similarity": 0.1209,
+          "top_terms": [
+            "good",
+            "mba",
+            "workex",
+            "work",
+            "cat",
+            "much"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_01034",
+              "post_id": "post_0104",
+              "post_title": "Tier 1 MBA/PGP alumni (2 Year Full Time): how did the 28-30 year olds with non-traditional profiles fare at placements vs the rest of the batch? Unplaced numbers, salary gaps, real stories welcome.",
+              "text": "I just graduated from SPJIMR, so maybe I can give you a deeper insight.\n\nGoing for an MBA with your background is basically making a risk-reward decision. You will have a workex of roughly 4-5 year in recruitment before MBA from an average ",
+              "link_score": 0.571,
+              "cosine_similarity": 0.301,
+              "solution_probability": 0.769,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00646",
+              "post_id": "post_0066",
+              "post_title": "Which gdpi course is best for preparation????",
+              "text": "# CAT ’25 aspirants: What actually helps convert PI calls (insights from SJMSOM IIT Bombay seniors)\n\n[](/r/CATpreparation/?f=flair_name%3A%22GDPI-WAT%20%3Asnoo_feelsbadman%3A%22)\n\n# One thing we learned mentoring CAT aspirants last year is ",
+              "link_score": 0.482,
+              "cosine_similarity": 0.089,
+              "solution_probability": 0.874,
+              "response_type": "counterargument"
+            }
+          ]
+        },
+        {
+          "theme": "Alumni & LinkedIn Verification / Networking",
+          "count": 12,
+          "share": 0.0779,
+          "mean_link_score": 0.5194,
+          "mean_cosine_similarity": 0.0955,
+          "top_terms": [
+            "linkedin",
+            "ask",
+            "year",
+            "now",
+            "few",
+            "talk"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00839",
+              "post_id": "post_0087",
+              "post_title": "I graduated from IIM Sambalpur. Aspirants deserve a more honest picture of placements.",
+              "text": "Go on linkedin. connect with the students graduating this year, and ask them if this is fake or not.  \nIts upto you to believe this or not.",
+              "link_score": 0.562,
+              "cosine_similarity": 0.153,
+              "solution_probability": 0.985,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00959",
+              "post_id": "post_0093",
+              "post_title": "Advice needed",
+              "text": "for 4 years exp you’re kind of in middle ground, not fresher not exp hire, so you’ll compete with everyone for same roles. mostly gen man + it services pm/ba type stuff at baby iims. do a strict roi calc vs your current ctc and ask seniors ",
+              "link_score": 0.542,
+              "cosine_similarity": 0.151,
+              "solution_probability": 0.922,
+              "response_type": "advice"
+            }
+          ]
+        },
+        {
+          "theme": "Placement Committee & Internship (SIP/PPO) Strategy",
+          "count": 8,
+          "share": 0.0519,
+          "mean_link_score": 0.5197,
+          "mean_cosine_similarity": 0.1045,
+          "top_terms": [
+            "want",
+            "placement",
+            "operations",
+            "companies",
+            "role",
+            "market"
+          ],
+          "examples": [
+            {
+              "comment_id": "cmt_00660",
+              "post_id": "post_0068",
+              "post_title": "Nirma University MBA review for Operations Management",
+              "text": "Very few people opt for Operations as majors because of less inflow of companies who bring operation focused roles. \nHence, people keep operations as minor and marketing as majors for maximum shortlisting. \n\nCompanies who came this year for",
+              "link_score": 0.521,
+              "cosine_similarity": 0.133,
+              "solution_probability": 0.881,
+              "response_type": "advice"
+            },
+            {
+              "comment_id": "cmt_00342",
+              "post_id": "post_0032",
+              "post_title": "IIM Sambalpur- Can someone from batch 2023-25 share the reality of placements at this college? How many placed out of 320 and what kind of roles? Is it mostly sales? What is the variable and fixed breakup?",
+              "text": "274ish/314 placed. Roles offered as follows:-\n\n#1 Marketing & Sales\n#2 Finance & GenMan (almost equal for both)\n#3 IT/Analytics/Consulting\nThen the rest.\n\nAverage is somewhere around 14.5 lpa, fixed component will be anywhere 9-11 lpa.\n\nGoo",
+              "link_score": 0.512,
+              "cosine_similarity": 0.163,
+              "solution_probability": 0.852,
+              "response_type": "personal_experience"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "task5_task6_ablations": {
+    "generated_at_epoch": 1795352093.1,
+    "elapsed_seconds": 636.8,
+    "task5_lid_study": {
+      "corpus_size": 3557,
+      "indian_reddit_lid_distribution": {
+        "en": 2898,
+        "und": 319,
+        "hi-en": 315,
+        "hi": 23,
+        "or-en": 2
+      },
+      "langdetect_top_distribution": {
+        "en": 2645,
+        "err": 97,
+        "id": 97,
+        "cy": 71,
+        "sw": 50,
+        "so": 47,
+        "tl": 47,
+        "fr": 47,
+        "af": 40,
+        "it": 38,
+        "de": 38,
+        "et": 35,
+        "nl": 32,
+        "pt": 30,
+        "fi": 29
+      },
+      "langdetect_bogus_non_indian_total": 815,
+      "langdetect_bogus_non_indian_rate": 0.2291,
+      "code_mixed_or_roman_indic_count": 340,
+      "langdetect_on_indic_distribution": {
+        "en": 134,
+        "id": 54,
+        "sw": 39,
+        "so": 24,
+        "et": 19,
+        "tl": 12,
+        "cy": 11,
+        "vi": 7,
+        "hu": 6,
+        "fi": 5,
+        "nl": 4,
+        "tr": 3
+      },
+      "langdetect_bogus_on_indic_count": 206,
+      "langdetect_bogus_on_indic_rate": 0.6059,
+      "langdetect_missed_as_english_on_indic": 134,
+      "langdetect_failure_rate_on_indic": 1.0,
+      "real_misclassification_examples": [
+        {
+          "comment_id": "comment-cmt_00009",
+          "text": "Yarr ab Sambhalpur jaise bhi wait list karne lage hain?🤣",
+          "langdetect_pred": "et",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "bhi",
+            "hain"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00039",
+          "text": "Ab inke alag se form bharo. Aur paisssaa",
+          "langdetect_pred": "af",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "aur"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00041",
+          "text": "Inka cut off kya hoga, any idea?",
+          "langdetect_pred": "so",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "hoga",
+            "kya"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00056",
+          "text": "Kuch khaas nhi bhai bass V , S aur Amritsar ka mail aaya hai",
+          "langdetect_pred": "id",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "aur",
+            "bhai",
+            "hai",
+            "kuch",
+            "nhi"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00060",
+          "text": "Chud gaye guru",
+          "langdetect_pred": "so",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "gaye"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00082",
+          "text": "Bc kahan kahan iims khul gaye hai.",
+          "langdetect_pred": "so",
+          "indian_reddit_lid_pred": "hi",
+          "script": "latin",
+          "is_code_mixed": false,
+          "matched_markers": [
+            "gaye",
+            "hai",
+            "kahan"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00097",
+          "text": "Yeah man. IIM B and Shillong ka fees almost same! Ye kaisa baat hua!",
+          "langdetect_pred": "tl",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "baat",
+            "kaisa"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00098",
+          "text": "Total seats bhi kam hai na",
+          "langdetect_pred": "id",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "bhi",
+            "hai"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00117",
+          "text": "Raipur ne bhi kuch bkchodi ki h kya?",
+          "langdetect_pred": "sw",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "bhi",
+            "kuch",
+            "kya"
+          ]
+        },
+        {
+          "comment_id": "comment-cmt_00120",
+          "text": "Sambalpur ka toh pata hai par Raipur ne kya kiya?😂",
+          "langdetect_pred": "id",
+          "indian_reddit_lid_pred": "hi-en",
+          "script": "latin",
+          "is_code_mixed": true,
+          "matched_markers": [
+            "hai",
+            "kya",
+            "pata",
+            "toh"
+          ]
+        }
+      ],
+      "controlled_probe_accuracy": {
+        "n_probes": 12,
+        "indian_reddit_lid_accuracy": 1.0,
+        "langdetect_accuracy": 0.3333,
+        "probes": [
+          {
+            "text": "Bhai IIM ABC ka summer placement scene kaisa hai 😭",
+            "gold_language": "hi-en",
+            "gold_script": "latin",
+            "langdetect_pred": "id",
+            "indian_reddit_lid_pred": "hi-en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "ଆଜି କ୍ଲାସ୍ ବହୁତ hectic ଥିଲା bro",
+            "gold_language": "or-en",
+            "gold_script": "mixed",
+            "langdetect_pred": "en",
+            "indian_reddit_lid_pred": "or-en",
+            "indian_reddit_script": "mixed",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "IIM e giye ki actually ROI pawa jay?",
+            "gold_language": "bn-en",
+            "gold_script": "latin",
+            "langdetect_pred": "en",
+            "indian_reddit_lid_pred": "bn-en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "Bro hostel life 💀... mess food toh literally mid... but seniors helped a lot ngl.",
+            "gold_language": "hi-en",
+            "gold_script": "latin",
+            "langdetect_pred": "en",
+            "indian_reddit_lid_pred": "hi-en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "IIM jaana worth it hai kya?",
+            "gold_language": "hi-en",
+            "gold_script": "latin",
+            "langdetect_pred": "sw",
+            "indian_reddit_lid_pred": "hi-en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "यह कॉलेज का प्लेसमेंट कैसा है?",
+            "gold_language": "hi",
+            "gold_script": "devanagari",
+            "langdetect_pred": "hi",
+            "indian_reddit_lid_pred": "hi",
+            "indian_reddit_script": "devanagari",
+            "indian_reddit_code_mixed": false,
+            "indian_reddit_correct": true,
+            "langdetect_correct": true
+          },
+          {
+            "text": "এই কলেজের হোস্টেল কেমন?",
+            "gold_language": "bn",
+            "gold_script": "bengali",
+            "langdetect_pred": "bn",
+            "indian_reddit_lid_pred": "bn",
+            "indian_reddit_script": "bengali",
+            "indian_reddit_code_mixed": false,
+            "indian_reddit_correct": true,
+            "langdetect_correct": true
+          },
+          {
+            "text": "ଆଜିର କ୍ଲାସ୍ ବହୁତ ଭଲ ଥିଲା",
+            "gold_language": "or",
+            "gold_script": "odia",
+            "langdetect_pred": "err",
+            "indian_reddit_lid_pred": "or",
+            "indian_reddit_script": "odia",
+            "indian_reddit_code_mixed": false,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "Aaji class kemiti thila bhai, bahut hectic hela",
+            "gold_language": "or-en",
+            "gold_script": "latin",
+            "langdetect_pred": "en",
+            "indian_reddit_lid_pred": "or-en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "Kolkata theke IIM Sambalpur jabo kemon hobe placement?",
+            "gold_language": "bn-en",
+            "gold_script": "latin",
+            "langdetect_pred": "sl",
+            "indian_reddit_lid_pred": "bn-en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": true,
+            "indian_reddit_correct": true,
+            "langdetect_correct": false
+          },
+          {
+            "text": "Try applying for the need-based financial aid scholarship.",
+            "gold_language": "en",
+            "gold_script": "latin",
+            "langdetect_pred": "en",
+            "indian_reddit_lid_pred": "en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": false,
+            "indian_reddit_correct": true,
+            "langdetect_correct": true
+          },
+          {
+            "text": "Fr bro got rejected at 99.3%ile 🤡",
+            "gold_language": "en",
+            "gold_script": "latin",
+            "langdetect_pred": "en",
+            "indian_reddit_lid_pred": "en",
+            "indian_reddit_script": "latin",
+            "indian_reddit_code_mixed": false,
+            "indian_reddit_correct": true,
+            "langdetect_correct": true
+          }
+        ]
+      }
+    },
+    "task6_preprocessing_ablation": {
+      "trainval_size": 367,
+      "trainval_emoji_rows": 23,
+      "protocol": "5-fold post_id-grouped OOF CV on untouched V1 trainval (367); frozen test (92) never touched",
+      "tfidf_5task_ablation": {
+        "raw": {
+          "mean_5task_oof_f1": 0.4566,
+          "tasks": {
+            "issue": {
+              "oof_macro_f1": 0.3903,
+              "emoji_subset_micro_f1": 0.6275,
+              "n_emoji_rows": 23
+            },
+            "sentiment": {
+              "oof_macro_f1": 0.5241,
+              "emoji_subset_acc": 0.6087,
+              "n_emoji_rows": 23
+            },
+            "emotion": {
+              "oof_macro_f1": 0.4106,
+              "emoji_subset_micro_f1": 0.5294,
+              "n_emoji_rows": 23
+            },
+            "response": {
+              "oof_macro_f1": 0.3858,
+              "emoji_subset_acc": 0.5652,
+              "n_emoji_rows": 23
+            },
+            "solution": {
+              "oof_macro_f1": 0.5723,
+              "emoji_subset_acc": 0.913,
+              "n_emoji_rows": 23
+            }
+          }
+        },
+        "conventional_nlp": {
+          "mean_5task_oof_f1": 0.4426,
+          "tasks": {
+            "issue": {
+              "oof_macro_f1": 0.3961,
+              "emoji_subset_micro_f1": 0.5833,
+              "n_emoji_rows": 23
+            },
+            "sentiment": {
+              "oof_macro_f1": 0.5093,
+              "emoji_subset_acc": 0.6087,
+              "n_emoji_rows": 23
+            },
+            "emotion": {
+              "oof_macro_f1": 0.3695,
+              "emoji_subset_micro_f1": 0.4615,
+              "n_emoji_rows": 23
+            },
+            "response": {
+              "oof_macro_f1": 0.338,
+              "emoji_subset_acc": 0.5217,
+              "n_emoji_rows": 23
+            },
+            "solution": {
+              "oof_macro_f1": 0.5999,
+              "emoji_subset_acc": 0.9565,
+              "n_emoji_rows": 23
+            }
+          }
+        },
+        "emoji_removed": {
+          "mean_5task_oof_f1": 0.4566,
+          "tasks": {
+            "issue": {
+              "oof_macro_f1": 0.3892,
+              "emoji_subset_micro_f1": 0.6275,
+              "n_emoji_rows": 23
+            },
+            "sentiment": {
+              "oof_macro_f1": 0.5246,
+              "emoji_subset_acc": 0.6522,
+              "n_emoji_rows": 23
+            },
+            "emotion": {
+              "oof_macro_f1": 0.4111,
+              "emoji_subset_micro_f1": 0.5714,
+              "n_emoji_rows": 23
+            },
+            "response": {
+              "oof_macro_f1": 0.3858,
+              "emoji_subset_acc": 0.5652,
+              "n_emoji_rows": 23
+            },
+            "solution": {
+              "oof_macro_f1": 0.5723,
+              "emoji_subset_acc": 0.913,
+              "n_emoji_rows": 23
+            }
+          }
+        },
+        "emoji_token_slang": {
+          "mean_5task_oof_f1": 0.4641,
+          "tasks": {
+            "issue": {
+              "oof_macro_f1": 0.3879,
+              "emoji_subset_micro_f1": 0.5652,
+              "n_emoji_rows": 23
+            },
+            "sentiment": {
+              "oof_macro_f1": 0.537,
+              "emoji_subset_acc": 0.6522,
+              "n_emoji_rows": 23
+            },
+            "emotion": {
+              "oof_macro_f1": 0.4321,
+              "emoji_subset_micro_f1": 0.6154,
+              "n_emoji_rows": 23
+            },
+            "response": {
+              "oof_macro_f1": 0.387,
+              "emoji_subset_acc": 0.5217,
+              "n_emoji_rows": 23
+            },
+            "solution": {
+              "oof_macro_f1": 0.5766,
+              "emoji_subset_acc": 0.9565,
+              "n_emoji_rows": 23
+            }
+          }
+        },
+        "emoji_affect_slang": {
+          "mean_5task_oof_f1": 0.4617,
+          "tasks": {
+            "issue": {
+              "oof_macro_f1": 0.3775,
+              "emoji_subset_micro_f1": 0.5532,
+              "n_emoji_rows": 23
+            },
+            "sentiment": {
+              "oof_macro_f1": 0.523,
+              "emoji_subset_acc": 0.6522,
+              "n_emoji_rows": 23
+            },
+            "emotion": {
+              "oof_macro_f1": 0.4391,
+              "emoji_subset_micro_f1": 0.7,
+              "n_emoji_rows": 23
+            },
+            "response": {
+              "oof_macro_f1": 0.3925,
+              "emoji_subset_acc": 0.5217,
+              "n_emoji_rows": 23
+            },
+            "solution": {
+              "oof_macro_f1": 0.5766,
+              "emoji_subset_acc": 0.913,
+              "n_emoji_rows": 23
+            }
+          }
+        }
+      },
+      "muril_wwm_affect_ablation": {
+        "raw": {
+          "sentiment": {
+            "oof_macro_f1": 0.6241,
+            "oof_ece": 0.156,
+            "train_seconds": 64.5
+          },
+          "emotion": {
+            "oof_macro_f1": 0.3122,
+            "oof_ece": 0.2173,
+            "train_seconds": 64.1
+          },
+          "mean_affect_oof_f1": 0.4681
+        },
+        "conventional_nlp": {
+          "sentiment": {
+            "oof_macro_f1": 0.5334,
+            "oof_ece": 0.0827,
+            "train_seconds": 52.5
+          },
+          "emotion": {
+            "oof_macro_f1": 0.116,
+            "oof_ece": 0.1998,
+            "train_seconds": 51.2
+          },
+          "mean_affect_oof_f1": 0.3247
+        },
+        "emoji_removed": {
+          "sentiment": {
+            "oof_macro_f1": 0.6218,
+            "oof_ece": 0.1319,
+            "train_seconds": 64.0
+          },
+          "emotion": {
+            "oof_macro_f1": 0.3095,
+            "oof_ece": 0.216,
+            "train_seconds": 62.9
+          },
+          "mean_affect_oof_f1": 0.4657
+        },
+        "emoji_token_slang": {
+          "sentiment": {
+            "oof_macro_f1": 0.6248,
+            "oof_ece": 0.1245,
+            "train_seconds": 63.3
+          },
+          "emotion": {
+            "oof_macro_f1": 0.3055,
+            "oof_ece": 0.2186,
+            "train_seconds": 64.0
+          },
+          "mean_affect_oof_f1": 0.4652
+        },
+        "emoji_affect_slang": {
+          "sentiment": {
+            "oof_macro_f1": 0.6468,
+            "oof_ece": 0.139,
+            "train_seconds": 65.1
+          },
+          "emotion": {
+            "oof_macro_f1": 0.3245,
+            "oof_ece": 0.2181,
+            "train_seconds": 63.5
+          },
+          "mean_affect_oof_f1": 0.4857
+        }
+      }
+    }
+  }
+}
