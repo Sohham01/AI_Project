@@ -1,6 +1,6 @@
 # RCI — Human Annotation Guidelines (v1.0 Real-Data Pilot)
 
-**Project:** Reddit Community Intelligence (RCI) — `D:\AI_Project`  
+**Project:** Reddit Community Intelligence (RCI)  
 **Applies To:** Sanitized blank-label candidate CSVs exported by `backend/import_reddit_export.py` and validated by `backend/validate_pilot_annotations.py`.
 
 > [!IMPORTANT]
@@ -145,3 +145,28 @@ When `backend/validate_pilot_annotations.py` runs:
 | *"Campus is 15 km from Sambalpur railway station."* | `neutral` | *(blank)* | *(blank)* | `opinion` | `not_solution` | `labeled` | |
 | *"Lol yeah right."* (`parent_context_status = unavailable`) | *(blank)* | *(blank)* | *(blank)* | *(blank)* | *(blank)* | `uncertain` | `missing_parent` |
 | *"RemindMe! 3 days"* | *(blank)* | *(blank)* | *(blank)* | *(blank)* | *(blank)* | `abstain` | `off_topic_noise` |
+
+---
+
+## 8. Post-IAA Calibration Addendum (v2.0 — 6 Mandatory Boundary Decision Trees)
+
+Following our 50-item blind Human IAA audit ([V5_HUMAN_IAA_REPORT.md](V5_HUMAN_IAA_REPORT.md)), six recurring boundary discrepancies accounted for >80% of inter-annotator disagreements. Before annotating any new batch (such as the 30-item blind calibration batch `iaa_calibration_30.csv`), **every annotator must apply the six deterministic tie-breakers below**:
+
+1. **`solution` vs. `not_solution` (Actionable Fix Rule):**
+   - **Rule:** Tag `solution` **ONLY** if the comment supplies a **concrete, repeatable action, workaround, portal/escalation path, financing/scholarship channel, or step-by-step fix** that helps resolve the issue (e.g., *"Email admissions@… with your sanction letter for a 15-day extension"*).
+   - **Tag `not_solution`** for: (a) plain factual AMA answers (*"Yes, OBC quota exists"*), (b) broad general advice without concrete steps (*"Work hard and network"*), or (c) status observations (*"Waitlist moved by 40"*).
+2. **`negative` vs. `neutral` Sentiment (Critical Evaluation Rule):**
+   - **Rule:** Tag `negative` whenever the author expresses **dissatisfaction, skepticism, warning, complaint, regret, sarcasm, or unmet expectation** — NOT solely profanity or overt anger (e.g., *"Alone internship cannot give you good placement"*, *"Fees feel like a honey trap"*, *"Portal is really confusing"* → **`negative`**).
+   - **Reserve `neutral`** for genuinely matter-of-fact statements, neutral data reports, or balanced/unemotional questions (*"Cutoffs were 92 percentile last year"* → **`neutral`**).
+3. **`counterargument` vs. `opinion` (Stance Reversal Rule):**
+   - **Rule:** Inspect the parent post/comment. If the reply **explicitly or implicitly pushes back against, corrects, challenges, or contradicts** a prior claim/assumption (*"Actually Sambalpur placements aren't as bad as this post claims..."*, *"No, that fee figure is outdated"*), tag **`counterargument`** even without the literal phrase *"I disagree"*.
+   - **Reserve `opinion`** for standalone evaluations or recommendations that do **not** contest a prior speaker's claim.
+4. **`hostel_facilities` vs. `campus_infrastructure` (Living vs. Academic Facility Split):**
+   - **`hostel_facilities`:** Dorm rooms, roommates, mess food, mess hygiene, canteen/kettle/cooking, hostel rules, AC/coolers, wardens, PG/off-campus stays.
+   - **`campus_infrastructure`:** Permanent campus construction, classrooms, library, Wi-Fi, labs, location/connectivity (airport, railway station, Jharsuguda/Sambalpur city), weather.
+5. **`financial_concerns` vs. `placements` (Cost vs. Finance Career Split):**
+   - **`financial_concerns`:** Tuition fees, hostel/mess fees, education loans, EMIs, scholarships, refunds, withdrawal deductions, affordability/ROI cost burden.
+   - **`placements` (NOT `financial_concerns`):** Finance-domain job roles, IB/corporate finance SIPs, CTC/LPA packages, recruiting companies, placement committees.
+6. **`confidence` Emotion vs. Blank (Emotional Affect vs. Plain Fact):**
+   - **Rule:** Leave `emotions` **blank (`""`)** for matter-of-fact procedural replies (*"Check the portal"*, *"Yes, reservation applies"*, *"Program is 4 years"*).
+   - **Tag `confidence`** ONLY when the speaker expresses **explicit personal assurance, pride, reassurance, or strong conviction** (*"Don't worry, you will definitely convert at WL 15!"*, *"Super proud of how our batch performed"*).
