@@ -20,7 +20,7 @@ Design decisions:
 
 import re
 import unicodedata
-from typing import Dict
+from typing import Dict, List
 
 # Curated mapping: emoji -> semantic token (lowercase, underscored)
 _EMOJI_MAP: Dict[str, str] = {
@@ -83,6 +83,51 @@ _EMOJI_MAP: Dict[str, str] = {
     "\u270c\ufe0f": "victory_hand",
     "\u270c": "victory_hand",
     "\U0001f44b": "waving_hand",
+    "\U0001f480": "skull",
+    "\U0001f921": "clown_face",
+    "\U0001f643": "upside_down_face",
+    "\U0001f972": "smiling_face_with_tear",
+    "\U0001f62b": "tired_face",
+    "\U0001f629": "weary_face",
+    "\U0001f97a": "pleading_face",
+    "\U0001f440": "eyes",
+}
+
+# Semantic affect verbalizations for social-media emoji pragmatics (Task 6)
+EMOJI_AFFECT_MAP: Dict[str, str] = {
+    "\U0001f62d": "sadness frustration",
+    "\U0001f622": "sadness disappointment",
+    "\U0001f525": "strong approval",
+    "\U0001f480": "extreme amusement disbelief",
+    "\U0001f921": "sarcasm mockery",
+    "\U0001f602": "amusement laughter",
+    "\U0001f923": "strong amusement laughter",
+    "\U0001f620": "anger frustration",
+    "\U0001f621": "anger frustration",
+    "\U0001f624": "frustration annoyance",
+    "\U0001f64f": "gratitude polite request",
+    "\U0001f44d": "approval agreement",
+    "\U0001f44e": "disapproval disagreement",
+    "\u2764\ufe0f": "strong appreciation",
+    "\u2764": "strong appreciation",
+    "\U0001f494": "disappointment heartbreak",
+    "\U0001f4af": "strong agreement",
+    "\U0001f389": "celebration congratulations",
+    "\U0001f680": "excitement ambition",
+    "\U0001f914": "curiosity skepticism",
+    "\U0001f92f": "shock disbelief",
+    "\U0001f926": "frustration disbelief",
+    "\U0001f937": "uncertainty indifference",
+    "\U0001f644": "annoyance skepticism",
+    "\U0001f643": "ironic frustration",
+    "\U0001f972": "bittersweet sadness stress",
+    "\U0001f62b": "exhaustion stress",
+    "\U0001f629": "overwhelmed stress",
+    "\U0001f97a": "anxious plea",
+    "\U0001f440": "curious attention",
+    "\U0001f4aa": "encouragement confidence",
+    "\U0001f60a": "warmth gratitude",
+    "\U0001f60e": "confidence approval",
 }
 
 # Character class of *emoji base* code points (covers most common ranges).
@@ -150,3 +195,43 @@ def _emoji_to_token(emoji_seq: str) -> str:
 def normalize_emojis(text: str) -> str:
     """Replace emojis with semantic tokens. Does NOT remove them."""
     return _EMOJI_RE.sub(lambda m: _emoji_to_token(m.group()), text)
+
+
+def strip_emojis(text: str) -> str:
+    """Remove emojis completely (used for Task 6 preprocessing ablation only)."""
+    return re.sub(r"\s+", " ", _EMOJI_RE.sub(" ", str(text or ""))).strip()
+
+
+def _emoji_to_affect(emoji_seq: str) -> str:
+    if emoji_seq in EMOJI_AFFECT_MAP:
+        return f" {EMOJI_AFFECT_MAP[emoji_seq]} "
+    bases = [ch for ch in emoji_seq if ch not in _SEQUENCE_INFIX]
+    if len(bases) == 1 and bases[0] in EMOJI_AFFECT_MAP:
+        return f" {EMOJI_AFFECT_MAP[bases[0]]} "
+    tok = _emoji_to_token(emoji_seq).removeprefix("<EMOJI_").removesuffix(">").replace("_", " ")
+    return f" {tok} "
+
+
+def normalize_emojis_semantic_affect(text: str) -> str:
+    """Replace emojis with natural-language semantic affect phrases (Task 6)."""
+    return re.sub(r"\s+", " ", _EMOJI_RE.sub(lambda m: _emoji_to_affect(m.group()), str(text or ""))).strip()
+
+
+def extract_emojis(text: str) -> List[Dict[str, str]]:
+    """Return each detected emoji with its deterministic token and semantic affect."""
+    found: List[Dict[str, str]] = []
+    seen: set[str] = set()
+    for match in _EMOJI_RE.finditer(str(text or "")):
+        raw = match.group()
+        if raw in seen:
+            continue
+        seen.add(raw)
+        bases = [ch for ch in raw if ch not in _SEQUENCE_INFIX]
+        affect = EMOJI_AFFECT_MAP.get(raw) or (EMOJI_AFFECT_MAP.get(bases[0]) if len(bases) == 1 else None)
+        token = _emoji_to_token(raw)
+        found.append({
+            "emoji": raw,
+            "token": token,
+            "semantic_affect": affect or token.removeprefix("<EMOJI_").removesuffix(">").replace("_", " "),
+        })
+    return found

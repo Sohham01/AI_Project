@@ -1,8 +1,8 @@
 /**
  * View 4: Conversation Audit (Visual Parent-Child Thread Tree & Evidence Studio)
  */
-import { api } from "../api.js?v=5.7";
-import { stackedCompositionBar } from "../charts.js?v=5.7";
+import { api } from "../api.js?v=6.0";
+import { stackedCompositionBar } from "../charts.js?v=6.0";
 import {
   badge,
   confidenceBadge,
@@ -13,7 +13,7 @@ import {
   resolutionBadge,
   roleBadge,
   sentimentBadge,
-} from "../components.js?v=5.7";
+} from "../components.js?v=6.0";
 import {
   CANONICAL_RESPONSE_TYPES,
   LANGUAGE_LABELS,
@@ -27,8 +27,8 @@ import {
   pretty,
   shortCommentLabel,
   truncate,
-} from "../format.js?v=5.7";
-import { icons } from "../icons.js?v=5.7";
+} from "../format.js?v=6.0";
+import { icons } from "../icons.js?v=6.0";
 
 const threadUiState = {
   layout: "tree",

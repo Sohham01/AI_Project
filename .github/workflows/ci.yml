@@ -70,6 +70,7 @@ jobs:
               "/api/demo/sentiment",
               "/api/demo/responses",
               "/api/demo/resolution",
+              "/api/demo/comparisons",
               "/api/demo/models",
               "/api/demo/error-analysis",
               "/api/demo/insights",
@@ -80,6 +81,10 @@ jobs:
               assert res.headers.get("x-frame-options") == "DENY"
               assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
               assert "frame-ancestors 'none'" in res.headers.get("content-security-policy", "")
+
+          an_res = client.post("/api/demo/analyze", json={"text": "Bhai IIM ABC ka summer placement scene kaisa hai 😭"})
+          assert an_res.status_code == 200, f"/api/demo/analyze returned {an_res.status_code}"
+          assert an_res.json()["language_detection"]["language"] == "hi-en"
 
           models_data = client.get("/api/demo/models").json()
           ver = models_data.get("benchmark_verification") or {}

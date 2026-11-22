@@ -18,6 +18,14 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from app.services.nlp.community_intelligence import (
+    analyze_live_comment,
+    build_cross_iim_comparison,
+    build_cross_language_comparison,
+    build_issue_solution_clusters,
+    build_nn_index,
+    build_unresolved_issue_matrix,
+)
 from app.services.nlp.cross_model_insights import (
     build_community_network,
     build_confidence_summary,
@@ -130,6 +138,9 @@ class ModelsResponse(BaseModel):
     error_analysis: dict[str, Any] | None = None
     benchmark_verification: dict[str, Any] | None = None
     confidence_summary: dict[str, Any] | None = None
+    labeled_data_provenance: dict[str, Any] | None = None
+    human_iaa_audit: dict[str, Any] | None = None
+    v5_optimization_upgrade: dict[str, Any] | None = None
 
 
 class ErrorAnalysisResponse(BaseModel):
@@ -148,9 +159,44 @@ class InsightsResponse(BaseModel):
     cross_model_insights: dict[str, Any]
 
 
+class ResolutionResponse(ItemsResponse):
+    unresolved_matrix: dict[str, Any] = Field(default_factory=dict)
+    issue_solution_clusters: dict[str, Any] = Field(default_factory=dict)
+    linker_summary: dict[str, Any] = Field(default_factory=dict)
+
+
+class ComparisonsResponse(BaseModel):
+    synthetic_only: bool
+    dataset_version: str
+    cross_iim: dict[str, Any]
+    cross_language: dict[str, Any]
+    task5_task6_ablations: dict[str, Any] | None = None
+
+
+class AnalyzeRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=2000)
+
+
+class AnalyzeResponse(BaseModel):
+    input_text: str
+    inference_mode: str
+    inference_notice: str
+    language_detection: dict[str, Any]
+    preprocessing: dict[str, Any]
+    predictions: dict[str, Any]
+    nearest_v6_neighbors: list[dict[str, Any]]
+
+
 def _read(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise RuntimeError(f"Corpus artifact missing: {path.name}. Run the build script first.")
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _read_optional(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
@@ -170,6 +216,7 @@ def _data() -> dict[str, Any]:
     predictions = _read(ARTIFACT_DIR / "predictions.json")["tasks"]
     evaluation = _read(ARTIFACT_DIR / "evaluation.json")
     topic_result = _read(ARTIFACT_DIR / "topic_discovery.json")["result"]
+    ci_artifact = _read_optional(ARTIFACT_DIR / "community_intelligence.json")
     posts = corpus["posts"]
     flat: list[dict[str, Any]] = []
     for post in posts:
@@ -206,6 +253,8 @@ def _data() -> dict[str, Any]:
         ),
         "topics": topic_result.get("topics", []),
         "topic_assignments": topic_result.get("documents", []),
+        "community_intelligence": ci_artifact,
+        "nn_index": build_nn_index(flat),
     }
 
 
@@ -587,7 +636,7 @@ def responses() -> dict[str, Any]:
     return {"items": items, "synthetic_only": data["synthetic_only"]}
 
 
-@router.get("/resolution", response_model=ItemsResponse)
+@router.get("/resolution", response_model=ResolutionResponse)
 def resolution() -> dict[str, Any]:
     data = _data()
     items = []
@@ -615,7 +664,35 @@ def resolution() -> dict[str, Any]:
             } for c in data["comments"] if c["post_id"] == post["reddit_id"] and c["predictions"]["solution"]],
             "synthetic": bool(post.get("synthetic", False)),
         })
-    return {"items": items, "synthetic_only": data["synthetic_only"]}
+    ci_art = data.get("community_intelligence")
+    unresolved_matrix = build_unresolved_issue_matrix(data["posts"], data["comments"], ci_art)
+    clusters = build_issue_solution_clusters(data["comments"], ci_art)
+    return {
+        "items": items,
+        "synthetic_only": data["synthetic_only"],
+        "unresolved_matrix": unresolved_matrix,
+        "issue_solution_clusters": clusters,
+        "linker_summary": (ci_art or {}).get("linker_summary") or clusters.get("linker_summary", {}),
+    }
+
+
+@router.get("/comparisons", response_model=ComparisonsResponse)
+def comparisons() -> dict[str, Any]:
+    data = _data()
+    ci_art = data.get("community_intelligence") or {}
+    return {
+        "synthetic_only": data["synthetic_only"],
+        "dataset_version": data["metadata"]["dataset_version"],
+        "cross_iim": build_cross_iim_comparison(data["posts"], data["comments"]),
+        "cross_language": build_cross_language_comparison(data["comments"]),
+        "task5_task6_ablations": ci_art.get("task5_task6_ablations"),
+    }
+
+
+@router.post("/analyze", response_model=AnalyzeResponse)
+def analyze(req: AnalyzeRequest) -> dict[str, Any]:
+    data = _data()
+    return analyze_live_comment(req.text, data["comments"], data["nn_index"])
 
 
 @router.get("/models", response_model=ModelsResponse)
@@ -631,6 +708,9 @@ def models() -> dict[str, Any]:
         "error_analysis": ev_raw.get("error_analysis"),
         "benchmark_verification": ev_raw.get("benchmark_verification"),
         "confidence_summary": build_confidence_summary(data["comments"], data["posts"]),
+        "labeled_data_provenance": ev_raw.get("labeled_data_provenance"),
+        "human_iaa_audit": ev_raw.get("human_iaa_audit"),
+        "v5_optimization_upgrade": ev_raw.get("v5_optimization_upgrade"),
     }
 
 

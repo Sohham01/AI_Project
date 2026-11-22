@@ -20,15 +20,15 @@ How to add slang:
 """
 
 import re
-from typing import Dict
+from typing import Dict, List
 
-SLANG_LEXICON_VERSION = "1.0.0"
+SLANG_LEXICON_VERSION = "1.1.0"
 
 # key: lowercase slang -> value: normalized replacement
 # Words that are already meaningful on their own (bro, bhai, lol)
 # are kept as-is or given a minimal expansion.
 SLANG_LEXICON: Dict[str, str] = {
-    # English internet abbreviations
+    # English internet / Gen-Z abbreviations
     "idk": "i don't know",
     "imo": "in my opinion",
     "imho": "in my humble opinion",
@@ -44,6 +44,7 @@ SLANG_LEXICON: Dict[str, str] = {
     "tl;dr": "too long didn't read",
     "tldr": "too long didn't read",
     "ngl": "not gonna lie",
+    "fr": "for real",
     "ikr": "i know right",
     "ftw": "for the win",
     "rn": "right now",
@@ -51,7 +52,6 @@ SLANG_LEXICON: Dict[str, str] = {
     "dm": "direct message",
     "ama": "ask me anything",
     "eli5": "explain like i'm five",
-    "imo": "in my opinion",
     "btw": "by the way",
     "fyi": "for your information",
     "pls": "please",
@@ -61,11 +61,63 @@ SLANG_LEXICON: Dict[str, str] = {
     "np": "no problem",
     "brb": "be right back",
     "gtg": "got to go",
+    "lmk": "let me know",
+    "cfbr": "commenting for better reach",
+    "irl": "in real life",
+    "fomo": "fear of missing out",
 
     # Expressions kept as-is (they're widely understood or carry tone)
     # "lol" -> kept, "lmao" -> kept, "bro" -> kept, "bhai" -> kept
-    # These are NOT in the lexicon so they pass through unchanged.
+    # Context-sensitive Gen-Z terms ("mid", "based", "cooked") are preserved
+    # rather than blindly rewritten to avoid corrupting "mid sem", "based on",
+    # or literal food mentions, and are surfaced via detect_slang_terms().
 }
+
+PRESERVED_TONE_SLANG: Dict[str, str] = {
+    "bro": "informal peer address (tone preserved)",
+    "bhai": "Hindi/Hinglish peer address (tone preserved)",
+    "yaar": "Hindi/Hinglish peer address (tone preserved)",
+    "lol": "amusement / softening tone (preserved)",
+    "lmao": "strong amusement (preserved)",
+}
+
+CONTEXT_SENSITIVE_SLANG: Dict[str, str] = {
+    "mid": "Gen-Z 'mediocre' (preserved to avoid corrupting 'mid-tier' / 'mid sem' / 'mid 30s')",
+    "based": "Gen-Z 'boldly agreeable' (preserved to avoid corrupting 'based on')",
+    "cooked": "Gen-Z 'overwhelmed / doomed' (preserved to avoid corrupting literal food mentions)",
+}
+
+
+def detect_slang_terms(text: str) -> List[Dict[str, str]]:
+    """Inspect all recognized slang / informal Reddit expressions in ``text``."""
+    found: List[Dict[str, str]] = []
+    seen: set[str] = set()
+    for word in str(text or "").split():
+        stripped = word.strip(".,!?;:\"'()[]{}").lower()
+        if not stripped or stripped in seen:
+            continue
+        if stripped in SLANG_LEXICON:
+            seen.add(stripped)
+            found.append({
+                "term": stripped,
+                "action": "expanded",
+                "meaning": SLANG_LEXICON[stripped],
+            })
+        elif stripped in PRESERVED_TONE_SLANG:
+            seen.add(stripped)
+            found.append({
+                "term": stripped,
+                "action": "preserved_tone",
+                "meaning": PRESERVED_TONE_SLANG[stripped],
+            })
+        elif stripped in CONTEXT_SENSITIVE_SLANG:
+            seen.add(stripped)
+            found.append({
+                "term": stripped,
+                "action": "context_preserved",
+                "meaning": CONTEXT_SENSITIVE_SLANG[stripped],
+            })
+    return found
 
 
 def normalize_slang(text: str) -> str:

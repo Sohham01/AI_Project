@@ -7,7 +7,7 @@
  * 4. Interactive 5-Task Error Analysis & 1:1 Square Calibration Studio (with tabbed Recoveries vs Residual Errors)
  * 5. Collapsible Per-Task Granular Audit Accordion + Compact Dataset Provenance Vault
  */
-import { api } from "../api.js?v=5.7";
+import { api } from "../api.js?v=6.0";
 import {
   architectureComparisonChart,
   bindChartTooltips,
@@ -16,18 +16,18 @@ import {
   confusionMatrixTable,
   daptConvergenceChart,
   robustnessCategoryHeatmap,
-} from "../charts.js?v=5.7";
-import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=5.7";
-import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=5.7";
+} from "../charts.js?v=6.0";
+import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=6.0";
+import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=6.0";
 
 const TASK_ORDER = ["issue", "solution", "sentiment", "response", "emotion"];
 
 const TASK_DESCRIPTIONS = {
-  sentiment: "3-class polarity classifier (negative, neutral, positive) using MuRIL-DAPT v3 + TF-IDF hybrid.",
-  emotion: "6-label multi-label affect classifier (confidence, curiosity, frustration, gratitude, hope, stress).",
-  issue: "8-label multi-label issue detector using MuRIL-DAPT v3 + parent post title context + TF-IDF hybrid.",
-  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy.",
-  solution: "Binary actionable-solution detector (not_solution vs. solution) using MuRIL-DAPT v3 + TF-IDF hybrid.",
+  sentiment: "3-class polarity classifier (negative, neutral, positive) using strictly-inductive MuRIL-DAPT-WWM 5-fold ensemble (CE-weighted, comment-only).",
+  emotion: "6-label multi-label affect classifier using MuRIL-DAPT-WWM 5-fold ensemble (Asymmetric Loss + OOF per-label monotonic Platt calibration).",
+  issue: "8-label multi-label issue detector using MuRIL-DAPT-WWM 5-fold ensemble with native [SEP] parent-comment/title context (parent_pair + ASL + OOF Platt).",
+  response: "6-class multiclass classifier preserving the exact canonical community response taxonomy using OOF-selected XLM-RoBERTa-base 5-fold ensemble (zero Reddit DAPT; CE-weighted).",
+  solution: "Binary actionable-solution detector (not_solution vs. solution) using OOF-selected XLM-RoBERTa-base 5-fold ensemble (zero Reddit DAPT; CE-weighted).",
 };
 
 function fmtParams(n) {
@@ -128,11 +128,12 @@ function renderVerificationBanner(verification) {
   `;
 }
 
-function renderArchitectureSection(archComp, evalScope) {
+function renderArchitectureSection(archComp, evalScope, upgradeInfo = null) {
   if (!archComp || !archComp.aggregate) return "";
   const order = archComp.architectures_order || Object.keys(archComp.aggregate);
   const agg = archComp.aggregate || {};
   const why = archComp.why_transformer || {};
+  const isTrackA = agg.production_hybrid?.family === "transformer_track_a";
 
   const summaryRows = order.map((key) => {
     const row = agg[key];
@@ -141,7 +142,7 @@ function renderArchitectureSection(archComp, evalScope) {
     const roleTag = key === "transformer_muril_dapt_v3"
       ? `<span class="meta-inline-tag">Core encoder</span>`
       : key === "production_hybrid"
-        ? `<span class="meta-inline-tag is-pos">Deployed</span>`
+        ? `<span class="meta-inline-tag is-pos">${isTrackA ? "V6 Deployed" : "Deployed"}</span>`
         : "";
     return `
       <tr class="${isSelected ? "arch-row-highlight" : ""}">
@@ -171,9 +172,17 @@ function renderArchitectureSection(archComp, evalScope) {
     return `${n >= 0 ? "+" : ""}${n.toFixed(1)} pp`;
   };
 
+  const heroVal = isTrackA
+    ? (why.mean_test_f1_hybrid ?? agg.production_hybrid?.mean_test_macro_f1)
+    : (why.mean_test_f1_transformer ?? agg.transformer_muril_dapt_v3?.mean_test_macro_f1);
+  const heroLabel = isTrackA ? "V6 Deployed (5-task mean)" : "MuRIL-DAPT v3 (5-task mean)";
+  const v5DeltaPill = upgradeInfo && upgradeInfo.delta_pp_vs_v5 !== undefined
+    ? `<div class="arch-delta-pill"><span>vs. Transductive V5</span><strong class="num">${fmtDelta(upgradeInfo.delta_pp_vs_v5)}</strong></div>`
+    : "";
+
   return deck("4-Architecture benchmark on real held-out Reddit comments", {
     id: "why-transformer-deck",
-    subtitle: evalScope || "Apples-to-apples comparison on identical post_id-grouped real Reddit test splits (n = 92 unseen-thread comments, 0 synthetic rows)",
+    subtitle: evalScope || "Apples-to-apples 5-fold CV comparison on identical post_id-grouped real Reddit test splits (n = 92 unseen-thread comments, 0 synthetic rows)",
     action: `
       <div class="segmented" role="group" aria-label="Architecture chart split toggle">
         <button type="button" class="seg-btn is-active" data-arch-mode="test">Real Held-Out Test</button>
@@ -183,10 +192,11 @@ function renderArchitectureSection(archComp, evalScope) {
     body: `
       ${why.gain_vs_logreg_pp !== undefined ? `
         <div class="arch-callout-strip">
-          <div class="arch-delta-pill arch-delta-accent"><span>MuRIL-DAPT v3 (5-task mean)</span><strong class="num">${percent(why.mean_test_f1_transformer ?? agg.transformer_muril_dapt_v3?.mean_test_macro_f1)}</strong></div>
+          <div class="arch-delta-pill arch-delta-accent"><span>${esc(heroLabel)}</span><strong class="num">${percent(heroVal)}</strong></div>
           <div class="arch-delta-pill"><span>Gain vs. Logistic Reg.</span><strong class="num">${fmtDelta(why.gain_vs_logreg_pp)}</strong></div>
           <div class="arch-delta-pill"><span>Gain vs. ANN (MLP)</span><strong class="num">${fmtDelta(why.gain_vs_ann_pp)}</strong></div>
           <div class="arch-delta-pill"><span>Gain vs. 1D TextCNN</span><strong class="num">${fmtDelta(why.gain_vs_cnn_pp)}</strong></div>
+          ${v5DeltaPill}
         </div>
       ` : ""}
 
@@ -212,7 +222,7 @@ function renderArchitectureSection(archComp, evalScope) {
 
       ${reasonCards ? `
         <details class="clean-disclosure">
-          <summary>Why MuRIL-DAPT v3 outperformed classical &amp; shallow neural baselines (4 findings)</summary>
+          <summary>Why ${isTrackA ? "V6 Strict-Inductive (MuRIL-DAPT-WWM + XLM-R)" : "MuRIL-DAPT v3"} outperformed classical &amp; shallow neural baselines (4 findings)</summary>
           <div class="why-grid" style="margin-top:var(--space-sm)">${reasonCards}</div>
         </details>
       ` : ""}
@@ -227,13 +237,17 @@ function renderArchitectureSection(archComp, evalScope) {
 
 function renderHowItWorksSection(dapt, confSummary) {
   if (!dapt && !confSummary) return "";
+  const isStrictWwm = Boolean(dapt?.zero_test_thread_leakage);
+  const daptCaption = isStrictWwm
+    ? `Strictly inductive ##-aligned WWM MLM trained on <strong>${num(dapt?.train_documents || 0)}</strong> unlabeled Reddit texts (<strong>${num(dapt?.excluded_frozen_test_threads || 44)}</strong> test/same-title threads strictly excluded, 0 overlap) and evaluated on <strong>${num(dapt?.val_documents || 0)}</strong> unseen thread-grouped texts across ${num(dapt?.epochs || 8)} epochs.`
+    : `Trained on <strong>${num(dapt?.train_documents || dapt?.unlabeled_documents || 0)}</strong> unlabeled Reddit texts and evaluated on <strong>${num(dapt?.val_documents || 0)}</strong> disjoint unseen texts across ${num(dapt?.epochs || 4)} epochs.`;
   return deck("Domain adaptation (DAPT) &amp; live confidence routing", {
-    subtitle: "How unsupervised Masked Language Modeling adapts MuRIL to Indian Reddit language and how calibrated confidence routes uncertain predictions to human review",
+    subtitle: "How strictly-inductive Whole-Word Masking adapts MuRIL to Indian Reddit language and how calibrated confidence routes uncertain predictions to human review",
     body: `
       <div class="studio-grid-2">
         <div class="how-panel">
-          <h3 class="subpanel-title">1. Unsupervised domain adaptation (DAPT)</h3>
-          <p class="how-explain">Trained on <strong>${num(dapt?.train_documents || dapt?.unlabeled_documents || 0)}</strong> unlabeled Reddit texts and evaluated on <strong>${num(dapt?.val_documents || 0)}</strong> disjoint unseen texts across ${num(dapt?.epochs || 4)} epochs.</p>
+          <h3 class="subpanel-title">1. Unsupervised domain adaptation (DAPT${isStrictWwm ? " · WWM Strict" : ""})</h3>
+          <p class="how-explain">${daptCaption}</p>
           ${daptConvergenceChart(dapt)}
         </div>
         ${confSummary?.histogram?.length ? `
@@ -299,7 +313,7 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
         </div>
         <blockquote class="err-case-quote">“${esc(w.text)}”</blockquote>
         <div class="err-case-compare">
-          <span><strong>Gold &amp; MuRIL:</strong> <code>${esc(fmtPred(w.true_label))}</code></span>
+          <span><strong>Gold &amp; Deployed:</strong> <code>${esc(fmtPred(w.true_label))}</code></span>
           <span class="muted">LogReg: <code>${esc(fmtPred(w.baseline_predictions?.logistic_regression))}</code> · ANN: <code>${esc(fmtPred(w.baseline_predictions?.ann_mlp))}</code> · CNN: <code>${esc(fmtPred(w.baseline_predictions?.cnn_textcnn))}</code></span>
         </div>
         <p class="err-case-reason">${esc(w.why_transformer_won)}</p>
@@ -363,7 +377,7 @@ function renderErrorAnalysisBody(taskKey, errTask, caseTab = "wins") {
       <div class="view-toggle-bar" style="margin-bottom:var(--space-sm)">
         <h3 class="subpanel-title" style="margin:0">Empirical real held-out examples</h3>
         <div class="segmented" role="tablist" aria-label="Switch between Transformer recoveries and residual errors">
-          <button type="button" role="tab" aria-selected="${caseTab === "wins"}" class="seg-btn ${caseTab === "wins" ? "is-active" : ""}" data-err-case-tab="wins">MuRIL recoveries (${wins.length})</button>
+          <button type="button" role="tab" aria-selected="${caseTab === "wins"}" class="seg-btn ${caseTab === "wins" ? "is-active" : ""}" data-err-case-tab="wins">Transformer recoveries (${wins.length})</button>
           <button type="button" role="tab" aria-selected="${caseTab === "miss"}" class="seg-btn ${caseTab === "miss" ? "is-active" : ""}" data-err-case-tab="miss">Residual errors (${residuals.length})</button>
         </div>
       </div>
@@ -455,29 +469,36 @@ export async function renderModels(container, ctx) {
     `;
   }).join("");
 
+  const humanIaa = modelsData.human_iaa_audit || null;
+  const upgradeInfo = modelsData.v5_optimization_upgrade || null;
+  const iaaLineHtml = humanIaa && humanIaa.completed
+    ? `<li><strong>Human IAA governance gate (50-item blind studio audit):</strong> Completed blind human review (<code>50/50</code> items, <code>${esc(humanIaa.review_status_agreement_pct ?? 98)}%</code> status agreement). <strong>${num(humanIaa.gates_passed || 0)} / ${num(humanIaa.total_gates || 5)}</strong> tasks passed threshold gates — so Track B V2 expansion stays archived/blocked and production serves strictly verified <strong>Track A V1</strong> (see <code>docs/V5_HUMAN_IAA_REPORT.md</code>).</li>`
+    : "";
+
   const provenanceBody = `
     <div class="provenance-two-col">
       <div>
         <h3 class="subpanel-title">Corpus metadata &amp; privacy</h3>
         <dl class="vault-kv-grid">
-          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v5")}</dd></div>
+          <div class="kv-span-full"><dt>Dataset identifier</dt><dd>${copyIdChip(prov.dataset_id || "iim-sambalpur-real-reddit-v6")}</dd></div>
           <div><dt>Version</dt><dd class="num">v${esc(prov.dataset_version || health.dataset_version)}</dd></div>
           <div><dt>Source archive</dt><dd>${esc(prov.source_provider === "arctic_shift" ? "Arctic Shift (public Reddit)" : "Local archive")}</dd></div>
           <div><dt>Updated at</dt><dd class="num">${dateTimeText(prov.generation_timestamp || summary.generated_at)}</dd></div>
           <div><dt>Corpus size</dt><dd class="num">${num(summary.posts)} threads · ${num(summary.comments)} comments (${avgReplies}/thread)</dd></div>
           <div><dt>Privacy</dt><dd>${badge(isSynthetic ? (prov.authorization_status || "synthetic_only") : "Pseudonymized · zero PII", isSynthetic ? "warning" : "positive")}</dd></div>
           <div><dt>Artifact root</dt><dd class="num">${esc(activeArtifactDir)}</dd></div>
-          ${dapt ? `<div class="kv-span-full"><dt>Domain-Adaptive MLM (DAPT)</dt><dd class="num">${num(dapt.train_documents || dapt.unlabeled_documents)} train / ${num(dapt.val_documents || 0)} held-out val texts · perplexity ${esc(dapt.initial_perplexity)} → ${esc(dapt.final_perplexity)}</dd></div>` : ""}
-          ${filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_boilerplate_filtered)} AutoMod stickies &amp; ${num(filt.gif_only_filtered)} GIF embeds removed; IDs pseudonymized and PII redacted</dd></div>` : ""}
+          ${dapt ? `<div class="kv-span-full"><dt>Strictly-Inductive DAPT</dt><dd class="num">${num(dapt.train_documents || dapt.unlabeled_documents)} train / ${num(dapt.val_documents || 0)} unseen val texts · WWM ppl ${esc(dapt.initial_perplexity)} → ${esc(dapt.final_perplexity)}${dapt.zero_test_thread_leakage ? ` · 0/${num(dapt.excluded_frozen_test_threads || 44)} test overlap` : ""}</dd></div>` : ""}
+          ${filt.automod_and_bot_comments_removed !== undefined || filt.automod_boilerplate_filtered !== undefined ? `<div class="kv-span-full"><dt>Noise filtering</dt><dd class="num">${num(filt.automod_and_bot_comments_removed ?? filt.automod_boilerplate_filtered ?? 0)} AutoMod/bot &amp; ${num(filt.gif_only_comments_removed ?? filt.gif_only_filtered ?? 0)} GIF embeds removed; IDs pseudonymized and PII redacted</dd></div>` : ""}
         </dl>
       </div>
 
       <div>
         <h3 class="subpanel-title">Methodology &amp; epistemic boundaries</h3>
         <ul class="limitations-list">
-          <li><strong>100% real anonymized Reddit data:</strong> Public discussions across ${subListText}; 459 comments across 200 distinct threads hand-labeled for strictly thread-grouped training, validation, and testing (0 synthetic rows).</li>
-          <li><strong>4-architecture benchmark:</strong> Logistic Regression, 2-layer ANN, 1D TextCNN, and MuRIL-DAPT v3 evaluated on identical unseen-thread splits; MuRIL-DAPT v3 leads all 5 tasks.</li>
-          <li><strong>Non-sharpening calibration:</strong> Validation-only scalar temperature scaling strictly clamped to <code>T &ge; 1.0</code>; low-confidence comments (&lt;55%) route to human adjudication.</li>
+          <li><strong>100% real anonymized Reddit data (Track A V1):</strong> Public discussions across ${subListText}; 459 comments across 200 distinct threads evaluated via 5-fold group-aware CV (<code>n=367</code> trainval) on the untouched frozen <code>n=92</code> (37-thread) held-out test set (0 synthetic rows).</li>
+          <li><strong>4-architecture 5-fold benchmark:</strong> Logistic Regression, 2-layer ANN, 1D TextCNN, MuRIL-DAPT-WWM (strictly inductive), and Deployed Track A (<code>MuRIL-DAPT-WWM</code> + <code>XLM-RoBERTa-base</code> on Response &amp; Solution) evaluated on identical splits.</li>
+          <li><strong>Honest calibration (OOF Platt + T=1.0):</strong> Per-label monotonic OOF Platt calibration fixes ASL probability shift on multi-label heads while 5-fold logit ensembles stay natively calibrated at <code>T = 1.0</code>.</li>
+          ${iaaLineHtml}
           <li><strong>Proposal vs. outcome separation:</strong> Predicted <code>advice</code> / <code>solution</code> replies are strictly separated from explicit first-person follow-up resolution signals.</li>
         </ul>
       </div>
@@ -504,7 +525,7 @@ export async function renderModels(container, ctx) {
 
   container.innerHTML = `
     ${renderVerificationBanner(verification)}
-    ${renderArchitectureSection(archComp, modelsData.evaluation_scope)}
+    ${renderArchitectureSection(archComp, modelsData.evaluation_scope, upgradeInfo)}
     ${renderHowItWorksSection(dapt, confSummary)}
     ${errorAnalysisDeck}
     ${deck("Per-task classifier ledger &amp; class-level audit", {

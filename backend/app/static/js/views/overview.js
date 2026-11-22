@@ -8,7 +8,7 @@
  * 5. Asymmetric 2-Column Split (Zero-Overshoot Monthly Sentiment Timeline + Actionable Density)
  * 6. Clean 2-Column Recent Discussions + Compact Single-Strip Provenance Bar
  */
-import { api } from "../api.js?v=5.7";
+import { api } from "../api.js?v=6.0";
 import {
   bindChartTooltips,
   bindModelNetworkInteractions,
@@ -21,15 +21,15 @@ import {
   issueFrictionQuadrantChart,
   modelNetworkDiagram,
   sankeyFlowChart,
-} from "../charts.js?v=5.7";
+} from "../charts.js?v=6.0";
 import {
   confidenceBadge,
   copyIdChip,
   deck,
   resolutionBadge,
   tallyStrip,
-} from "../components.js?v=5.7";
-import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=5.7";
+} from "../components.js?v=6.0";
+import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=6.0";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes, modelsData] = await Promise.all([
@@ -106,7 +106,7 @@ export async function renderOverview(container, ctx) {
       color: meanConfPct >= 75 ? "var(--color-positive)" : "var(--color-accent)",
       note: meanConfPct > 0
         ? `${percent(conf.high_share, 0)} high (≥80%) · ${num(conf.low_count)} below 55%`
-        : `MuRIL-DAPT v3 hybrid + ${num(summary.topic_count)} NMF topics`,
+        : `V6 (MuRIL-WWM + XLM-R) + ${num(summary.topic_count)} NMF topics`,
       href: "#/models",
     },
   ], "Community corpus headline figures");
@@ -220,7 +220,7 @@ export async function renderOverview(container, ctx) {
   const modelNetDeck = modelsData?.tasks
     ? deck("Model architecture &amp; inference network", {
         id: "overview-model-network-deck",
-        subtitle: "How anonymized Reddit replies flow through MuRIL-DAPT v3, lexical TF-IDF blending, 5 calibrated heads, and confidence routing",
+        subtitle: "How anonymized Reddit replies flow through strictly-inductive MuRIL-DAPT-WWM (Issue/Sentiment/Emotion), XLM-RoBERTa-base (Response & Solution), 5 calibrated heads, and confidence routing",
         action: `<a class="btn btn-quiet btn-sm" href="#/models">Full benchmarks &amp; error audit</a>`,
         body: modelNetworkDiagram(modelsData, summary),
       })
@@ -254,7 +254,7 @@ export async function renderOverview(container, ctx) {
   const provenanceStrip = `
     <aside class="compact-prov-bar anim-enter" aria-label="Dataset provenance summary">
       <div class="compact-prov-items">
-        <span><span class="muted">Dataset</span> ${copyIdChip(prov.dataset_id || "iim-sambalpur-arctic-shift-v5")}</span>
+        <span><span class="muted">Dataset</span> ${copyIdChip(prov.dataset_id || "iim-sambalpur-real-reddit-v6")}</span>
         <span class="meta-sep" aria-hidden="true">·</span>
         <span class="num"><span class="muted">Version</span> v${esc(prov.dataset_version || summary.dataset_version)}</span>
         <span class="meta-sep" aria-hidden="true">·</span>

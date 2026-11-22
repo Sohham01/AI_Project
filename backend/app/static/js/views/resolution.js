@@ -3,9 +3,9 @@
  * Separates proposed solutions/advice from explicit first-person resolution outcomes.
  * Unlocks expandable per-thread scenario proposals, advice comments, and binary model probabilities.
  */
-import { api } from "../api.js?v=5.7";
-import { stackedCompositionBar, stackedMatrixRows } from "../charts.js?v=5.7";
-import { badge, callout, copyIdChip, deck, emptyState, glossaryTip, resolutionBadge } from "../components.js?v=5.7";
+import { api } from "../api.js?v=6.0";
+import { stackedCompositionBar, stackedMatrixRows } from "../charts.js?v=6.0";
+import { badge, callout, copyIdChip, deck, emptyState, glossaryTip, resolutionBadge } from "../components.js?v=6.0";
 import {
   RESOLUTION_META,
   RESOLUTION_ORDER,
@@ -16,15 +16,112 @@ import {
   pretty,
   share,
   shortCommentLabel,
-} from "../format.js?v=5.7";
+} from "../format.js?v=6.0";
 
 const resState = {
   stateFilter: "all",
   issueFilter: "all",
   search: "",
   sortBy: "default",
+  clusterIssue: "administrative_communication",
   expandedIds: new Set(),
 };
+
+function renderUnresolvedMatrixDeck(matrix) {
+  const rows = matrix?.rows || [];
+  if (!rows.length) return "";
+  const crit = matrix?.criteria_definition || {};
+  const statusTone = (s) => (s === "Resolved" ? "positive" : s === "Partially Resolved" ? "warning" : "negative");
+  const strengthTone = (s) => (s === "High" ? "positive" : s === "Moderate" ? "info" : "neutral");
+
+  const trs = rows.map((r) => `
+    <tr>
+      <td><strong>${esc(r.issue_label)}</strong></td>
+      <td class="num"><strong>${num(r.comment_mentions)}</strong><div class="muted" style="font-size:11px">${esc(r.volume_tier)}</div></td>
+      <td class="num"><strong>${percent(r.solution_density, 1)}</strong><div class="muted" style="font-size:11px">${num(r.solutions_detected)} replies</div></td>
+      <td class="num"><strong>${num(r.linked_solutions)}</strong><div class="muted" style="font-size:11px">${percent(r.linked_thread_coverage, 0)} thr</div></td>
+      <td class="num"><strong>${num(r.verified_outcomes)}</strong><div class="muted" style="font-size:11px">${percent(r.verified_outcome_rate, 1)}</div></td>
+      <td>${badge(r.resolution_strength, strengthTone(r.resolution_strength))}</td>
+      <td>${badge(r.status, statusTone(r.status))}</td>
+    </tr>
+  `).join("");
+
+  const rulesHtml = (crit.status_rules || []).map((rule) => `
+    <li><strong>${esc(rule.status)}:</strong> <code>${esc(rule.formula)}</code> — ${esc(rule.interpretation)}</li>
+  `).join("");
+
+  return deck("Quantitative resolution & unresolved issues matrix (Task 11)", {
+    subtitle: "Reproducible per-issue status derived from XLM-R solution density, TF-IDF cosine-linked thread coverage, and explicit verified outcomes",
+    body: `
+      <div class="table-scroll">
+        <table class="data-table" style="font-size:var(--text-xs)" aria-label="Quantitative per-issue resolution status matrix">
+          <thead>
+            <tr>
+              <th scope="col">Issue domain</th>
+              <th scope="col" class="num">Volume</th>
+              <th scope="col" class="num">Solutions</th>
+              <th scope="col" class="num">Linked</th>
+              <th scope="col" class="num">Verified</th>
+              <th scope="col">Strength</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>${trs}</tbody>
+        </table>
+      </div>
+      ${rulesHtml ? `
+        <details style="margin-top:var(--space-sm)">
+          <summary class="muted" style="cursor:pointer;font-size:var(--text-xs)">Inspect exact quantitative criteria formulas (Resolved / Partially Resolved / Unresolved)</summary>
+          <ul class="muted" style="font-size:var(--text-xs);margin-top:var(--space-xs);padding-left:1.2rem;line-height:1.5">${rulesHtml}</ul>
+        </details>
+      ` : ""}
+    `,
+  });
+}
+
+function renderSolutionClustersDeck(clustersData, linkerSummary) {
+  const byIssue = clustersData?.by_issue || {};
+  const issueKeys = Object.keys(byIssue);
+  if (!issueKeys.length) return "";
+  if (!byIssue[resState.clusterIssue]) resState.clusterIssue = issueKeys[0];
+  const active = byIssue[resState.clusterIssue];
+  const clusters = active?.clusters || [];
+  const lSum = linkerSummary || clustersData?.linker_summary || {};
+
+  const pills = issueKeys.map((k) => {
+    const info = byIssue[k];
+    const isAct = k === resState.clusterIssue;
+    return `<button type="button" class="btn ${isAct ? "btn-primary" : "btn-quiet"} btn-sm" data-cluster-issue="${esc(k)}">${esc(info.issue_label)} <span class="num">(${num(info.linked_solution_count ?? info.actionable_comment_count ?? 0)})</span></button>`;
+  }).join("");
+
+  const cards = clusters.length
+    ? clusters.map((c, idx) => `
+        <div style="padding:var(--space-sm);border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:var(--color-surface-2)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-xs);flex-wrap:wrap">
+            <strong>${idx + 1}. ${esc(c.theme)}</strong>
+            <span class="num" style="font-size:var(--text-xs);font-weight:700">${num(c.count)} linked (${percent(c.share, 0)})${c.mean_link_score ? ` · blend ${Number(c.mean_link_score).toFixed(2)}` : ""}</span>
+          </div>
+          ${(c.top_terms || []).length ? `<div class="muted" style="font-size:var(--text-xs);margin-top:3px">Keywords: ${c.top_terms.map((t) => `<code>${esc(t)}</code>`).join(" ")}</div>` : ""}
+          ${(c.examples || []).slice(0, 1).map((ex) => `
+            <div style="margin-top:var(--space-xs);font-size:var(--text-xs);line-height:1.45">
+              “${esc(ex.text)}”
+              <span class="muted"> — <a href="#/thread/${encodeURIComponent(ex.post_id)}">${esc(shortCommentLabel(ex.comment_id))}</a>${ex.cosine_similarity !== undefined ? ` (cos ${Number(ex.cosine_similarity).toFixed(2)})` : ""}</span>
+            </div>
+          `).join("")}
+        </div>
+      `).join("")
+    : `<p class="muted" style="font-size:var(--text-xs)">No cosine-linked solution clusters found for this issue.</p>`;
+
+  return deck("Linked issue → most common community solutions (Task 10)", {
+    subtitle: lSum.total_asserted_links
+      ? `TfidfCosineIssueSolutionLinker (same-post scoped, threshold ${lSum.link_threshold ?? 0.45}): ${num(lSum.total_asserted_links)} asserted links (${num(lSum.unique_linked_solutions)} unique solutions across ${num(lSum.threads_with_linked_solutions)} threads)`
+      : "Ranked community-suggested solution themes linked to each issue domain",
+    body: `
+      <div style="display:flex;flex-wrap:wrap;gap:var(--space-xs);margin-bottom:var(--space-md)">${pills}</div>
+      <div style="display:grid;gap:var(--space-sm)">${cards}</div>
+    `,
+  });
+}
 
 export async function renderResolution(container, ctx, params = {}) {
   const [resData, summary] = await Promise.all([
@@ -248,6 +345,10 @@ export async function renderResolution(container, ctx, params = {}) {
         })}
       </div>
 
+      ${renderUnresolvedMatrixDeck(resData.unresolved_matrix)}
+
+      ${renderSolutionClustersDeck(resData.issue_solution_clusters, resData.linker_summary)}
+
       ${deck("Thread-level proposal & outcome audit", {
         subtitle: "Expand any thread row to compare predicted solution proposals, advice comments, explicit evidence text, and binary model probabilities",
         action: resState.stateFilter !== "all" || resState.issueFilter !== "all" || resState.search
@@ -291,6 +392,13 @@ export async function renderResolution(container, ctx, params = {}) {
         `,
       })}
     `;
+
+    container.querySelectorAll("[data-cluster-issue]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        resState.clusterIssue = btn.dataset.clusterIssue;
+        paint();
+      });
+    });
 
     container.querySelectorAll("[data-res-state]").forEach((btn) => {
       btn.addEventListener("click", () => {

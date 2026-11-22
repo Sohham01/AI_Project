@@ -22,8 +22,8 @@ import {
   plural,
   pretty,
   share,
-} from "./format.js?v=5.7";
-import { hideVizTooltip, showVizTooltip } from "./motion.js?v=5.7";
+} from "./format.js?v=6.0";
+import { hideVizTooltip, showVizTooltip } from "./motion.js?v=6.0";
 
 /* ==========================================================================
    0. Shared Interactive Floating Tooltip Binder (Used Across All Charts)
@@ -896,6 +896,10 @@ export function architectureComparisonChart(archComp, mode = "test") {
     `;
   }).join("");
 
+  const isTrackA = archComp?.aggregate?.production_hybrid?.family === "transformer_track_a";
+  const murilShort = isTrackA ? "MuRIL-DAPT-WWM" : "MuRIL-DAPT v3";
+  const deployedShort = isTrackA ? "V6 Deployed" : "Production Hybrid";
+
   const rows = taskOrder.map((taskKey, idx) => {
     const cy = pad.top + idx * rowH + rowH / 2;
     const tModels = perTask[taskKey] || {};
@@ -908,23 +912,24 @@ export function architectureComparisonChart(archComp, mode = "test") {
     const cnn = vals.cnn_textcnn;
     const muril = vals.transformer_muril_dapt_v3;
     const hyb = vals.production_hybrid;
+    const primaryVal = isTrackA ? hyb : muril;
 
     const minBase = Math.min(lr, ann, cnn);
     const maxBase = Math.max(lr, ann, cnn);
-    const gainPp = (muril - maxBase) * 100;
+    const gainPp = (primaryVal - maxBase) * 100;
     const gainSign = gainPp >= 0 ? "+" : "";
 
-    // Gentle vertical micro-offset only when Hybrid sits right on top of MuRIL so both markers stay crisp
+    // Gentle vertical micro-offset only when Deployed sits right on top of MuRIL so both markers stay crisp
     const hybridOffsetY = Math.abs(hyb - muril) < 0.015 ? -7 : 0;
     const murilOffsetY = Math.abs(hyb - muril) < 0.015 ? 4 : 0;
 
     const tipRows = JSON.stringify([
-      ["MuRIL-DAPT v3", `${(muril * 100).toFixed(1)}%`],
-      ["Production Hybrid", `${(hyb * 100).toFixed(1)}%`],
-      ["Logistic Regression", `${(lr * 100).toFixed(1)}%`],
+      [deployedShort, `${(hyb * 100).toFixed(1)}%`],
+      [murilShort, `${(muril * 100).toFixed(1)}%`],
+      ["Logistic Regression (5-fold)", `${(lr * 100).toFixed(1)}%`],
       ["ANN (2-layer MLP)", `${(ann * 100).toFixed(1)}%`],
       ["1D TextCNN", `${(cnn * 100).toFixed(1)}%`],
-      ["MuRIL vs. Best Non-Trans.", `${gainSign}${gainPp.toFixed(1)} pp`],
+      ["Deployed vs. Best Non-Trans.", `${gainSign}${gainPp.toFixed(1)} pp`],
     ]);
 
     return `
@@ -940,20 +945,20 @@ export function architectureComparisonChart(archComp, mode = "test") {
         <!-- Baseline spread span -->
         <line x1="${xAt(minBase).toFixed(1)}" y1="${cy.toFixed(1)}" x2="${xAt(maxBase).toFixed(1)}" y2="${cy.toFixed(1)}" stroke="var(--color-rule-2)" stroke-width="3" stroke-linecap="round"/>
 
-        <!-- Highlighted Transformer gain bridge from best baseline -> MuRIL -->
-        <line x1="${xAt(Math.min(maxBase, muril)).toFixed(1)}" y1="${cy.toFixed(1)}" x2="${xAt(Math.max(maxBase, muril)).toFixed(1)}" y2="${cy.toFixed(1)}" stroke="${gainPp >= 0 ? "var(--color-accent)" : "var(--color-warning)"}" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+        <!-- Highlighted Transformer gain bridge from best baseline -> Deployed -->
+        <line x1="${xAt(Math.min(maxBase, primaryVal)).toFixed(1)}" y1="${cy.toFixed(1)}" x2="${xAt(Math.max(maxBase, primaryVal)).toFixed(1)}" y2="${cy.toFixed(1)}" stroke="${gainPp >= 0 ? "var(--color-accent)" : "var(--color-warning)"}" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
 
         <!-- Non-transformer baseline markers (muted) -->
         ${renderArchMarker("hollow", xAt(lr), cy, "var(--color-muted)")}
         ${renderArchMarker("diamond", xAt(ann), cy, "var(--color-warning)")}
         ${renderArchMarker("square", xAt(cnn), cy, "var(--color-info)")}
 
-        <!-- Highlighted MuRIL-DAPT v3 & Hybrid markers -->
-        ${renderArchMarker("ring", xAt(hyb), cy + hybridOffsetY, "var(--color-positive)")}
+        <!-- Highlighted MuRIL-WWM & Deployed Track A markers -->
         ${renderArchMarker("solid", xAt(muril), cy + murilOffsetY, "var(--color-accent)")}
+        ${renderArchMarker("ring", xAt(hyb), cy + hybridOffsetY, "var(--color-positive)")}
 
         <!-- Direct right-margin readout (zero overlaps) -->
-        <text x="${W - pad.right + 16}" y="${(cy + 4).toFixed(1)}" text-anchor="start" fill="var(--color-ink)" font-size="12.5" font-weight="600" font-family="var(--font-body)">${(muril * 100).toFixed(1)}%</text>
+        <text x="${W - pad.right + 16}" y="${(cy + 4).toFixed(1)}" text-anchor="start" fill="var(--color-ink)" font-size="12.5" font-weight="600" font-family="var(--font-body)">${(primaryVal * 100).toFixed(1)}%</text>
         <text x="${W - pad.right + 72}" y="${(cy + 4).toFixed(1)}" text-anchor="start" fill="${gainPp >= 0 ? "var(--color-positive)" : "var(--color-muted)"}" font-size="11.5" font-weight="600" font-family="var(--font-body)">${gainSign}${gainPp.toFixed(1)} pp</text>
       </g>
     `;
@@ -962,12 +967,12 @@ export function architectureComparisonChart(archComp, mode = "test") {
   const legend = `
     <div class="chart-legend" style="margin-top:var(--space-xs)">
       <span class="legend-item">
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="var(--color-accent)"/></svg>
-        <span><strong>MuRIL-DAPT v3</strong></span>
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.2" fill="none" stroke="var(--color-positive)" stroke-width="2.2"/></svg>
+        <span><strong>${esc(deployedShort)}</strong></span>
       </span>
       <span class="legend-item">
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.2" fill="none" stroke="var(--color-positive)" stroke-width="2.2"/></svg>
-        <span>Production Hybrid</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="var(--color-accent)"/></svg>
+        <span>${esc(murilShort)}</span>
       </span>
       <span class="legend-item">
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.8" fill="none" stroke="var(--color-muted)" stroke-width="1.8"/></svg>
@@ -988,7 +993,7 @@ export function architectureComparisonChart(archComp, mode = "test") {
     <div>
       <svg class="responsive-svg arch-dumbbell-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(subtitle)}">
         <text x="${pad.left}" y="16" fill="var(--color-muted)" font-size="11.5" font-family="var(--font-body)">${esc(subtitle)}</text>
-        <text x="${W - pad.right + 16}" y="16" text-anchor="start" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">MuRIL</text>
+        <text x="${W - pad.right + 16}" y="16" text-anchor="start" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${isTrackA ? "Deployed" : "MuRIL"}</text>
         <text x="${W - pad.right + 72}" y="16" text-anchor="start" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">vs. Best Base</text>
         ${grid}
         ${rows}
@@ -1095,9 +1100,10 @@ export function daptConvergenceChart(daptSummary) {
   const dots = pts.map((p, i) => {
     const h = p.h;
     const epLabel = Number(h.epoch) === 0 ? "Pre-DAPT" : `Epoch ${h.epoch}`;
-    const isFirstNearTop = i === 0 && p.y - 11 < pad.top + 8;
-    const labelX = isFirstNearTop ? p.x + 22 : p.x;
-    const labelY = isFirstNearTop ? p.y + 4 : (p.y - 11 < pad.top + 8 ? p.y + 18 : p.y - 11);
+    const isFirst = i === 0;
+    const labelX = isFirst ? p.x + 12 : p.x;
+    const labelY = isFirst ? p.y - 8 : (p.y - 11 < pad.top + 8 ? p.y + 18 : p.y - 11);
+    const labelAnchor = isFirst ? "start" : "middle";
     const tipRows = JSON.stringify([
       ["Held-out Val Perplexity", Number(h.perplexity).toFixed(2)],
       ["Held-out MLM Loss", Number(h.mlm_loss).toFixed(4)],
@@ -1109,7 +1115,7 @@ export function daptConvergenceChart(daptSummary) {
          data-chart-tip-rows="${esc(tipRows)}">
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="14" fill="transparent"/>
         <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="var(--color-accent)" stroke="var(--color-surface-solid)" stroke-width="2"/>
-        <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11" font-weight="600" font-family="var(--font-body)">${Number(h.perplexity).toFixed(1)}</text>
+        <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${labelAnchor}" fill="var(--color-ink)" font-size="11" font-weight="600" font-family="var(--font-body)">${Number(h.perplexity).toFixed(1)}</text>
         <text x="${p.x.toFixed(1)}" y="${(H - pad.bottom + 18).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="11" font-family="var(--font-body)">${epLabel}</text>
       </g>
     `;
@@ -1855,14 +1861,16 @@ export function modelNetworkDiagram(modelsData, summary) {
 
   const totalPosts = Number(summary?.posts || 0);
   const totalComments = Number(summary?.comments || 0);
+  const isTrackA = archAgg.production_hybrid?.family === "transformer_track_a";
   const murilParams = archAgg.transformer_muril_dapt_v3?.param_count
     ? `${(Number(archAgg.transformer_muril_dapt_v3.param_count) / 1e6).toFixed(1)}M`
     : "237.6M";
-  const murilMs = Number(archAgg.transformer_muril_dapt_v3?.mean_inference_ms || 1.28).toFixed(2);
+  const murilMs = Number(archAgg.transformer_muril_dapt_v3?.mean_inference_ms || 1.82).toFixed(2);
   const lrMs = Number(archAgg.logistic_regression?.mean_inference_ms || 0.01).toFixed(2);
   const meanEce = Number(archAgg.production_hybrid?.mean_calibration_ece ?? 0.065).toFixed(3);
-  const daptFrom = Number(dapt.initial_perplexity || 94.3).toFixed(1);
-  const daptTo = Number(dapt.final_perplexity || 20.1).toFixed(1);
+  const daptFrom = Number(dapt.initial_perplexity || 88.3).toFixed(1);
+  const daptTo = Number(dapt.final_perplexity || 25.2).toFixed(1);
+  const daptZeroLeak = Boolean(dapt.zero_test_thread_leakage);
 
   const inputNodes = [
     {
@@ -1875,7 +1883,7 @@ export function modelNetworkDiagram(modelsData, summary) {
       sub1: `${num(totalComments)} real comments`,
       sub2: "en · hi-en · hi · zero PII",
       accent: "var(--color-info)",
-      detail: `All ${num(totalComments)} pseudonymized Reddit comments (AutoMod stickies & GIF embeds filtered) enter both semantic and lexical branches.`,
+      detail: `All ${num(totalComments)} pseudonymized Reddit comments (AutoMod stickies & GIF embeds filtered) enter the V6 strict-inductive neural pipeline.`,
       href: "#/explorer",
     },
     {
@@ -1884,11 +1892,13 @@ export function modelNetworkDiagram(modelsData, summary) {
       y: 256,
       w: col.in.w,
       h: 64,
-      title: "Parent post title",
-      sub1: `${num(totalPosts)} thread titles`,
-      sub2: "Context for Issue task",
+      title: isTrackA ? "Parent reply / title" : "Parent post title",
+      sub1: isTrackA ? `parent_pair (${num(totalPosts)} threads)` : `${num(totalPosts)} thread titles`,
+      sub2: "Native [SEP] Issue context",
       accent: "var(--color-accent-2)",
-      detail: "Parent post titles provide thread-level topical context explicitly concatenated for the 8-label Issue classifier.",
+      detail: isTrackA
+        ? "Verified immediate parent comment (falling back to thread title for top-level replies) passed via native [CLS] reply [SEP] context [SEP] to the 8-label Issue head."
+        : "Parent post titles provide thread-level topical context explicitly concatenated for the 8-label Issue classifier.",
       href: "#/issues",
     },
   ];
@@ -1900,28 +1910,44 @@ export function modelNetworkDiagram(modelsData, summary) {
       y: 100,
       w: col.enc.w,
       h: 92,
-      title: "MuRIL-DAPT v3",
-      sub1: `${murilParams} params · ${murilMs} ms/txt`,
-      sub2: `DAPT ppl ${daptFrom} → ${daptTo}`,
-      sub3: "[CLS]+Mean+Max · 5× MSD",
+      title: isTrackA ? "MuRIL-DAPT-WWM" : "MuRIL-DAPT v3",
+      sub1: `${murilParams} params · ${isTrackA ? "5-fold ens" : `${murilMs} ms/txt`}`,
+      sub2: `WWM ppl ${daptFrom} → ${daptTo}`,
+      sub3: daptZeroLeak ? "0/44 test overlap · 5× MSD" : "[CLS]+Mean+Max · 5× MSD",
       accent: "var(--color-accent)",
       highlight: true,
-      detail: `Domain-adapted on ${num(dapt.train_documents || 2780)} unlabeled Reddit texts (held-out val ppl ${daptFrom} → ${daptTo} on ${num(dapt.val_documents || 379)} unseen texts); powers all 5 task heads.`,
+      detail: isTrackA
+        ? `Strictly inductive 8-epoch ##-aligned Whole-Word Masking DAPT on ${num(dapt.train_documents || 2135)} unlabeled texts (44 test/same-title threads excluded, unseen val ppl ${daptFrom} → ${daptTo}); powers Issue, Sentiment, and Emotion.`
+        : `Domain-adapted on ${num(dapt.train_documents || 2780)} unlabeled Reddit texts (held-out val ppl ${daptFrom} → ${daptTo} on ${num(dapt.val_documents || 379)} unseen texts); powers all 5 task heads.`,
       href: "#/models",
     },
-    {
-      id: "enc:tfidf",
-      x: col.enc.x,
-      y: 252,
-      w: col.enc.w,
-      h: 76,
-      title: "Word + Char TF-IDF",
-      sub1: `1–2w / 3–5c · ${lrMs} ms/txt`,
-      sub2: "Lexical blend (val-only α)",
-      accent: "var(--color-series-val)",
-      detail: "Sparse word & character n-gram linear branch blended strictly when validation-only calibration selects α_tfidf > 0 (Response 10%, Solution 20%).",
-      href: "#/models",
-    },
+    isTrackA
+      ? {
+          id: "enc:xlmr",
+          x: col.enc.x,
+          y: 252,
+          w: col.enc.w,
+          h: 76,
+          title: "XLM-RoBERTa-base",
+          sub1: "278.0M params · 5-fold ens",
+          sub2: "Zero DAPT · Resp & Sol winner",
+          accent: "var(--color-positive)",
+          detail: "OOF-selected pure neural backbone for both Response classification and Solution detection (zero Reddit DAPT required; beats MuRIL-WWM on Reddit conversational pragmatics).",
+          href: "#/models",
+        }
+      : {
+          id: "enc:tfidf",
+          x: col.enc.x,
+          y: 252,
+          w: col.enc.w,
+          h: 76,
+          title: "Word + Char TF-IDF",
+          sub1: `1–2w / 3–5c · ${lrMs} ms/txt`,
+          sub2: "Lexical blend (val-only α)",
+          accent: "var(--color-series-val)",
+          detail: "Sparse word & character n-gram linear branch blended strictly when validation-only calibration selects α_tfidf > 0.",
+          href: "#/models",
+        },
   ];
 
   const headTop = 52;
@@ -1938,9 +1964,13 @@ export function modelNetworkDiagram(modelsData, summary) {
     const ece = errAnalysis[key]?.calibration?.calibrated_ece;
     const isMulti = Boolean(tm.multilabel);
     const kind = isMulti ? `${(t.labels || []).length}-label` : `${(t.labels || []).length}-class`;
-    const blendStr = aTfidf > 0.001
-      ? `${Math.round(aMuril * 100)}/${Math.round(aTfidf * 100)} hybrid`
-      : "100% MuRIL";
+    const isXlmr = isTrackA && String(t.model_name || "").includes("xlm_roberta");
+    const lossShort = t.loss_type === "asl" ? "ASL+Platt" : t.loss_type === "ce_weighted" ? "CE-W" : "";
+    const blendStr = isTrackA
+      ? `${isXlmr ? "XLM-R" : "MuRIL-WWM"}${lossShort ? ` · ${lossShort}` : ""}`
+      : (aTfidf > 0.001
+          ? `${Math.round(aMuril * 100)}/${Math.round(aTfidf * 100)} hybrid`
+          : "100% MuRIL");
     const y = headTop + idx * (headH + headGap);
     return {
       id: `head:${key}`,
@@ -1951,11 +1981,12 @@ export function modelNetworkDiagram(modelsData, summary) {
       h: headH,
       title: `${pretty(key)} (${kind})`,
       f1Text: percent(testF1, 1, "—"),
-      sub1: `${blendStr} · T=${temp.toFixed(2)}${ece !== undefined ? ` · ECE ${Number(ece).toFixed(3)}` : ""}`,
+      sub1: `${blendStr}${ece !== undefined ? ` · ECE ${Number(ece).toFixed(3)}` : ` · T=${temp.toFixed(2)}`}`,
       aMuril,
       aTfidf,
-      accent: key === "solution" || key === "emotion" ? "var(--color-positive)" : "var(--color-accent)",
-      detail: `${pretty(key)} head (${kind}): Real held-out Test Macro F1 ${percent(testF1)} (n=${num(tm.n_samples || 92)}), blend ${Math.round(aMuril * 100)}% MuRIL / ${Math.round(aTfidf * 100)}% TF-IDF, temperature T=${temp.toFixed(2)}${ece !== undefined ? `, 5-bin ECE ${Number(ece).toFixed(3)}` : ""}.`,
+      isXlmr,
+      accent: isXlmr || key === "issue" ? "var(--color-positive)" : "var(--color-accent)",
+      detail: `${pretty(key)} head (${kind}): Frozen held-out Test Macro F1 ${percent(testF1)} (n=${num(tm.n_samples || 92)}), ${blendStr}, 5-fold group CV${ece !== undefined ? `, 5-bin ECE ${Number(ece).toFixed(3)}` : ""}.`,
       href: "#/models",
     };
   });
@@ -1967,11 +1998,13 @@ export function modelNetworkDiagram(modelsData, summary) {
       y: 72,
       w: col.out.w,
       h: 70,
-      title: "Temp. Calibration",
-      sub1: "Strict T ≥ 1.0 scaling",
+      title: isTrackA ? "OOF Platt + T=1.0" : "Temp. Calibration",
+      sub1: isTrackA ? "Monotonic ASL + 5-fold ens" : "Strict T ≥ 1.0 scaling",
       sub2: `Mean 5-bin ECE ${meanEce}`,
       accent: "var(--color-positive)",
-      detail: `Validation-only scalar temperature scaling (clamped T ≥ 1.0 so logits never sharpen artificially) achieves ${meanEce} mean 5-bin ECE across all 5 real held-out test splits.`,
+      detail: isTrackA
+        ? `Per-label OOF monotonic Platt calibration on ASL heads + native 5-fold logit averaging (T = 1.0) achieves ${meanEce} mean 5-bin ECE across all 5 frozen held-out test splits.`
+        : `Validation-only scalar temperature scaling (clamped T ≥ 1.0) achieves ${meanEce} mean 5-bin ECE across all 5 real held-out test splits.`,
       href: "#/models",
     },
     {
@@ -2005,30 +2038,47 @@ export function modelNetworkDiagram(modelsData, summary) {
   const allNodes = [...inputNodes, ...encoderNodes, ...headNodes, ...outputNodes];
   const byId = new Map(allNodes.map((n) => [n.id, n]));
 
-  const edgesList = [
-    { s: "in:comment", t: "enc:muril", label: "All 3,557 tokenized replies", color: "var(--color-accent)", sw: 2.8, dashed: false },
-    { s: "in:comment", t: "enc:tfidf", label: "Word (1–2) & char (3–5) n-grams", color: "var(--color-series-val)", sw: 1.8, dashed: false },
-    { s: "in:title", t: "enc:muril", label: "Parent post title context (Issue)", color: "var(--color-accent-2)", sw: 2.0, dashed: true },
-  ];
+  const edgesList = isTrackA
+    ? [
+        { s: "in:comment", t: "enc:muril", label: `All ${num(totalComments)} replies → MuRIL-DAPT-WWM (max_len=256)`, color: "var(--color-accent)", sw: 2.8, dashed: false },
+        { s: "in:comment", t: "enc:xlmr", label: `All ${num(totalComments)} replies → XLM-RoBERTa-base (Response & Solution)`, color: "var(--color-positive)", sw: 2.2, dashed: false },
+        { s: "in:title", t: "enc:muril", label: "Native [SEP] parent comment / title context (Issue)", color: "var(--color-accent-2)", sw: 2.0, dashed: true },
+      ]
+    : [
+        { s: "in:comment", t: "enc:muril", label: `All ${num(totalComments)} tokenized replies`, color: "var(--color-accent)", sw: 2.8, dashed: false },
+        { s: "in:comment", t: "enc:tfidf", label: "Word (1–2) & char (3–5) n-grams", color: "var(--color-series-val)", sw: 1.8, dashed: false },
+        { s: "in:title", t: "enc:muril", label: "Parent post title context (Issue)", color: "var(--color-accent-2)", sw: 2.0, dashed: true },
+      ];
 
   for (const h of headNodes) {
-    edgesList.push({
-      s: "enc:muril",
-      t: h.id,
-      label: `MuRIL-DAPT v3 weight α = ${h.aMuril.toFixed(2)}`,
-      color: "var(--color-accent)",
-      sw: 1.4 + h.aMuril * 2.2,
-      dashed: false,
-    });
-    if (h.aTfidf > 0.001) {
+    if (isTrackA && h.isXlmr) {
       edgesList.push({
-        s: "enc:tfidf",
+        s: "enc:xlmr",
         t: h.id,
-        label: `TF-IDF lexical blend weight α = ${h.aTfidf.toFixed(2)}`,
-        color: "var(--color-series-val)",
-        sw: 1.4 + h.aTfidf * 2.6,
-        dashed: true,
+        label: "XLM-RoBERTa-base 5-fold ensemble (100% pure neural)",
+        color: "var(--color-positive)",
+        sw: 3.0,
+        dashed: false,
       });
+    } else {
+      edgesList.push({
+        s: "enc:muril",
+        t: h.id,
+        label: isTrackA ? "MuRIL-DAPT-WWM 5-fold ensemble (100% pure neural)" : `MuRIL-DAPT v3 weight α = ${h.aMuril.toFixed(2)}`,
+        color: "var(--color-accent)",
+        sw: 1.4 + h.aMuril * 2.2,
+        dashed: false,
+      });
+      if (!isTrackA && h.aTfidf > 0.001) {
+        edgesList.push({
+          s: "enc:tfidf",
+          t: h.id,
+          label: `TF-IDF lexical blend weight α = ${h.aTfidf.toFixed(2)}`,
+          color: "var(--color-series-val)",
+          sw: 1.4 + h.aTfidf * 2.6,
+          dashed: true,
+        });
+      }
     }
     edgesList.push({
       s: h.id,

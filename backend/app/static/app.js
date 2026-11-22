@@ -4,19 +4,20 @@
  * mobile bottom dock, Ctrl+K Command Palette, Dusk Midnight <-> Daylight Bone theme switcher,
  * and automatic GPU-safe motion hydration.
  */
-import { api, clearApiCache } from "./js/api.js?v=5.7";
-import { errorState, skeletonView } from "./js/components.js?v=5.7";
-import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, dateText, esc, num, pretty } from "./js/format.js?v=5.7";
-import { hideVizTooltip, hydrateMotion } from "./js/motion.js?v=5.7";
-import { renderExplorer } from "./js/views/explorer.js?v=5.7";
-import { renderIssues } from "./js/views/issues.js?v=5.7";
-import { renderModels } from "./js/views/models.js?v=5.7";
-import { renderOverview } from "./js/views/overview.js?v=5.7";
-import { renderResolution } from "./js/views/resolution.js?v=5.7";
-import { renderResponses } from "./js/views/responses.js?v=5.7";
-import { renderSentiment } from "./js/views/sentiment.js?v=5.7";
-import { renderThread } from "./js/views/thread.js?v=5.7";
-import { renderTopics } from "./js/views/topics.js?v=5.7";
+import { api, clearApiCache } from "./js/api.js?v=6.0";
+import { errorState, skeletonView } from "./js/components.js?v=6.0";
+import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, dateText, esc, num, pretty } from "./js/format.js?v=6.0";
+import { hideVizTooltip, hydrateMotion } from "./js/motion.js?v=6.0";
+import { renderCompare } from "./js/views/compare.js?v=6.0";
+import { renderExplorer } from "./js/views/explorer.js?v=6.0";
+import { renderIssues } from "./js/views/issues.js?v=6.0";
+import { renderModels } from "./js/views/models.js?v=6.0";
+import { renderOverview } from "./js/views/overview.js?v=6.0";
+import { renderResolution } from "./js/views/resolution.js?v=6.0";
+import { renderResponses } from "./js/views/responses.js?v=6.0";
+import { renderSentiment } from "./js/views/sentiment.js?v=6.0";
+import { renderThread } from "./js/views/thread.js?v=6.0";
+import { renderTopics } from "./js/views/topics.js?v=6.0";
 
 const PAGE_META = {
   overview: {
@@ -63,9 +64,15 @@ const PAGE_META = {
   },
   resolution: {
     title: "Solutions & resolution evidence",
-    description: "Audit proposed solutions and advice separately from explicit first-person resolution outcomes; missing follow-up never implies failure.",
+    description: "Audit linked community solutions, quantitative unresolved criteria, and explicit first-person resolution outcomes; missing follow-up never implies failure.",
     crumb: "Resolution",
     nav: "resolution",
+  },
+  compare: {
+    title: "Cross-IIM, languages & live lab",
+    description: "Compare discussions across 19 mentioned Indian IIMs and language registers, inspect Task 5–6 studies, or analyze Hinglish, Banglish, Odia, and emoji comments live.",
+    crumb: "Compare & lab",
+    nav: "compare",
   },
   models: {
     title: "Models & dataset provenance",
@@ -403,6 +410,9 @@ async function renderCurrentRoute() {
         break;
       case "resolution":
         await renderResolution(container, ctx, route.params);
+        break;
+      case "compare":
+        await renderCompare(container, ctx, route.params);
         break;
       case "models":
         await renderModels(container, ctx, route.params);

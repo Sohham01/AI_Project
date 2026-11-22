@@ -81,9 +81,12 @@ def test_live_artifacts_pass_all_seven_pipeline_integrity_checks() -> None:
     corpus = json.loads((LIVE_DATA / "corpus.json").read_text(encoding="utf-8"))
 
     assert evaluation["synthetic_only"] is False
-    assert evaluation["dataset_version"] == "5.0.0"
+    assert evaluation["dataset_version"] == "6.1.0"
     assert evaluation["labeled_data_provenance"]["synthetic_training_rows"] == 0
     assert evaluation["labeled_data_provenance"]["labeled_real_comments"] >= 400
+    assert evaluation["labeled_data_provenance"]["v2_expansion_blocked_by_iaa_gate"] is True
+    assert evaluation["dapt_summary"]["zero_test_thread_leakage"] is True
+    assert int(evaluation["dapt_summary"]["excluded_frozen_test_threads"]) >= 37
 
     # Ensure every task has realistic non-sharpening temperature T >= 1.0 and uses MuRIL (alpha >= 0.5)
     for t_name, t_obj in evaluation["tasks"].items():

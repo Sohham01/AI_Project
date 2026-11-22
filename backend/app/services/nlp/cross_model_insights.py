@@ -391,7 +391,11 @@ def build_cross_model_insights(
         1 for r in rows if r.get("language") in {"hi", "hi-en"} or bool(r.get("is_code_mixed"))
     )
     arch_agg = (evaluation.get("architecture_comparison") or {}).get("aggregate") or {}
-    t_test = (arch_agg.get("transformer_muril_dapt_v3") or {}).get("mean_test_macro_f1")
+    prod_entry = arch_agg.get("production_hybrid") or {}
+    muril_entry = arch_agg.get("transformer_muril_dapt_v3") or {}
+    is_track_a = prod_entry.get("family") == "transformer_track_a"
+    t_test = prod_entry.get("mean_test_macro_f1") if is_track_a else muril_entry.get("mean_test_macro_f1")
+    t_label = "V6 Strict-Inductive (MuRIL-WWM + XLM-R)" if is_track_a else "MuRIL-DAPT v3"
     lr_test = (arch_agg.get("logistic_regression") or {}).get("mean_test_macro_f1")
     ann_test = (arch_agg.get("ann_mlp") or {}).get("mean_test_macro_f1")
     cnn_test = (arch_agg.get("cnn_textcnn") or {}).get("mean_test_macro_f1")
@@ -405,14 +409,14 @@ def build_cross_model_insights(
                 "category": "4-Model Benchmark",
                 "tone": "positive" if gain_best >= 0 else "info",
                 "headline": (
-                    f"MuRIL-DAPT v3 reaches {float(t_test) * 100:.1f}% real held-out F1 "
+                    f"{t_label} reaches {float(t_test) * 100:.1f}% real held-out F1 "
                     f"({gain_sign}{gain_best:.1f} pp vs. best non-transformer)"
                 ),
                 "metric": f"LogReg {float(lr_test) * 100:.1f}% · ANN {float(ann_test or 0.0) * 100:.1f}% · CNN {float(cnn_test or 0.0) * 100:.1f}% · {hinglish_or_hi} Hinglish/HI",
                 "detail": (
-                    f"Evaluated on unseen thread-grouped real Reddit comments (including {hinglish_or_hi} "
+                    f"Evaluated strictly inductively on unseen thread-grouped real Reddit comments (including {hinglish_or_hi} "
                     f"Hinglish/Hindi comments, {hinglish_or_hi / n_comments * 100:.1f}% of corpus), comparing "
-                    f"domain-adapted MuRIL against Logistic Regression, 2-Layer ANN, and 1D TextCNN."
+                    f"{t_label} against 5-fold Logistic Regression, 2-Layer ANN, and 1D TextCNN."
                 ),
                 "href": "#/models",
                 "cta": "Inspect 4-model benchmark",

@@ -46,6 +46,41 @@ export async function apiGet(path, { useCache = true } = {}) {
   return payload;
 }
 
+export async function apiPost(path, body) {
+  let response;
+  try {
+    response = await fetch(`/api/demo${path}`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (networkErr) {
+    throw new Error(
+      "Could not reach the local FastAPI demo server (/api/demo). Verify that uvicorn is running on this origin."
+    );
+  }
+
+  if (!response.ok) {
+    let detail = `API request failed with HTTP ${response.status}`;
+    try {
+      const errBody = await response.json();
+      if (typeof errBody?.detail === "string" && errBody.detail.trim()) {
+        detail = errBody.detail;
+      }
+    } catch {
+      // Keep status fallback
+    }
+    const err = new Error(detail);
+    err.status = response.status;
+    throw err;
+  }
+
+  return response.json();
+}
+
 export const api = {
   health: () => apiGet("/health", { useCache: false }),
   summary: () => apiGet("/summary"),
@@ -54,6 +89,8 @@ export const api = {
   sentiment: () => apiGet("/sentiment"),
   responses: () => apiGet("/responses"),
   resolution: () => apiGet("/resolution"),
+  comparisons: () => apiGet("/comparisons"),
+  analyze: (text) => apiPost("/analyze", { text }),
   models: () => apiGet("/models"),
   errorAnalysis: () => apiGet("/error-analysis"),
   insights: () => apiGet("/insights"),

@@ -3,10 +3,10 @@
  * Showcases unsupervised NMF clusters, keyword_weights, corpus share ratios,
  * representative excerpts, and honest disclosure of Devanagari regex tokenization.
  */
-import { api } from "../api.js?v=5.7";
-import { horizontalBarChart, topicConstellationSvg } from "../charts.js?v=5.7";
-import { badge, callout, deck, emptyState, glossaryTip, tallyStrip } from "../components.js?v=5.7";
-import { esc, num, percent, share, truncate } from "../format.js?v=5.7";
+import { api } from "../api.js?v=6.0";
+import { horizontalBarChart, topicConstellationSvg } from "../charts.js?v=6.0";
+import { badge, callout, deck, emptyState, glossaryTip, tallyStrip } from "../components.js?v=6.0";
+import { esc, num, percent, share, truncate } from "../format.js?v=6.0";
 
 const topicState = {
   viewMode: "constellation",

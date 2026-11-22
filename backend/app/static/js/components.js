@@ -11,8 +11,8 @@ import {
   SENTIMENT_META,
   esc,
   pretty,
-} from "./format.js?v=5.7";
-import { icons } from "./icons.js?v=5.7";
+} from "./format.js?v=6.0";
+import { icons } from "./icons.js?v=6.0";
 
 /**
  * Primary Dusk elevated deck container.

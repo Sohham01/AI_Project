@@ -1,9 +1,9 @@
 /**
  * View 2: Issues Intelligence Studio (Visual Pods + Sticky Deep Dive + 9-Col Sortable Table Toggle)
  */
-import { api } from "../api.js?v=5.7";
-import { stackedCompositionBar } from "../charts.js?v=5.7";
-import { callout, copyIdChip, deck, emptyState, resolutionBadge } from "../components.js?v=5.7";
+import { api } from "../api.js?v=6.0";
+import { stackedCompositionBar } from "../charts.js?v=6.0";
+import { callout, copyIdChip, deck, emptyState, resolutionBadge } from "../components.js?v=6.0";
 import {
   RESOLUTION_META,
   RESOLUTION_ORDER,
@@ -15,7 +15,7 @@ import {
   pretty,
   share,
   truncate,
-} from "../format.js?v=5.7";
+} from "../format.js?v=6.0";
 
 const viewState = {
   mode: "cards",
