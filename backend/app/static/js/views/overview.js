@@ -8,7 +8,7 @@
  * 5. Asymmetric 2-Column Split (Zero-Overshoot Monthly Sentiment Timeline + Actionable Density)
  * 6. Clean 2-Column Recent Discussions + Compact Single-Strip Provenance Bar
  */
-import { api } from "../api.js?v=6.0";
+import { api } from "../api.js?v=6.2";
 import {
   bindChartTooltips,
   bindModelNetworkInteractions,
@@ -21,15 +21,16 @@ import {
   issueFrictionQuadrantChart,
   modelNetworkDiagram,
   sankeyFlowChart,
-} from "../charts.js?v=6.0";
+} from "../charts.js?v=6.2";
 import {
   confidenceBadge,
   copyIdChip,
   deck,
   resolutionBadge,
   tallyStrip,
-} from "../components.js?v=6.0";
-import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=6.0";
+} from "../components.js?v=6.2";
+import { dateText, esc, monthLabel, num, percent, plural, pretty } from "../format.js?v=6.2";
+import { downloadExecutiveMarkdownBrief } from "../export.js?v=6.2";
 
 export async function renderOverview(container, ctx) {
   const [summary, sentimentRes, modelsData] = await Promise.all([
@@ -51,11 +52,16 @@ export async function renderOverview(container, ctx) {
   const issues = summary.issue_distribution || [];
   const totalSolutions = issues.reduce((s, i) => s + Number(i.solutions_proposed || 0), 0);
   const totalAdvice = issues.reduce((s, i) => s + Number(i.advice_comments || 0), 0);
-  const totalActionable = issues.reduce((s, i) => s + Number(i.actionable_recommendations || 0), 0);
-  const reportedSuccess = resMap.reported_success || 0;
-  const reportedPending = resMap.reported_pending || 0;
+  const totalRoleActionable = totalSolutions + totalAdvice;
+  const totalBinaryActionable = issues.reduce((s, i) => s + Number(i.actionable_recommendations || 0), 0);
+  const resV2 = summary.resolution_v2_summary || {};
+  const v2States = resV2.state_distribution || {};
+  const hasV2Res = Number(resV2.total_threads || 0) > 0;
+  const reportedSuccess = hasV2Res ? Number(v2States.reported_success || 0) : (resMap.reported_success || 0);
+  const reportedPending = hasV2Res ? Number(v2States.reported_pending || 0) : (resMap.reported_pending || 0);
+  const contradictoryThreads = Number(resV2.threads_with_contradictory_followups || 0);
   const unconfirmedTotal = totalPosts - reportedSuccess - reportedPending;
-  const actionablePct = totalComments ? (totalActionable / totalComments) * 100 : 0;
+  const actionablePct = totalComments ? (totalRoleActionable / totalComments) * 100 : 0;
   const successPct = totalPosts ? (reportedSuccess / totalPosts) * 100 : 0;
   const communityCount = (summary.community_distribution || []).length;
 
@@ -66,7 +72,7 @@ export async function renderOverview(container, ctx) {
   const priorityMatrix = summary.issue_priority_matrix || [];
   const communityNetwork = summary.community_network || null;
 
-  // Row 1: Calm Ruled Tally Strip
+  // Row 1: Calm Ruled Tally Strip (strictly reconciled counts)
   const tallyRow = tallyStrip([
     {
       label: "Community corpus",
@@ -85,7 +91,7 @@ export async function renderOverview(container, ctx) {
       suffix: "%",
       ratioPct: actionablePct,
       color: "var(--color-role-advice)",
-      note: `${num(totalSolutions)} solution, ${num(totalAdvice)} advice replies`,
+      note: `${num(totalSolutions)} solution + ${num(totalAdvice)} advice (${num(totalRoleActionable)}) · ${num(totalBinaryActionable)} binary hits`,
       href: "#/responses",
     },
     {
@@ -93,7 +99,9 @@ export async function renderOverview(container, ctx) {
       valueText: `${num(reportedSuccess + reportedPending)} / ${num(totalPosts)}`,
       ratioPct: successPct,
       color: "var(--color-positive)",
-      note: `${num(reportedSuccess)} success · ${num(reportedPending)} pending · ${num(unconfirmedTotal)} unconfirmed`,
+      note: hasV2Res
+        ? `${num(reportedSuccess)} confirmed · ${num(reportedPending)} pending · ${num(contradictoryThreads)} contradictory`
+        : `${num(reportedSuccess)} success · ${num(reportedPending)} pending · ${num(unconfirmedTotal)} unconfirmed`,
       href: "#/resolution",
     },
     {
@@ -111,7 +119,7 @@ export async function renderOverview(container, ctx) {
     },
   ], "Community corpus headline figures");
 
-  // Row 2: Key Findings (Top 3 upfront to prevent card overload; optional reveal for all)
+  // Row 2: Evidence-Linked Cross-Model Insight Explorer
   const renderInsightItem = (card) => {
     const toneColor = card.tone === "danger"
       ? "var(--color-negative)"
@@ -122,6 +130,10 @@ export async function renderOverview(container, ctx) {
           : card.tone === "accent"
             ? "var(--color-accent)"
             : "var(--color-info)";
+    const supPosts = card.supporting_posts || [];
+    const supComments = card.supporting_comments || [];
+    const topicRefs = card.topic_refs || [];
+    const hasEvidence = Boolean(card.observation || supPosts.length || supComments.length || topicRefs.length);
     return `
       <article class="insight-card">
         <div class="insight-card-top">
@@ -129,7 +141,43 @@ export async function renderOverview(container, ctx) {
           <span class="insight-metric num">${esc(card.metric)}</span>
         </div>
         <h3 class="insight-headline">${esc(card.headline)}</h3>
-        <p class="insight-detail">${esc(card.detail)}</p>
+        ${card.observation
+          ? `<p class="insight-detail"><strong>Observation:</strong> ${esc(card.observation)}</p>
+             ${card.interpretation ? `<p class="insight-detail muted"><strong>Interpretation:</strong> ${esc(card.interpretation)}</p>` : ""}`
+          : `<p class="insight-detail">${esc(card.detail)}</p>`}
+        ${hasEvidence ? `
+          <details class="evidence-details">
+            <summary>Inspect supporting evidence (${supPosts.length} threads · ${supComments.length} quotes${card.model_confidence ? ` · conf ${(Number(card.model_confidence) * 100).toFixed(0)}%` : ""})</summary>
+            <div class="evidence-details-body">
+              ${topicRefs.length ? `
+                <div class="tag-row">
+                  ${topicRefs.map((tr) => `<span class="tag tag-neutral">${esc(String(tr.method || "").toUpperCase())}: ${esc(tr.label || tr.topic_id)}</span>`).join("")}
+                </div>
+              ` : ""}
+              ${supPosts.length ? `
+                <div class="grid-stack-xs">
+                  <span class="muted">Supporting posts:</span>
+                  <div class="tag-row">
+                    ${supPosts.map((sp) => `<a class="tag tag-info" href="#/thread/${encodeURIComponent(sp.post_id)}">${esc(sp.post_id)}: ${esc((sp.post_title || "").slice(0, 46))}</a>`).join("")}
+                  </div>
+                </div>
+              ` : ""}
+              ${supComments.length ? `
+                <div class="grid-stack-xs">
+                  ${supComments.slice(0, 2).map((sc) => `
+                    <div class="evidence-quote-well" style="--quote-accent:${toneColor}">
+                      <div>“${esc((sc.text || "").slice(0, 170))}”</div>
+                      <div class="muted">
+                        <a href="#/thread/${encodeURIComponent(sc.post_id)}">${esc(sc.comment_id || sc.post_id)}</a> · ${esc(sc.language || "en")}${sc.response_type ? ` · ${esc(sc.response_type)}` : ""}${sc.confidence ? ` · conf ${(Number(sc.confidence) * 100).toFixed(0)}%` : ""}
+                      </div>
+                    </div>
+                  `).join("")}
+                </div>
+              ` : ""}
+              ${card.evidence_limitations ? `<p class="muted"><strong>Limitation:</strong> ${esc(card.evidence_limitations)}</p>` : ""}
+            </div>
+          </details>
+        ` : ""}
         ${card.href ? `<a class="insight-link" href="${esc(card.href)}">${esc(card.cta || "Inspect")} &rarr;</a>` : ""}
       </article>
     `;
@@ -140,8 +188,11 @@ export async function renderOverview(container, ctx) {
     ? deck("Key cross-model findings", {
         subtitle: "Empirical takeaways joining all 5 supervised classifiers, calibrated confidence tiers, and real held-out benchmarks",
         action: `
-          ${hasExtraInsights ? `<button type="button" class="btn btn-quiet btn-sm" id="toggle-all-insights" aria-expanded="false">Show all ${insightCards.length}</button>` : ""}
-          <a class="btn btn-quiet btn-sm" href="#/models">Model benchmarks</a>
+          <div class="export-bar">
+            ${hasExtraInsights ? `<button type="button" class="btn btn-quiet btn-sm" id="toggle-all-insights" aria-expanded="false">Show all ${insightCards.length}</button>` : ""}
+            <button type="button" class="btn btn-quiet btn-sm" id="export-brief-md">Export brief (.md)</button>
+            <a class="btn btn-quiet btn-sm" href="#/models">Model benchmarks</a>
+          </div>
         `,
         body: `
           <div class="insight-grid" id="primary-insights-grid">
@@ -209,7 +260,7 @@ export async function renderOverview(container, ctx) {
     subtitle: "Predicted solution and advice replies ranked across issue domains",
     action: `<a class="btn btn-quiet btn-sm" href="#/issues">Issues studio</a>`,
     body: horizontalBarChart(issueBars, {
-      total: Math.max(1, totalActionable),
+      total: Math.max(1, totalBinaryActionable),
       maxCount: Math.max(1, ...issueBars.map((b) => b.count)),
       unit: "actionable",
       showShare: true,
@@ -280,6 +331,13 @@ export async function renderOverview(container, ctx) {
     ${spotlightDeck}
     ${provenanceStrip}
   `;
+
+  // Wire "Export Executive Brief (.md)" download
+  container.querySelector("#export-brief-md")?.addEventListener("click", () => {
+    if (downloadExecutiveMarkdownBrief(summary)) {
+      ctx.showToast?.("Downloaded Executive Insight Brief (.md)");
+    }
+  });
 
   // Wire "Show all insights" progressive disclosure
   const toggleBtn = container.querySelector("#toggle-all-insights");

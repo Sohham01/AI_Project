@@ -60,6 +60,7 @@
   --color-inset: oklch(13% 0.014 268);
   --color-surface: oklch(20.5% 0.017 268 / 0.82);
   --color-surface-solid: oklch(20% 0.017 268);
+  --color-surface-2: oklch(19.5% 0.017 268);
   --color-surface-hover: oklch(24.5% 0.019 268);
 
   /* Dusk ink hierarchy (4 verified WCAG AA/AAA tiers) */
@@ -70,6 +71,7 @@
 
   /* Dusk edges & glass highlights */
   --color-rule: oklch(26% 0.015 266);
+  --color-border: oklch(26% 0.015 266);
   --color-rule-2: oklch(35% 0.018 266);
   --color-light: oklch(100% 0 0);
   --color-shade: oklch(8% 0.022 268);
@@ -151,6 +153,7 @@
   --font-display: "Wix Madefor Display", "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Wix Madefor Text", "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-outlier: "Cascadia Code", "Consolas", "SFMono-Regular", ui-monospace, monospace;
+  --font-mono: var(--font-outlier);
 
   /* Concentric rounded geometry (Dusk modern studio) */
   --radius-card: 16px;
@@ -173,6 +176,7 @@
   --color-inset: oklch(93.5% 0.007 80);
   --color-surface: oklch(99.5% 0.002 80 / 0.92);
   --color-surface-solid: oklch(99.5% 0.002 80);
+  --color-surface-2: oklch(94.5% 0.006 80);
   --color-surface-hover: oklch(95% 0.008 268);
 
   --color-ink: oklch(19% 0.022 268);
@@ -181,6 +185,7 @@
   --color-subtle: oklch(53% 0.016 264);
 
   --color-rule: oklch(89% 0.008 260);
+  --color-border: oklch(89% 0.008 260);
   --color-rule-2: oklch(78% 0.012 260);
   --glass: oklch(99.5% 0.002 80 / 0.86);
   --glass-strong: oklch(99.5% 0.002 80 / 0.96);

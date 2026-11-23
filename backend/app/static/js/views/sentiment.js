@@ -3,14 +3,14 @@
  * Interactive smooth spline area chart with crosshair scrubbing, animated emotion bars,
  * and sortable Issue x Polarity normalized matrix.
  */
-import { api } from "../api.js?v=6.0";
+import { api } from "../api.js?v=6.2";
 import {
   bindSplineInteractions,
   horizontalBarChart,
   interactiveSplineAreaChart,
   stackedMatrixRows,
-} from "../charts.js?v=6.0";
-import { callout, deck, tallyStrip } from "../components.js?v=6.0";
+} from "../charts.js?v=6.2";
+import { callout, deck, tallyStrip } from "../components.js?v=6.2";
 import {
   EMOTION_COLORS,
   SENTIMENT_META,
@@ -20,7 +20,7 @@ import {
   monthLabel,
   num,
   pretty,
-} from "../format.js?v=6.0";
+} from "../format.js?v=6.2";
 
 const sentState = { issueSort: "negative_share" };
 
@@ -172,6 +172,43 @@ export async function renderSentiment(container, ctx) {
           `,
         })}
       </div>
+
+      ${(data.by_language || []).length ? deck("Language-aware sentiment &amp; emotion breakdown", {
+        subtitle: "Polarity composition and leading multi-label emotions segmented by detected language register (English vs. Hinglish/Indic vs. Terse/Undetermined)",
+        body: `
+          <div class="table-scroll">
+            <table class="data-table" aria-label="Language-aware sentiment and emotion breakdown">
+              <thead>
+                <tr>
+                  <th scope="col">Language register</th>
+                  <th scope="col" class="num">Comments</th>
+                  <th scope="col" class="num">Positive</th>
+                  <th scope="col" class="num">Neutral</th>
+                  <th scope="col" class="num">Negative</th>
+                  <th scope="col">Top predicted emotions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(data.by_language || []).map((row) => {
+                  const dm = Object.fromEntries((row.distribution || []).map((d) => [d.label, Number(d.count || 0)]));
+                  const tot = Math.max(Number(row.total || 0), 1);
+                  const ems = (row.top_emotions || []).map((e) => `${pretty(e.label)} (${num(e.count)})`).join(" · ");
+                  return `
+                    <tr>
+                      <td><strong>${esc(row.language_group)}</strong></td>
+                      <td class="num">${num(row.total)}</td>
+                      <td class="num">${((dm.positive || 0) / tot * 100).toFixed(1)}% <span class="muted">(${num(dm.positive || 0)})</span></td>
+                      <td class="num">${((dm.neutral || 0) / tot * 100).toFixed(1)}% <span class="muted">(${num(dm.neutral || 0)})</span></td>
+                      <td class="num">${((dm.negative || 0) / tot * 100).toFixed(1)}% <span class="muted">(${num(dm.negative || 0)})</span></td>
+                      <td class="text-xs">${esc(ems || "—")}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        `,
+      }) : ""}
 
       ${deck("Predicted sentiment by issue domain", {
         subtitle: "100% normalized polarity mix per community issue category; click any sentiment count to filter discussions",

@@ -4,20 +4,20 @@
  * mobile bottom dock, Ctrl+K Command Palette, Dusk Midnight <-> Daylight Bone theme switcher,
  * and automatic GPU-safe motion hydration.
  */
-import { api, clearApiCache } from "./js/api.js?v=6.0";
-import { errorState, skeletonView } from "./js/components.js?v=6.0";
-import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, dateText, esc, num, pretty } from "./js/format.js?v=6.0";
-import { hideVizTooltip, hydrateMotion } from "./js/motion.js?v=6.0";
-import { renderCompare } from "./js/views/compare.js?v=6.0";
-import { renderExplorer } from "./js/views/explorer.js?v=6.0";
-import { renderIssues } from "./js/views/issues.js?v=6.0";
-import { renderModels } from "./js/views/models.js?v=6.0";
-import { renderOverview } from "./js/views/overview.js?v=6.0";
-import { renderResolution } from "./js/views/resolution.js?v=6.0";
-import { renderResponses } from "./js/views/responses.js?v=6.0";
-import { renderSentiment } from "./js/views/sentiment.js?v=6.0";
-import { renderThread } from "./js/views/thread.js?v=6.0";
-import { renderTopics } from "./js/views/topics.js?v=6.0";
+import { api, clearApiCache } from "./js/api.js?v=6.2";
+import { errorState, skeletonView } from "./js/components.js?v=6.2";
+import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, dateText, esc, num, pretty } from "./js/format.js?v=6.2";
+import { hideVizTooltip, hydrateMotion } from "./js/motion.js?v=6.2";
+import { renderCompare } from "./js/views/compare.js?v=6.2";
+import { renderExplorer } from "./js/views/explorer.js?v=6.2";
+import { renderIssues } from "./js/views/issues.js?v=6.2";
+import { renderModels } from "./js/views/models.js?v=6.2";
+import { renderOverview } from "./js/views/overview.js?v=6.2";
+import { renderResolution } from "./js/views/resolution.js?v=6.2";
+import { renderResponses } from "./js/views/responses.js?v=6.2";
+import { renderSentiment } from "./js/views/sentiment.js?v=6.2";
+import { renderThread } from "./js/views/thread.js?v=6.2";
+import { renderTopics } from "./js/views/topics.js?v=6.2";
 
 const PAGE_META = {
   overview: {
@@ -46,7 +46,7 @@ const PAGE_META = {
   },
   topics: {
     title: "Topic constellation",
-    description: "Explore unsupervised NMF clusters fit directly on community comments, inspect weighted terms, and audit representative replies.",
+    description: "Compare deterministic NMF factors against dense multilingual BERTopic clusters, inspect weighted terms, audit explicit outliers, and read representative replies.",
     crumb: "Topic map",
     nav: "topics",
   },
@@ -70,7 +70,7 @@ const PAGE_META = {
   },
   compare: {
     title: "Cross-IIM, languages & live lab",
-    description: "Compare discussions across 19 mentioned Indian IIMs and language registers, inspect Task 5–6 studies, or analyze Hinglish, Banglish, Odia, and emoji comments live.",
+    description: "Compare discussions across 19 mentioned Indian IIMs and language registers, review multilingual NLP benchmarks, or analyze Hinglish, Banglish, Odia, slang, and emoji comments live.",
     crumb: "Compare & lab",
     nav: "compare",
   },
@@ -122,12 +122,34 @@ const dom = {
 const ctx = {
   health: null,
   summary: null,
+  showToast: (msg) => showToast(msg),
+  syncQueryParams: (updates = {}) => syncQueryParams(updates),
 };
 
 let renderSeq = 0;
 let toastTimer = null;
 let paletteSearchTimer = null;
 let paletteFocusIdx = 0;
+let lastPaletteTrigger = null;
+
+function syncQueryParams(updates = {}) {
+  const rawHash = (window.location.hash || "#/overview").replace(/^#/, "");
+  const [pathPart, queryPart = ""] = rawHash.split("?");
+  const sp = new URLSearchParams(queryPart);
+  for (const [k, v] of Object.entries(updates)) {
+    if (v === null || v === undefined || v === "" || v === "all") sp.delete(k);
+    else sp.set(k, String(v));
+  }
+  const qs = sp.toString();
+  const nextHash = `#${pathPart || "/overview"}${qs ? `?${qs}` : ""}`;
+  if (window.location.hash !== nextHash) {
+    try {
+      window.history.replaceState(null, "", nextHash);
+    } catch {
+      // Ignore in restricted history contexts
+    }
+  }
+}
 
 /* ==========================================================================
    Theme Switcher (Dusk Midnight <-> Daylight Bone)
@@ -265,11 +287,12 @@ function paintPaletteList(items) {
     return;
   }
   dom.paletteResults.innerHTML = items.map((item, idx) => `
-    <a class="palette-item ${idx === 0 ? "is-focused" : ""}" role="option" href="${esc(item.href)}" data-palette-idx="${idx}">
+    <a id="palette-opt-${idx}" class="palette-item ${idx === 0 ? "is-focused" : ""}" role="option" aria-selected="${idx === 0}" href="${esc(item.href)}" data-palette-idx="${idx}">
       <span>${esc(item.title)}</span>
       <span class="palette-item-meta">${esc(item.meta)}</span>
     </a>
   `).join("");
+  dom.paletteInput?.setAttribute("aria-activedescendant", "palette-opt-0");
   dom.paletteResults.querySelectorAll(".palette-item").forEach((el) => {
     el.addEventListener("click", () => closePalette());
   });
@@ -300,6 +323,7 @@ function updatePalette(query) {
 
 function openPalette(prefill = "") {
   if (!dom.paletteBackdrop) return;
+  lastPaletteTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   dom.paletteBackdrop.hidden = false;
   document.body.classList.add("modal-open");
   if (dom.paletteInput) {
@@ -313,14 +337,24 @@ function closePalette() {
   if (!dom.paletteBackdrop) return;
   dom.paletteBackdrop.hidden = true;
   document.body.classList.remove("modal-open");
+  if (lastPaletteTrigger && document.contains(lastPaletteTrigger)) {
+    lastPaletteTrigger.focus();
+  }
+  lastPaletteTrigger = null;
 }
 
 function movePaletteFocus(delta) {
   const items = [...(dom.paletteResults?.querySelectorAll(".palette-item[href]") || [])];
   if (!items.length) return;
   paletteFocusIdx = (paletteFocusIdx + delta + items.length) % items.length;
-  items.forEach((el, idx) => el.classList.toggle("is-focused", idx === paletteFocusIdx));
-  items[paletteFocusIdx]?.scrollIntoView({ block: "nearest" });
+  items.forEach((el, idx) => {
+    const active = idx === paletteFocusIdx;
+    el.classList.toggle("is-focused", active);
+    el.setAttribute("aria-selected", String(active));
+  });
+  const activeEl = items[paletteFocusIdx];
+  if (activeEl?.id) dom.paletteInput?.setAttribute("aria-activedescendant", activeEl.id);
+  activeEl?.scrollIntoView({ block: "nearest" });
 }
 
 /* ==========================================================================
@@ -447,7 +481,8 @@ function bindGlobalInteractions() {
   dom.closeBtn?.addEventListener("click", () => setDrawerOpen(false));
   dom.backdrop?.addEventListener("click", () => setDrawerOpen(false));
 
-  dom.provPillBtn?.addEventListener("click", () => {
+  dom.provPillBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
     const nextOpen = Boolean(dom.provPopover?.hidden);
     if (dom.provPopover) dom.provPopover.hidden = !nextOpen;
     dom.provPillBtn.setAttribute("aria-expanded", String(nextOpen));
@@ -455,6 +490,36 @@ function bindGlobalInteractions() {
   dom.closeProvBtn?.addEventListener("click", () => {
     if (dom.provPopover) dom.provPopover.hidden = true;
     dom.provPillBtn?.setAttribute("aria-expanded", "false");
+    dom.provPillBtn?.focus();
+  });
+  document.addEventListener("click", (e) => {
+    if (
+      dom.provPopover &&
+      !dom.provPopover.hidden &&
+      !dom.provPopover.contains(e.target) &&
+      !dom.provPillBtn?.contains(e.target)
+    ) {
+      dom.provPopover.hidden = true;
+      dom.provPillBtn?.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Focus trap inside open Command Palette modal
+  dom.paletteBackdrop?.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab" || dom.paletteBackdrop.hidden) return;
+    const focusables = [...dom.paletteBackdrop.querySelectorAll("input, button, a[href]")].filter(
+      (el) => !el.hasAttribute("disabled") && el.offsetParent !== null
+    );
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 
   dom.openPaletteBtn?.addEventListener("click", () => openPalette(dom.globalSearchInput?.value || ""));

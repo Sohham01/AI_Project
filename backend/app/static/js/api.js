@@ -85,10 +85,12 @@ export const api = {
   health: () => apiGet("/health", { useCache: false }),
   summary: () => apiGet("/summary"),
   issues: () => apiGet("/issues"),
-  topics: () => apiGet("/topics"),
+  topics: (model = "nmf") =>
+    apiGet(model && model !== "nmf" ? `/topics?model=${encodeURIComponent(model)}` : "/topics"),
   sentiment: () => apiGet("/sentiment"),
   responses: () => apiGet("/responses"),
-  resolution: () => apiGet("/resolution"),
+  resolution: ({ compact = true } = {}) =>
+    apiGet(compact ? "/resolution?compact=true" : "/resolution"),
   comparisons: () => apiGet("/comparisons"),
   analyze: (text) => apiPost("/analyze", { text }),
   models: () => apiGet("/models"),

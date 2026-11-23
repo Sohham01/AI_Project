@@ -4,10 +4,10 @@
  * 1. agreement  2. personal_experience  3. opinion  4. advice  5. solution  6. counterargument
  * Features an interactive animated 6-segment radial wheel + 3-example interactive switcher per role.
  */
-import { api } from "../api.js?v=6.0";
-import { bindWheelInteractions, horizontalBarChart, radialResponseWheel } from "../charts.js?v=6.0";
-import { badge, callout, deck, tallyStrip } from "../components.js?v=6.0";
-import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, esc, num, percent, share } from "../format.js?v=6.0";
+import { api } from "../api.js?v=6.2";
+import { bindWheelInteractions, horizontalBarChart, radialResponseWheel } from "../charts.js?v=6.2";
+import { badge, callout, deck, tallyStrip } from "../components.js?v=6.2";
+import { CANONICAL_RESPONSE_TYPES, RESPONSE_META, esc, num, percent, share } from "../format.js?v=6.2";
 
 export async function renderResponses(container, ctx) {
   const [res, summary] = await Promise.all([
@@ -168,6 +168,23 @@ export async function renderResponses(container, ctx) {
     <div class="response-role-grid">
       ${ordered.map(renderRoleCard).join("")}
     </div>
+    ${(res.difficult_boundaries || []).length ? deck("Difficult classification boundaries (held-out error analysis)", {
+      subtitle: "Documented semantic overlaps observed across the 6 canonical community response roles on unseen Reddit discussions",
+      body: `
+        <div class="why-grid">
+          ${(res.difficult_boundaries || []).map((b, i) => `
+            <div class="why-card">
+              <span class="why-num num">0${i + 1}</span>
+              <div>
+                <h4>${esc(b.boundary)}</h4>
+                <p>${esc(b.reason)}</p>
+                <p class="muted" style="font-size:var(--text-xs);margin-top:4px"><strong>Empirical finding:</strong> ${esc(b.frozen_test_note)}</p>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `,
+    }) : ""}
   `;
 
   bindWheelInteractions(container, total);

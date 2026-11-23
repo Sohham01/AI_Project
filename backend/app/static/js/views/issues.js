@@ -1,9 +1,9 @@
 /**
  * View 2: Issues Intelligence Studio (Visual Pods + Sticky Deep Dive + 9-Col Sortable Table Toggle)
  */
-import { api } from "../api.js?v=6.0";
-import { stackedCompositionBar } from "../charts.js?v=6.0";
-import { callout, copyIdChip, deck, emptyState, resolutionBadge } from "../components.js?v=6.0";
+import { api } from "../api.js?v=6.2";
+import { stackedCompositionBar } from "../charts.js?v=6.2";
+import { callout, copyIdChip, deck, emptyState, resolutionBadge } from "../components.js?v=6.2";
 import {
   RESOLUTION_META,
   RESOLUTION_ORDER,
@@ -15,7 +15,7 @@ import {
   pretty,
   share,
   truncate,
-} from "../format.js?v=6.0";
+} from "../format.js?v=6.2";
 
 const viewState = {
   mode: "cards",
@@ -214,7 +214,7 @@ export async function renderIssues(container, ctx, params = {}) {
           <a class="btn btn-primary btn-sm" href="#/explorer?issue=${encodeURIComponent(active.key)}">Explore ${num(active.posts)} threads</a>
         `,
         body: `
-          <div style="display:flex;flex-wrap:wrap;gap:var(--space-xs);margin-bottom:var(--space-md)">
+          <div class="tag-row tag-row-md">
             ${copyIdChip(active.key, { label: "key" })}
             <span class="tag tag-info">${num(active.actionable_recommendations)} actionable (${share(active.actionable_recommendations, active.comments)})</span>
             <span class="tag tag-positive">${num(active.reported_successes)} / ${num(active.posts)} reported success</span>
@@ -231,18 +231,44 @@ export async function renderIssues(container, ctx, params = {}) {
           </div>
 
           <div class="aside-section">
-            <h3>Representative proposed solutions</h3>
-            <div class="preview-comment-list">
-              ${sampleProposals.map((p) => `
-                <div class="preview-comment-item">
-                  <p>“${esc(truncate(p.text, 180))}”</p>
-                  <div class="topic-example-foot">
-                    <a href="#/thread/${encodeURIComponent(p.postId)}">${esc(truncate(p.title, 48))}</a>
-                    ${resolutionBadge(p.state)}
+            <h3>Contextual matched solutions &amp; clusters (Multilingual E5)</h3>
+            ${active.contextual_solutions ? `
+              <div class="tag-row tag-row-mb">
+                <span class="tag tag-positive num">${num(active.contextual_solutions.linked_solution_count)} matched solutions</span>
+                <span class="tag tag-info num">${num(active.contextual_solutions.cluster_count)} semantic clusters</span>
+                ${active.resolution_verdict ? `<span class="tag tag-warning">${esc(active.resolution_verdict)}</span>` : ""}
+                ${active.contradictory_threads ? `<span class="tag tag-negative num">${num(active.contradictory_threads)} contradictory threads</span>` : ""}
+              </div>
+              <div class="preview-comment-list">
+                ${(active.contextual_solutions.semantic_solution_clusters || []).slice(0, 3).map((cl) => `
+                  <div class="preview-comment-item">
+                    <div class="surface-well-head text-xs">
+                      <strong>${esc(cl.cluster_label)}</strong>
+                      <span class="num muted">${num(cl.solution_count)} recs · score ${Number(cl.mean_matching_score || 0).toFixed(2)}</span>
+                    </div>
+                    ${cl.representative_solution ? `
+                      <p>“${esc(truncate(cl.representative_solution.evidence_text, 170))}”</p>
+                      <div class="topic-example-foot">
+                        <a href="#/thread/${encodeURIComponent(cl.representative_solution.post_id)}">${esc(truncate(cl.representative_solution.post_title || cl.representative_solution.post_id, 46))}</a>
+                        <span class="muted num">${esc(cl.representative_solution.verification_status || "model_inferred")}</span>
+                      </div>
+                    ` : ""}
                   </div>
-                </div>
-              `).join("") || `<p class="muted">No proposals found.</p>`}
-            </div>
+                `).join("")}
+              </div>
+            ` : `
+              <div class="preview-comment-list">
+                ${sampleProposals.map((p) => `
+                  <div class="preview-comment-item">
+                    <p>“${esc(truncate(p.text, 180))}”</p>
+                    <div class="topic-example-foot">
+                      <a href="#/thread/${encodeURIComponent(p.postId)}">${esc(truncate(p.title, 48))}</a>
+                      ${resolutionBadge(p.state)}
+                    </div>
+                  </div>
+                `).join("") || `<p class="muted">No proposals found.</p>`}
+              </div>
+            `}
           </div>
 
           <div class="aside-section">
@@ -311,6 +337,7 @@ export async function renderIssues(container, ctx, params = {}) {
         const key = el.dataset.selectIssue;
         if (key && key !== viewState.selectedKey) {
           viewState.selectedKey = key;
+          ctx.syncQueryParams?.({ selected: key });
           paint();
         }
       });

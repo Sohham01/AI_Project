@@ -3,8 +3,8 @@
  * Directly inspired by crisp modern split-pane narrative consoles (Image 2),
  * upgraded in Dusk Smoked Glass: Summary & Evidence | Reply Flow | Model Signals.
  */
-import { api } from "../api.js?v=6.0";
-import { responseMiniStrip, stackedCompositionBar } from "../charts.js?v=6.0";
+import { api } from "../api.js?v=6.2";
+import { responseMiniStrip, stackedCompositionBar } from "../charts.js?v=6.2";
 import {
   badge,
   confidenceBadge,
@@ -14,7 +14,7 @@ import {
   resolutionBadge,
   roleBadge,
   sentimentBadge,
-} from "../components.js?v=6.0";
+} from "../components.js?v=6.2";
 import {
   CANONICAL_RESPONSE_TYPES,
   RESOLUTION_META,
@@ -28,8 +28,9 @@ import {
   pretty,
   shortCommentLabel,
   truncate,
-} from "../format.js?v=6.0";
-import { icons } from "../icons.js?v=6.0";
+} from "../format.js?v=6.2";
+import { downloadCsv } from "../export.js?v=6.2";
+import { icons } from "../icons.js?v=6.2";
 
 const FILTER_KEYS = ["q", "community", "issue", "sentiment", "emotion", "response", "confidence"];
 
@@ -228,10 +229,13 @@ export async function renderExplorer(container, ctx, params = {}) {
     ${filterBar}
     ${chipsHtml}
     <div class="results-bar">
-      <span><strong class="num">${num(data.total)}</strong> matching thread${data.total === 1 ? "" : "s"}</span>
-      <span class="canonical-key-inline">
-        ${CANONICAL_RESPONSE_TYPES.map((k) => `<span class="micro-legend"><span class="legend-swatch" style="background:${RESPONSE_META[k].color}" aria-hidden="true"></span>${RESPONSE_META[k].short}</span>`).join("")}
-      </span>
+      <span><strong class="num">${num(data.total)}</strong> matching thread${data.total === 1 ? "" : "s"} <span class="muted text-xs">(use <code>j</code> / <code>k</code> to step preview)</span></span>
+      <div class="export-bar">
+        <span class="canonical-key-inline">
+          ${CANONICAL_RESPONSE_TYPES.map((k) => `<span class="micro-legend"><span class="legend-swatch" style="background:${RESPONSE_META[k].color}" aria-hidden="true"></span>${RESPONSE_META[k].short}</span>`).join("")}
+        </span>
+        ${items.length ? `<button type="button" class="btn btn-quiet btn-sm" id="export-explorer-csv">Export page CSV</button>` : ""}
+      </div>
     </div>
     ${splitWorkspace}
     ${pagination}
@@ -375,21 +379,61 @@ export async function renderExplorer(container, ctx, params = {}) {
     }
   }
 
+  function selectCardById(nextId) {
+    if (!nextId || nextId === selectedId) return;
+    selectedId = nextId;
+    container.querySelectorAll(".discussion-card").forEach((c) => {
+      const isAct = c.dataset.previewId === selectedId;
+      c.classList.toggle("is-selected", isAct);
+      if (isAct) c.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+    loadPreview(selectedId);
+  }
+
   container.querySelectorAll(".discussion-card[data-preview-id]").forEach((card) => {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".row-open-link") || e.target.closest("[data-copy-value]")) return;
       if (window.innerWidth > 1023) {
         e.preventDefault();
-        const nextId = card.dataset.previewId;
-        if (nextId && nextId !== selectedId) {
-          selectedId = nextId;
-          container.querySelectorAll(".discussion-card").forEach((c) => {
-            c.classList.toggle("is-selected", c.dataset.previewId === selectedId);
-          });
-          loadPreview(selectedId);
-        }
+        selectCardById(card.dataset.previewId);
       }
     });
+  });
+
+  // Power-user j / k keyboard navigation (self-cleans when view unmounts)
+  const onExplorerKey = (e) => {
+    if (!container.isConnected) {
+      document.removeEventListener("keydown", onExplorerKey);
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey || !items.length) return;
+    const tag = (document.activeElement?.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.key === "j" || e.key === "k") {
+      e.preventDefault();
+      const idx = Math.max(0, items.findIndex((p) => p.id === selectedId));
+      const nextIdx = e.key === "j" ? Math.min(items.length - 1, idx + 1) : Math.max(0, idx - 1);
+      selectCardById(items[nextIdx]?.id);
+    }
+  };
+  document.addEventListener("keydown", onExplorerKey);
+
+  container.querySelector("#export-explorer-csv")?.addEventListener("click", () => {
+    const ok = downloadCsv(
+      items,
+      [
+        { key: "id", label: "Post ID" },
+        { key: "subreddit", label: "Subreddit" },
+        { key: "issue", label: "Issue" },
+        { key: "title", label: "Title" },
+        { key: "comment_count", label: "Comments" },
+        { key: "resolution_state", label: "Resolution State" },
+        { key: "mean_confidence", label: "Mean Confidence" },
+        { key: "created_at", label: "Created At" },
+      ],
+      `rci_discussions_page${data.page}.csv`
+    );
+    if (ok) ctx.showToast?.(`Exported ${items.length} discussions to CSV`);
   });
 
   if (selectedId) loadPreview(selectedId);

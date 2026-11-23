@@ -22,8 +22,8 @@ import {
   plural,
   pretty,
   share,
-} from "./format.js?v=6.0";
-import { hideVizTooltip, showVizTooltip } from "./motion.js?v=6.0";
+} from "./format.js?v=6.2";
+import { hideVizTooltip, showVizTooltip } from "./motion.js?v=6.2";
 
 /* ==========================================================================
    0. Shared Interactive Floating Tooltip Binder (Used Across All Charts)
@@ -479,10 +479,13 @@ export function bindSplineInteractions(container) {
    3. Honest Area-Proportional NMF Topic Grid (Zero Fake Orbital Spokes)
    Area of every circle scales directly with document_count (r = sqrt(c/max)*R).
    ========================================================================== */
-export function topicConstellationSvg(topics, selectedId) {
+export function topicConstellationSvg(topics, selectedId, { method = "nmf" } = {}) {
   const sorted = [...topics].sort((a, b) => Number(b.document_count) - Number(a.document_count));
   const maxCount = Math.max(1, ...sorted.map((t) => Number(t.document_count || 0)));
   const totalDocs = Math.max(1, sorted.reduce((s, t) => s + Number(t.document_count || 0), 0));
+  const isBert = method === "bertopic";
+  const idPrefix = isBert ? "BT-" : "T";
+  const algName = isBert ? "BERTopic" : "NMF";
 
   const cols = Math.min(5, Math.max(2, Math.ceil(sorted.length / 2)));
   const rows = Math.ceil(sorted.length / cols);
@@ -506,18 +509,21 @@ export function topicConstellationSvg(topics, selectedId) {
       ? "var(--color-accent-2)"
       : t.character.tone === "info"
         ? "var(--color-role-advice)"
-        : "var(--color-accent)";
+        : t.character.tone === "positive"
+          ? "var(--color-positive)"
+          : "var(--color-accent)";
     const isSel = Number(t.topic_id) === Number(selectedId);
     const kw1 = (t.keywords || [])[0] || "";
     const kw2 = (t.keywords || [])[1] || "";
     const kwLine = [kw1, kw2].filter(Boolean).join(" · ");
     const shortKw = kwLine.length > 16 ? `${kwLine.slice(0, 15)}…` : kwLine;
+    const shortId = `${idPrefix}${t.topic_id}`;
 
     return `
-      <g class="topic-orb ${isSel ? "is-selected" : ""}" tabindex="0" role="button" data-select-topic="${t.topic_id}" aria-label="Topic ${t.topic_id}, ${num(count)} comments (${share(count, totalDocs)}), ${esc(kwLine)}">
+      <g class="topic-orb ${isSel ? "is-selected" : ""}" tabindex="0" role="button" data-select-topic="${t.topic_id}" aria-label="${algName} ${shortId}, ${num(count)} comments (${share(count, totalDocs)}), ${esc(kwLine)}">
         <circle class="topic-orb-ring" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${(r + 6).toFixed(1)}"/>
         <circle class="topic-orb-circle" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${color}" fill-opacity="${isSel ? "0.28" : "0.16"}" stroke="${color}" stroke-width="${isSel ? "2.2" : "1.6"}"/>
-        <text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11.5" font-weight="600" font-family="var(--font-body)">T${t.topic_id}</text>
+        <text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11.5" font-weight="600" font-family="var(--font-body)">${shortId}</text>
         <text x="${cx.toFixed(1)}" y="${(padY + row * cellH + 104).toFixed(1)}" text-anchor="middle" fill="var(--color-ink)" font-size="11" font-weight="500" font-family="var(--font-body)">${esc(shortKw)}</text>
         <text x="${cx.toFixed(1)}" y="${(padY + row * cellH + 120).toFixed(1)}" text-anchor="middle" fill="var(--color-muted)" font-size="10.5" font-family="var(--font-body)">${num(count)} (${share(count, totalDocs, 0)})</text>
       </g>
@@ -526,10 +532,10 @@ export function topicConstellationSvg(topics, selectedId) {
 
   return `
     <div class="constellation-stage">
-      <svg class="constellation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Area-proportional grid of ${sorted.length} unsupervised NMF topic clusters ordered by comment volume">
+      <svg class="constellation-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Area-proportional grid of ${sorted.length} unsupervised ${algName} topic clusters ordered by comment volume">
         ${cells}
       </svg>
-      <p class="chart-footnote" style="margin-top:var(--space-xs)">Circle area is proportional to assigned comments (ordered largest to smallest). Positions are grid-aligned, not semantic distances.</p>
+      <p class="chart-footnote">Circle area is proportional to assigned comments (ordered largest to smallest). Positions are grid-aligned, not semantic distances.</p>
     </div>
   `;
 }

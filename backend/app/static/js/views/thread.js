@@ -1,8 +1,8 @@
 /**
  * View 4: Conversation Audit (Visual Parent-Child Thread Tree & Evidence Studio)
  */
-import { api } from "../api.js?v=6.0";
-import { stackedCompositionBar } from "../charts.js?v=6.0";
+import { api } from "../api.js?v=6.2";
+import { stackedCompositionBar } from "../charts.js?v=6.2";
 import {
   badge,
   confidenceBadge,
@@ -13,7 +13,7 @@ import {
   resolutionBadge,
   roleBadge,
   sentimentBadge,
-} from "../components.js?v=6.0";
+} from "../components.js?v=6.2";
 import {
   CANONICAL_RESPONSE_TYPES,
   LANGUAGE_LABELS,
@@ -27,8 +27,8 @@ import {
   pretty,
   shortCommentLabel,
   truncate,
-} from "../format.js?v=6.0";
-import { icons } from "../icons.js?v=6.0";
+} from "../format.js?v=6.2";
+import { icons } from "../icons.js?v=6.2";
 
 const threadUiState = {
   layout: "tree",
@@ -64,7 +64,7 @@ function computeTreeOrder(comments) {
   return ordered;
 }
 
-export async function renderThread(container, ctx, postId) {
+export async function renderThread(container, ctx, postId, params = {}) {
   const data = await api.discussionDetail(postId);
   const post = data.post;
   const isSynthetic = Boolean(post.synthetic);
@@ -169,6 +169,18 @@ export async function renderThread(container, ctx, postId) {
       `
       : "";
 
+    const langAn = comment.language_analysis || null;
+    const spanStrip = langAn && (langAn.has_multi_language_spans || langAn.abstain)
+      ? `
+        <div class="tag-row text-xs" style="margin-bottom:6px">
+          ${langAn.abstain ? badge(`LID abstain (${langAn.uncertainty_flag})`, "warning") : ""}
+          ${langAn.has_multi_language_spans
+            ? (langAn.spans || []).map((sp, i) => `<span class="tag tag-neutral">Span ${i + 1}: ${esc(sp.language)}/${esc(sp.script)} (${Math.round(Number(sp.confidence || 0) * 100)}%)</span>`).join("")
+            : ""}
+        </div>
+      `
+      : "";
+
     return `
       <article id="comment-${esc(comment.reddit_id)}" class="thread-comment ${visualDepth > 0 ? "is-nested" : ""} ${isEvidence ? "is-evidence-comment" : ""}" style="--depth:${visualDepth}">
         ${evidenceBanner}
@@ -177,13 +189,14 @@ export async function renderThread(container, ctx, postId) {
             <span class="num comment-seq">${esc(shortCommentLabel(comment.reddit_id))}</span>
             ${copyIdChip(comment.reddit_id)}
             <span class="num depth-tag">Depth ${depth}</span>
-            ${languageBadge(comment.language, comment.script, comment.is_code_mixed)}
+            ${languageBadge(langAn?.language || comment.language, langAn?.script || comment.script, langAn?.is_code_mixed ?? comment.is_code_mixed)}
           </div>
           <span class="num comment-time">${dateTimeText(comment.created_at)}</span>
         </header>
 
         ${parentRef}
-        <p class="comment-body" lang="${comment.language === "hi" ? "hi" : "en"}">${esc(comment.body)}</p>
+        ${spanStrip}
+        <p class="comment-body" lang="${(langAn?.language || comment.language) === "hi" ? "hi" : "en"}">${esc(comment.body)}</p>
 
         <div class="comment-predictions-strip" aria-label="Model predictions">
           <span class="strip-caption">Model output:</span>
@@ -390,4 +403,18 @@ export async function renderThread(container, ctx, postId) {
   }
 
   paint();
+
+  // Deep-link support for jumping straight to a specific comment (?comment=cmt_xxx)
+  if (params.comment) {
+    const targetId = String(params.comment);
+    setTimeout(() => {
+      const el = container.querySelector(`#comment-${CSS.escape(targetId)}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.remove("flash-highlight");
+        void el.offsetWidth;
+        el.classList.add("flash-highlight");
+      }
+    }, 80);
+  }
 }

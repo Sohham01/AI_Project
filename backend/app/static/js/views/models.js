@@ -7,7 +7,7 @@
  * 4. Interactive 5-Task Error Analysis & 1:1 Square Calibration Studio (with tabbed Recoveries vs Residual Errors)
  * 5. Collapsible Per-Task Granular Audit Accordion + Compact Dataset Provenance Vault
  */
-import { api } from "../api.js?v=6.0";
+import { api } from "../api.js?v=6.2";
 import {
   architectureComparisonChart,
   bindChartTooltips,
@@ -16,9 +16,9 @@ import {
   confusionMatrixTable,
   daptConvergenceChart,
   robustnessCategoryHeatmap,
-} from "../charts.js?v=6.0";
-import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=6.0";
-import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=6.0";
+} from "../charts.js?v=6.2";
+import { badge, callout, confidenceBadge, copyIdChip, deck, glossaryTip } from "../components.js?v=6.2";
+import { dateTimeText, esc, num, percent, pretty } from "../format.js?v=6.2";
 
 const TASK_ORDER = ["issue", "solution", "sentiment", "response", "emotion"];
 
@@ -40,6 +40,117 @@ function fmtParams(n) {
 function fmtPred(val) {
   if (Array.isArray(val)) return val.length ? val.map(pretty).join(", ") : "None";
   return pretty(String(val ?? "None"));
+}
+
+function renderV6GovernanceAndSubsystems(modelsData) {
+  const gov = modelsData.strict_oof_governance_audit || null;
+  const btComp = modelsData.bertopic_vs_nmf_comparison || null;
+  const auths = modelsData.provenance_authorizations || {};
+  const perf = modelsData.inference_performance || {};
+  const sub = modelsData.v6_subsystem_benchmarks || {};
+
+  const govHtml = gov ? `
+    <div class="callout-governance">
+      <div class="tag-row">
+        ${badge("Strict OOF Evaluation Governance", "warning")}
+        <strong class="text-sm">Primary Unbiased Benchmarks Reported (Zero Test-Set Peeking)</strong>
+      </div>
+      <p class="text-xs">Primary benchmark metrics reflect strictly out-of-fold (OOF) model selection with zero held-out test feedback; post-hoc test-inspected checkpoints are isolated and explicitly flagged below.</p>
+      <div class="stat-strip-mini" style="margin-bottom:4px">
+        <div class="stat-mini-cell">
+          <span class="stat-mini-label">Strict 3-Seed Mean</span>
+          <strong class="stat-mini-val is-positive num">${percent(gov.primary_unbiased_benchmarks?.v6_strict_inductive_3seed_mean_f1, 2)}</strong>
+          <span class="stat-mini-sub">Primary unbiased</span>
+        </div>
+        <div class="stat-mini-cell">
+          <span class="stat-mini-label">V6.0 Pure Neural OOF</span>
+          <strong class="stat-mini-val is-positive num">${percent(gov.primary_unbiased_benchmarks?.v6_0_strict_pure_neural_oof_mean_f1, 2)}</strong>
+          <span class="stat-mini-sub">Zero test peeking</span>
+        </div>
+        <div class="stat-mini-cell">
+          <span class="stat-mini-label">Strict Stage 3 OOF</span>
+          <strong class="stat-mini-val is-info num">${percent(gov.primary_unbiased_benchmarks?.v6_stage3_strict_all_oof_winners_mean_f1, 2)}</strong>
+          <span class="stat-mini-sub">All OOF winners</span>
+        </div>
+        <div class="stat-mini-cell">
+          <span class="stat-mini-label">Historical V5</span>
+          <strong class="stat-mini-val num">${percent(gov.primary_unbiased_benchmarks?.v5_historical_transductive_mean_f1, 2)}</strong>
+          <span class="stat-mini-sub">Prior baseline</span>
+        </div>
+        <div class="stat-mini-cell">
+          <span class="stat-mini-label">Post-Hoc V6.1 (Flagged)</span>
+          <strong class="stat-mini-val is-warning num">${percent(gov.post_hoc_test_inspected_diagnostic?.v6_1_partial_stage3_mean_f1, 2)}</strong>
+          <span class="stat-mini-sub">Diagnostic only</span>
+        </div>
+      </div>
+      <p class="muted text-xs">${esc(gov.post_hoc_test_inspected_diagnostic?.reason_flagged || "")}</p>
+    </div>
+  ` : "";
+
+  const btRows = (btComp?.table || []).map((r) => `
+    <tr class="${r.is_winner_bertopic || r.is_preserved_default ? "table-row-highlight" : ""}">
+      <td><strong>${esc(r.model_id)}</strong>${r.is_preserved_default ? ` ${badge("Default", "info")}` : ""}${r.is_winner_bertopic ? ` ${badge("Companion", "positive")}` : ""}</td>
+      <td>${esc(String(r.algorithm || "").toUpperCase())}</td>
+      <td class="num">${num(r.n_topics)}</td>
+      <td class="num">${(Number(r.outlier_rate || 0) * 100).toFixed(1)}%</td>
+      <td class="num">${Number(r.coherence_npmi ?? 0).toFixed(4)}</td>
+      <td class="num">${Number(r.topic_diversity ?? 0).toFixed(4)}</td>
+      <td class="num">${Number(r.size_balance_entropy ?? 0).toFixed(4)}</td>
+    </tr>
+  `).join("");
+
+  const authRows = Object.entries(auths).map(([k, v]) => `
+    <div><dt>${esc(pretty(k))}</dt><dd><code class="text-xs">${esc(v)}</code></dd></div>
+  `).join("");
+
+  const perfHtml = perf.hardware ? `
+    <dl class="vault-kv-grid">
+      <div class="kv-span-full"><dt>Training / Inference GPU</dt><dd>${esc(perf.hardware)}</dd></div>
+      <div><dt>Single-task Transformer (GPU bf16)</dt><dd class="num">${esc(perf.single_task_transformer_gpu_ms)} ms/cmt</dd></div>
+      <div><dt>Single-task Transformer (CPU FP32)</dt><dd class="num">${esc(perf.single_task_transformer_cpu_ms)} ms/cmt</dd></div>
+      <div><dt>Shared MTL (all 5 tasks GPU)</dt><dd class="num">${esc(perf.shared_mtl_all_5_gpu_ms)} ms/cmt</dd></div>
+      <div><dt>Multilingual E5-Small (GPU)</dt><dd class="num">${esc(perf.multilingual_e5_small_gpu_ms)} ms/doc</dd></div>
+      <div><dt>TF-IDF + LogReg (CPU)</dt><dd class="num">${esc(perf.tfidf_logreg_cpu_ms)} ms/cmt</dd></div>
+      <div class="kv-span-full"><dt>Vercel Serving Runtime</dt><dd>${esc(perf.vercel_runtime_dependencies)}</dd></div>
+    </dl>
+  ` : "";
+
+  const subMap = sub.issue_solution_mapping?.v6_contextual_embedding || null;
+  const subRes = sub.unresolved_resolution_engine || null;
+
+  return deck("Strict Evaluation Governance, BERTopic vs. NMF, Subsystem Benchmarks &amp; Inference", {
+    subtitle: "Transparent separation of strict OOF-selected scores, dual topic discovery, human-reviewed linking & resolution benchmarks, 4-field data authorizations, and runtime latency",
+    body: `
+      ${govHtml}
+      ${btRows ? `
+        <h3 class="subpanel-title">BERTopic v1 vs. Preserved NMF v1 (Identical 3,459 Eligible Comments)</h3>
+        <div class="table-scroll" style="margin-bottom:var(--space-md)">
+          <table class="data-table text-xs" aria-label="BERTopic versus NMF summary benchmark">
+            <thead>
+              <tr><th scope="col">Model ID</th><th scope="col">Alg</th><th scope="col" class="num">Topics</th><th scope="col" class="num">Outliers</th><th scope="col" class="num">NPMI</th><th scope="col" class="num">Diversity</th><th scope="col" class="num">Balance</th></tr>
+            </thead>
+            <tbody>${btRows}</tbody>
+          </table>
+        </div>
+      ` : ""}
+      <div class="studio-grid-2">
+        <div>
+          <h3 class="subpanel-title">Hardware &amp; Inference Performance</h3>
+          ${perfHtml}
+          ${subMap || subRes ? `
+            <div class="tag-row" style="margin-top:var(--space-sm)">
+              ${subMap ? `<span class="tag tag-info num">Contextual Mapping F1: ${percent(subMap.pairwise_f1, 1)} · P@3: ${percent(subMap.precision_at_3, 1)} · FPR: ${percent(subMap.false_positive_rate, 1)}</span>` : ""}
+              ${subRes ? `<span class="tag tag-positive num">Resolution 4-State F1: ${percent(subRes.four_state_classification?.macro_f1, 1)} · False Res: ${percent(subRes.false_resolution_claim_rate, 1)}</span>` : ""}
+            </div>
+          ` : ""}
+        </div>
+        <div>
+          <h3 class="subpanel-title">Separated Four-Field Data Provenance Authorizations</h3>
+          <dl class="vault-kv-grid">${authRows}</dl>
+        </div>
+      </div>
+    `,
+  });
 }
 
 function renderPerClassSection(taskName, task) {
@@ -525,6 +636,7 @@ export async function renderModels(container, ctx) {
 
   container.innerHTML = `
     ${renderVerificationBanner(verification)}
+    ${renderV6GovernanceAndSubsystems(modelsData)}
     ${renderArchitectureSection(archComp, modelsData.evaluation_scope, upgradeInfo)}
     ${renderHowItWorksSection(dapt, confSummary)}
     ${errorAnalysisDeck}
