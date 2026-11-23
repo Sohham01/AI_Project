@@ -17,6 +17,7 @@ from collections import Counter, defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from app.services.nlp.indian_reddit_lid import detect_indian_reddit_language
+from app.services.nlp.preprocessing.context_normalizer import normalize_context_aware_slang
 from app.services.nlp.preprocessing.emoji_normalizer import (
     _EMOJI_RE,
     extract_emojis,
@@ -614,6 +615,7 @@ def analyze_live_comment(
 
     emojis_found = extract_emojis(raw)
     slang_found = detect_slang_terms(raw)
+    context_slang = normalize_context_aware_slang(step_punct)
     iims_found = extract_iim_mentions(raw)
 
     # Sparse TF-IDF cosine retrieval against precomputed V6 neural predictions (k=12)
@@ -699,14 +701,16 @@ def analyze_live_comment(
         "input_text": raw,
         "inference_mode": "realtime_v6_neighbor_projection",
         "inference_notice": (
-            "Real-time Task 5 Language/Script ID + Task 6 Emoji/Slang normalization runs deterministically "
-            "with zero GPU (<15 ms). Task scores project from the k=12 nearest precomputed V6 neural "
-            "predictions in the anonymized corpus (offline GPU MuRIL-WWM + XLM-R runs at build time)."
+            "Real-time span-level Language/Script ID, context-aware Gen-Z slang disambiguation, and affect-preserving "
+            "emoji decoding run deterministically with zero GPU (<15 ms). Task scores project from the k=12 nearest "
+            "precomputed V6 neural predictions in the anonymized corpus."
         ),
         "language_detection": lid,
         "preprocessing": {
             "normalized_emoji_token": step_emoji_tok,
             "normalized_semantic_affect": step_emoji_affect,
+            "context_slang_normalized": context_slang.get("normalized_text", step_punct),
+            "context_slang_transformations": context_slang.get("transformations", []),
             "emojis_detected": emojis_found,
             "slang_detected": slang_found,
             "iims_detected": iims_found,

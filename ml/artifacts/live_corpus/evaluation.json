@@ -77,7 +77,13 @@
         "p_beats_v5": 0.999
       }
     },
-    "optimization_report": "docs/V5_MODEL_IMPROVEMENT_REPORT.md"
+    "optimization_report": "docs/V5_MODEL_IMPROVEMENT_REPORT.md",
+    "strict_oof_3seed_mean_f1": 0.6462,
+    "strict_oof_v6_0_deployed_mean_f1": 0.6501,
+    "strict_oof_hybrid_seed1_mean_f1": 0.6438,
+    "strict_oof_stage3_all_winners_mean_f1": 0.6438,
+    "post_hoc_test_inspected_v6_1_mean_f1": 0.6559,
+    "headline_reporting_policy": "Strict OOF-only selection numbers (64.62% 3-seed strict inductive / 65.01% V6.0 strict OOF / 64.38% strict Stage 3 OOF-only) are reported as the primary unbiased benchmarks. The 65.59% V6.1 figure reverted Sentiment & Emotion after inspecting frozen n=92 test metrics and is explicitly flagged as post-hoc test-inspected rather than an unbiased strict-selection score."
   },
   "dapt_summary": {
     "base_model_id": "google/muril-base-cased",
@@ -6902,5 +6908,20 @@
         "detail": "Verified 0 author fields, 0 emails/handles, 0 raw Reddit URLs, and 100% opaque pseudonymized IDs across 365 threads."
       }
     ]
+  },
+  "strict_oof_governance_audit": {
+    "policy": "Either report the strict-selection number, or collect a fresh test set that is only scored once.",
+    "primary_unbiased_benchmarks": {
+      "v5_historical_transductive_mean_f1": 0.5948,
+      "v6_strict_inductive_3seed_mean_f1": 0.6462,
+      "v6_strict_inductive_hybrid_oof_mean_f1": 0.6438,
+      "v6_0_strict_pure_neural_oof_mean_f1": 0.6501,
+      "v6_stage3_strict_all_oof_winners_mean_f1": 0.6438
+    },
+    "post_hoc_test_inspected_diagnostic": {
+      "v6_1_partial_stage3_mean_f1": 0.6559,
+      "reason_flagged": "sent_muril_affect and emo_muril_affect cleared the +1.0 pp OOF gate (+1.55 pp / +3.52 pp) but were reverted after observing frozen n=92 test F1/ECE.",
+      "delta_over_strict_stage3_pp": 1.21
+    }
   }
 }

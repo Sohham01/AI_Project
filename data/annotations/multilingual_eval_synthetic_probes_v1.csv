@@ -1,0 +1,25 @@
+id,text,gold_language,gold_script,gold_is_code_mixed,gold_multi_span,eval_scope,note
+syn_01,Is the placement record at IIM Sambalpur improving this year?,en,latin,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_02,हॉस्टल और मेस का खाना बहुत खराब है।,hi,devanagari,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_03,क्या IIM Sambalpur अच्छा है placement के लिए?,hi-en,mixed,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_04,Bhai hostel fees bohot high hai aur mess food literally mid hai.,hi-en,latin,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_05,"Thik hai bhai, abhi kuch nahi hoga.",hi,latin,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_06,IIM placement season is stressful. Bhai kuch samajh nahi aa raha.,hi-en,latin,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_07,এই কলেজের হোস্টেল আর মেসের খাবার কেমন?,bn,bengali,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_08,আমি IIM Sambalpur এর placement report দেখলাম।,bn-en,mixed,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_09,IIM e giye ki actually ROI pawa jay? fees onek beshi.,bn-en,latin,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_10,Ami bujhte parchi na keno eto taka lagche.,bn,latin,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_11,The curriculum looks intense. Kintu amar mone hoy placement bhalo hobe.,bn-en,latin,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_12,হোস্টেল ভালো না। But the faculty support is decent.,bn-en,mixed,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_13,ହଷ୍ଟେଲ ରୁମ୍ ଆଉ ମେସ୍ ଖାଦ୍ୟ ବହୁତ ଖରାପ ଅଛି।,or,odia,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_14,ଆଜି କ୍ଲାସ୍ ବହୁତ hectic ଥିଲା bro।,or-en,mixed,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_15,IIM Sambalpur ra placement package kemiti achi?,or-en,latin,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_16,"Aaji class bahut hectic thila, katha bujhili na.",or-en,latin,True,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_17,Tume kouthi rahucha ebe? Kichi katha bujhili.,or,latin,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_18,The campus is remote. Kintu hostel ra condition bhala achi.,or-en,latin,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_19,95.4 / 92 / 8.7,und,unknown,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_20,😭😭😭,und,unknown,False,False,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_21,Waitlist moved by 45 today. बहुत अच्छी खबर है!,hi-en,mixed,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_22,Don't take a huge loan without checking median CTC. Paisa bachana zaroori hai.,hi-en,latin,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_23,Kolkata theke Sambalpur train ache ki? Direct route helps.,bn-en,latin,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe
+syn_24,Bhubaneswar ru direct train achi. Travel time is around 5 hours.,or-en,latin,True,True,controlled_synthetic_probe_NOT_real_world_proof,Synthetic cross-script & Romanized diagnostic probe

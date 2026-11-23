@@ -1,0 +1,91 @@
+id,post_id,text,gold_language,gold_script,gold_is_code_mixed,gold_multi_span,eval_scope,note
+cmt_00009,post_0003,Yarr ab Sambhalpur jaise bhi wait list karne lage hain?🤣,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi syntax + English 'wait list' + emoji
+cmt_00018,post_0005,94/93.2/9.6,und,unknown,False,False,real_reddit_corpus_manual_review_v1,Numeric academic profile only (94/93.2/9.6)
+cmt_00026,post_0006,3005,und,unknown,False,False,real_reddit_corpus_manual_review_v1,Numeric waitlist number only (3005)
+cmt_00040,post_0008,"Paisa nai lenge mostly, sirf rohtak wale lete hain",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi + English 'mostly'
+cmt_00050,post_0011,"Idk if you know, but I think iss baar cap cut off is 95%ile",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English matrix + Hinglish phrase 'iss baar'
+cmt_00054,post_0011,Hogya bhai convert?,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi 'Hogya bhai' + English 'convert'
+cmt_00058,post_0012,DM me 83.32 so sectional reh gya usme,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English 'DM me ... sectional' + Hindi 'reh gya usme'
+cmt_00060,post_0013,Chud gaye guru,hi,latin,False,False,real_reddit_corpus_manual_review_v1,Pure Romanized Hindi idiom
+cmt_00071,post_0014,Thank God I didn't receive a call. Laakhon rupiye bach gaye...,hi-en,latin,True,True,real_reddit_corpus_manual_review_v1,"Multi-span switch: Sent 1 English, Sent 2 Romanized Hindi"
+cmt_01028,post_0104,"Do not think this much about age tbh.
+
+I did engg from one of old IITs, then prepared for civil services for 4 yrs, couldn't clear. Gave CAT and got in one of BLACKI, at age of 28, fared okay there. Got good job, having good life. No one cares about your age except you.
+Aur jab se achhi job mil jaye tabhi se bdhiya, nothing wrong in that",hi-en,latin,True,True,real_reddit_corpus_manual_review_v1,Multi-span switch: 4 English sentences + final Hinglish sentence
+cmt_01610,post_0158,"Hn,hn chor unko, congrats ,tum party do bhai, गोलगप्पे khilao ab to ;)",hi-en,mixed,True,False,real_reddit_corpus_manual_review_v1,Mixed Devanagari ('गोलगप्पे') + Romanized Hindi + English
+cmt_01936,post_0183,"Bhai nit ra try kar 
+Ae sabu kana pasuchu",or-en,latin,True,True,real_reddit_corpus_manual_review_v1,Genuine Romanized Odia ('Ae sabu kana pasuchu') + English/Hindi
+cmt_03434,post_0355,"Ews category cutoff? Any of your friends, vercel is showing 99+ 7/8/8",en,latin,False,False,real_reddit_corpus_manual_review_v1,English MBA cutoff query
+cmt_00565,post_0064,"Fuck man, scary thanks for the heads up for people looking to join this",en,latin,False,False,real_reddit_corpus_manual_review_v1,Colloquial English reaction
+cmt_00151,post_0021,"First of all he didn't do regular 2 year pgdm course , he did working professional course from Delhi centre of iim sambalpur",en,latin,False,False,real_reddit_corpus_manual_review_v1,English factual clarification
+cmt_01401,post_0146,The wl moment is reserved categories is very slim. But hope for the best I guess,en,latin,False,False,real_reddit_corpus_manual_review_v1,English waitlist discussion
+cmt_01258,post_0132,When is the joining date?,en,latin,False,False,real_reddit_corpus_manual_review_v1,Short English question
+cmt_01146,post_0112,Means your WL change for MBA.?,en,latin,False,False,real_reddit_corpus_manual_review_v1,Short English MBA question
+cmt_00715,post_0069,I mean I am from IIM A then they will preferably hire me over other?,en,latin,False,False,real_reddit_corpus_manual_review_v1,English placement query
+cmt_00524,post_0052,"You sure ?
+I mean I’m very confused 
+Mainly between IIM Visakhapatnam and IIM Sambalpur",en,latin,False,False,real_reddit_corpus_manual_review_v1,Multi-line English comparison
+cmt_02911,post_0299,Just wait calmly,en,latin,False,False,real_reddit_corpus_manual_review_v1,Short English advice
+cmt_00445,post_0045,"If I score 50 perecentitle but have bad academics, do I stand any chance under pwd category?",en,latin,False,False,real_reddit_corpus_manual_review_v1,English query with spelling typo ('perecentitle')
+cmt_03163,post_0321,"Good luck people , even though I had hopes that I would get selected, but I didn't",en,latin,False,False,real_reddit_corpus_manual_review_v1,English personal reflection
+cmt_02184,post_0211,You should do it before 23july,en,latin,False,False,real_reddit_corpus_manual_review_v1,English deadline instruction
+cmt_00184,post_0024,IIM Sambalpur MBA CORE vs GLIM C PGPM? 32 months work ex,en,latin,False,False,real_reddit_corpus_manual_review_v1,English program comparison
+cmt_00176,post_0024,Its showing registration closed to me,en,latin,False,False,real_reddit_corpus_manual_review_v1,English portal status report
+cmt_00479,post_0051,Have 99+%ile but still didnt get a call🫠,en,latin,False,False,real_reddit_corpus_manual_review_v1,English with emoji
+cmt_01125,post_0110,Workex and acads ?,en,latin,False,False,real_reddit_corpus_manual_review_v1,Short Indian-MBA English abbreviation query
+cmt_01192,post_0122,You don’t know your cibil affects if you don’t pay loan and you are expecting one now and you’re in IIM 🫡congrats,en,latin,False,False,real_reddit_corpus_manual_review_v1,Sarcastic English comment with emoji
+cmt_02674,post_0273,It’s on the website so I hope they give out official info,en,latin,False,False,real_reddit_corpus_manual_review_v1,English website info comment
+cmt_03230,post_0326,For general waitlist moved more than 26,en,latin,False,False,real_reddit_corpus_manual_review_v1,English waitlist movement update
+cmt_00161,post_0021,Whats the actual median in college,en,latin,False,False,real_reddit_corpus_manual_review_v1,English median package query
+cmt_03002,post_0308,Yes me going for CSAB,en,latin,False,False,real_reddit_corpus_manual_review_v1,Indian English counselling reply
+cmt_01016,post_0101,"Really, that’s crazy",en,latin,False,False,real_reddit_corpus_manual_review_v1,Short English exclamation
+cmt_03132,post_0319,Ye log phone bhi nhi utha te hai 🫩,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi + English 'phone' + emoji
+cmt_02537,post_0251,Bhai me bhai ews candidate hu and WL-59 show ho rha hai ews me. Kya koi umeed hai admission ka?,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Two-sentence Hinglish waitlist query
+cmt_01569,post_0155,Thanks bhai👍,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Short English 'Thanks' + Hindi 'bhai'
+cmt_02657,post_0269,Ig unhone portal pr update nhi Kiya till now,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Gen-Z 'Ig' + Hinglish + English 'portal update till now'
+cmt_03368,post_0349,Bkl classes start hoo gayii h. Khi aur admission karwa lee,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Slang + Hinglish + English 'classes start admission'
+cmt_01902,post_0180,"Bro are u sure , wdym soon matlab aa rha aek aur waitlist",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English slang 'wdym' + Hinglish 'matlab aa rha aek aur'
+cmt_00052,post_0011,Bhai EWS ka toh I think is around 77,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish 'Bhai EWS ka toh' + English
+cmt_00952,post_0092,"Kya pata bro, tbh I've never heard of these ""baby IIMs""",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish 'Kya pata' + English clause
+cmt_02549,post_0251,Nhi mne iim mumbai ke liye ni kra apply. And yes I am an ews candidate and my percentile is 96.7,hi-en,latin,True,True,real_reddit_corpus_manual_review_v1,"Multi-span switch: Sent 1 Hinglish, Sent 2 English"
+cmt_02234,post_0219,Just kidding Bhai,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English 'Just kidding' + Hindi 'Bhai'
+cmt_00934,post_0090,XIMB>Vizag>Amritsar ~Jammu~Sambalpur>Bodh gaya~Sirmaur,en,latin,False,False,real_reddit_corpus_manual_review_v1,English college ranking containing proper noun 'Bodh gaya'
+cmt_01562,post_0155,Bhai interview me kya puchte hai,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish with English 'interview'
+cmt_02218,post_0217,Bhai I was in the 1st merit list dw,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hindi vocative 'Bhai' + English sentence
+cmt_00665,post_0069,"15-17 lpa ke avg package wale colleges ko tier 3 me rakhkar op sigma moment create kar raha hai 👺.   Remember tier ranking is based on all the things like location, age, gender diversity, hostel, faculties , placement etc etc but for most of the students I think only placement and connection matters not this all even a person can study at iim abc with eating some peasent foods",hi-en,latin,True,True,real_reddit_corpus_manual_review_v1,"Multi-span switch: Sent 1 Hinglish, Sent 2 English"
+cmt_00602,post_0064,Humiliation kink h bhai ki,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English phrase + Hindi 'h bhai ki'
+cmt_02397,post_0232,Koi na yaawr mba baddies hit kr lena,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish 'Koi na yaawr' + English slang
+cmt_00606,post_0064,Fake news toh nahi hain bro yeh..... suna hain maine 4-5 ussi course ke bacho se,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish + English 'Fake news' / 'course'
+cmt_02320,post_0225,"Mujhe bhi add krdo , im also a fresher",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish clause + English clause
+cmt_02240,post_0220,Abhi tak nhi release huyi bhai,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi + English 'release'
+cmt_03435,post_0355,"Koi na bro, focus on your profile now",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Hinglish 'Koi na' + English advice
+cmt_01487,post_0152,Thik hai bhai,hi,latin,False,False,real_reddit_corpus_manual_review_v1,Pure Romanized Hindi ('Thik hai bhai')
+cmt_03190,post_0322,Ye hai kya,hi,latin,False,False,real_reddit_corpus_manual_review_v1,Pure Romanized Hindi ('Ye hai kya')
+cmt_00082,post_0014,Bc kahan kahan iims khul gaye hai.,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi + English acronym 'iims'
+cmt_03052,post_0311,Bhai Tera hua kya,hi,latin,False,False,real_reddit_corpus_manual_review_v1,Pure Romanized Hindi ('Bhai Tera hua kya')
+cmt_02207,post_0217,Mtlb?,hi,latin,False,False,real_reddit_corpus_manual_review_v1,Pure Romanized Hindi phonetic contraction ('Mtlb?')
+cmt_02555,post_0252,Mera ews 4 hai,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi + English acronym 'ews'
+cmt_00411,post_0041,Phir kehte hai placements kyun nahi ho rahi,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,Romanized Hindi + English 'placements'
+cmt_01933,post_0183,"Try karo , abhi bhi time hai",hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,"Hinglish + English 'Try', 'time'"
+cmt_00154,post_0021,Package kitna lga??,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English 'Package' + Romanized Hindi 'kitna lga??'
+cmt_02926,post_0301,Dm kro uska bhi hai,hi-en,latin,True,False,real_reddit_corpus_manual_review_v1,English 'Dm' + Romanized Hindi 'kro uska bhi hai'
+cmt_01898,post_0180,Tomorrow,en,latin,False,False,real_reddit_corpus_manual_review_v1,Single English word ('Tomorrow')
+cmt_03555,post_0365,Obv,en,latin,False,False,real_reddit_corpus_manual_review_v1,Single English abbreviation ('Obv')
+cmt_02274,post_0222,Welcome!!,en,latin,False,False,real_reddit_corpus_manual_review_v1,Single English word ('Welcome!!')
+cmt_03350,post_0345,Durga Puja?,und,latin,False,False,real_reddit_corpus_manual_review_v1,Proper noun festival name ('Durga Puja?') — language-ambiguous
+cmt_01201,post_0122,[ Removed by Reddit ],und,latin,False,False,real_reddit_corpus_manual_review_v1,Reddit moderation placeholder ('[ Removed by Reddit ]')
+cmt_00468,post_0048,Confusing,en,latin,False,False,real_reddit_corpus_manual_review_v1,Single English word ('Confusing')
+cmt_00327,post_0031,Sarcasm,en,latin,False,False,real_reddit_corpus_manual_review_v1,Single English word ('Sarcasm')
+cmt_01420,post_0147,genuinely asking,en,latin,False,False,real_reddit_corpus_manual_review_v1,Two-word English phrase ('genuinely asking')
+cmt_01843,post_0172,🤣🤣🤣,und,unknown,False,False,real_reddit_corpus_manual_review_v1,Emoji-only comment ('🤣🤣🤣')
+cmt_00480,post_0051,Whyy 😭?,en,latin,False,False,real_reddit_corpus_manual_review_v1,Elongated English word + emoji ('Whyy 😭?')
+cmt_01646,post_0158,Bro kill the interviewer with your confidence and smile.,en,latin,False,False,real_reddit_corpus_manual_review_v1,Informal English with 'Bro'
+cmt_01089,post_0107,"I totally agree with you on the upgrade part. But my concern with ROI is that I wanted to know what's a better thing to do, repeat cat and get a better college and better package or go with smbp and grow slowly? Its just that i have been hearing alot of placement issues about the institute. I myself received a referral request from a recent smbp grad, so ya just need more clarity. Thank you!",en,latin,False,False,real_reddit_corpus_manual_review_v1,Long English ROI discussion
+cmt_02293,post_0223,bro can you tell me what's your jee mains rank?,en,latin,False,False,real_reddit_corpus_manual_review_v1,English with 'bro'
+cmt_01967,post_0185,bro how much percentile did you get,en,latin,False,False,real_reddit_corpus_manual_review_v1,English with 'bro'
+cmt_02646,post_0268,Ha just now around 1 PM. U may check again,hi-en,latin,True,True,real_reddit_corpus_manual_review_v1,"Multi-span: 'Ha' (Hindi yes) + English update, Sent 2 English"
+cmt_03445,post_0357,"I trust this email finds you in good health' - no it doesn't, bro is literally threatening to shut down the entire college within 48 hours",en,latin,False,False,real_reddit_corpus_manual_review_v1,English humorous commentary with 'bro'
+cmt_02252,post_0220,Please Check Your DM Bro,en,latin,False,False,real_reddit_corpus_manual_review_v1,English DM request with 'Bro'
+cmt_01382,post_0145,No bro,en,latin,False,False,real_reddit_corpus_manual_review_v1,Short English reply ('No bro')
+cmt_02256,post_0220,No idea bro,en,latin,False,False,real_reddit_corpus_manual_review_v1,Short English reply ('No idea bro')
+cmt_02231,post_0218,bro how much you got in jee,en,latin,False,False,real_reddit_corpus_manual_review_v1,English JEE rank question with 'bro'
