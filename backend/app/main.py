@@ -3,8 +3,9 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
@@ -52,6 +53,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(SecurityHeadersMiddleware)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -60,7 +62,11 @@ app.mount("/assets", StaticFiles(directory=STATIC_DIR), name="demo-assets")
 
 
 @app.get("/")
-def root():
+def root(request: Request = None):  # type: ignore[assignment]
+    if request is not None:
+        accept = (request.headers.get("accept") or "").lower()
+        if "text/html" in accept and "application/json" not in accept.split(",")[0]:
+            return RedirectResponse(url="/app", status_code=307)
     return {
         "message": "IIM Sambalpur Community Intelligence API is running"
     }

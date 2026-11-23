@@ -53,4 +53,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("Content-Security-Policy", csp)
         if path == "/app" or path.startswith(("/app/", "/assets/")):
             response.headers.setdefault("Cache-Control", "no-cache, must-revalidate")
+        elif request.method == "GET" and path.startswith("/api/demo/") and path != "/api/demo/health":
+            response.headers.setdefault(
+                "Cache-Control",
+                "public, max-age=300, stale-while-revalidate=3600",
+            )
         return response

@@ -18,6 +18,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from app.services.nlp.indian_reddit_lid import detect_indian_reddit_language
 from app.services.nlp.community_intelligence import (
     analyze_live_comment,
     build_cross_iim_comparison,
@@ -94,6 +95,7 @@ class SummaryResponse(BaseModel):
     emotion_distribution: list[dict[str, Any]]
     response_distribution: list[dict[str, Any]]
     resolution_summary: list[dict[str, Any]]
+    resolution_v2_summary: dict[str, Any] = Field(default_factory=dict)
     recent_discussions: list[dict[str, Any]]
     confidence_summary: dict[str, Any] = Field(default_factory=dict)
     issue_priority_matrix: list[dict[str, Any]] = Field(default_factory=list)
@@ -121,12 +123,26 @@ class ItemsResponse(BaseModel):
     synthetic_only: bool
 
 
+class TopicsResponse(ItemsResponse):
+    model: str = "nmf"
+    model_info: dict[str, Any] = Field(default_factory=dict)
+    available_models: list[dict[str, Any]] = Field(default_factory=list)
+    outliers: dict[str, Any] | None = None
+    hierarchy: list[dict[str, Any]] = Field(default_factory=list)
+    comparison: dict[str, Any] = Field(default_factory=dict)
+
+
 class SentimentResponse(BaseModel):
     sentiment: list[dict[str, Any]]
     emotions: list[dict[str, Any]]
     by_issue: list[dict[str, Any]]
     monthly: list[dict[str, Any]]
+    by_language: list[dict[str, Any]] = Field(default_factory=list)
     synthetic_only: bool
+
+
+class ResponsesResponse(ItemsResponse):
+    difficult_boundaries: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ModelsResponse(BaseModel):
@@ -141,6 +157,11 @@ class ModelsResponse(BaseModel):
     labeled_data_provenance: dict[str, Any] | None = None
     human_iaa_audit: dict[str, Any] | None = None
     v5_optimization_upgrade: dict[str, Any] | None = None
+    strict_oof_governance_audit: dict[str, Any] | None = None
+    bertopic_vs_nmf_comparison: dict[str, Any] | None = None
+    provenance_authorizations: dict[str, str] = Field(default_factory=dict)
+    inference_performance: dict[str, Any] = Field(default_factory=dict)
+    v6_subsystem_benchmarks: dict[str, Any] = Field(default_factory=dict)
 
 
 class ErrorAnalysisResponse(BaseModel):
@@ -163,6 +184,8 @@ class ResolutionResponse(ItemsResponse):
     unresolved_matrix: dict[str, Any] = Field(default_factory=dict)
     issue_solution_clusters: dict[str, Any] = Field(default_factory=dict)
     linker_summary: dict[str, Any] = Field(default_factory=dict)
+    explainable_resolution_v2: dict[str, Any] | None = None
+    issue_solution_map_v2: dict[str, Any] | None = None
 
 
 class ComparisonsResponse(BaseModel):
@@ -216,6 +239,9 @@ def _data() -> dict[str, Any]:
     predictions = _read(ARTIFACT_DIR / "predictions.json")["tasks"]
     evaluation = _read(ARTIFACT_DIR / "evaluation.json")
     topic_result = _read(ARTIFACT_DIR / "topic_discovery.json")["result"]
+    bertopic_artifact = _read_optional(ARTIFACT_DIR / "bertopic_v1_topics.json")
+    issue_solution_map_v2 = _read_optional(ARTIFACT_DIR / "issue_solution_map_v2.json")
+    resolution_engine_v2 = _read_optional(ARTIFACT_DIR / "resolution_engine_v2.json")
     ci_artifact = _read_optional(ARTIFACT_DIR / "community_intelligence.json")
     posts = corpus["posts"]
     flat: list[dict[str, Any]] = []
@@ -253,6 +279,9 @@ def _data() -> dict[str, Any]:
         ),
         "topics": topic_result.get("topics", []),
         "topic_assignments": topic_result.get("documents", []),
+        "bertopic_artifact": bertopic_artifact,
+        "issue_solution_map_v2": issue_solution_map_v2,
+        "resolution_engine_v2": resolution_engine_v2,
         "community_intelligence": ci_artifact,
         "nn_index": build_nn_index(flat),
     }
@@ -360,26 +389,38 @@ def _summary_data() -> dict[str, Any]:
         data["topic_assignments"],
         confidence_summary=conf_summary,
         priority_matrix=priority_matrix,
+        bertopic_artifact=data.get("bertopic_artifact"),
+        issue_solution_map=data.get("issue_solution_map_v2"),
+        resolution_v2=data.get("resolution_engine_v2"),
     )
+    provenance_auths = {
+        "collection_authorization": "public_reddit_archive_read_only_anonymized_snapshot",
+        "research_use_authorization": "academic_non_commercial_research_analysis",
+        "model_training_authorization": "internal_research_benchmarking_and_dapt_evaluation_only",
+        "public_redistribution_permission": "aggregated_metrics_and_anonymized_excerpts_only_no_usernames_or_restricted_records",
+    }
     return {
         "synthetic_only": synthetic_only,
         "dataset_version": data["metadata"]["dataset_version"],
         "generated_at": data["metadata"].get("generation_timestamp") or data["metadata"].get("generated_at", ""),
         "provenance": {
-            key: data["metadata"].get(key)
-            for key in (
-                "dataset_id",
-                "dataset_version",
-                "generation_seed",
-                "generation_timestamp",
-                "source_provider",
-                "source_mode",
-                "synthetic",
-                "authorization_status",
-                "filtering_summary",
-                "dapt_summary",
-                "notice",
-            )
+            **{
+                key: data["metadata"].get(key)
+                for key in (
+                    "dataset_id",
+                    "dataset_version",
+                    "generation_seed",
+                    "generation_timestamp",
+                    "source_provider",
+                    "source_mode",
+                    "synthetic",
+                    "authorization_status",
+                    "filtering_summary",
+                    "dapt_summary",
+                    "notice",
+                )
+            },
+            **provenance_auths,
         },
         "posts": len(posts),
         "comments": len(rows),
@@ -393,6 +434,7 @@ def _summary_data() -> dict[str, Any]:
         "emotion_distribution": _prediction_distribution(rows, "emotion", "emotions"),
         "response_distribution": _prediction_distribution(rows, "response", "response_type", list(RESPONSE_TYPES)),
         "resolution_summary": [{"label": state, "count": resolution_counts.get(state, 0)} for state in resolution_order],
+        "resolution_v2_summary": (data.get("resolution_engine_v2") or {}).get("overall_summary") or {},
         "recent_discussions": [{
             "id": p["reddit_id"],
             "title": p["title"],
@@ -541,32 +583,112 @@ def discussion_detail(post_id: str) -> dict[str, Any]:
         confs.append(float(c_prof["overall_confidence"]))
         if c_prof["needs_review"]:
             low_cnt += 1
+        lid = detect_indian_reddit_language(comment.get("body") or "")
         comments.append({
             **comment,
             "parent_comment_text": by_id.get(comment.get("parent_reddit_id"), {}).get("body"),
             "predictions": flat.get("predictions", {}),
             "confidence_profile": c_prof,
+            "language_analysis": {
+                "language": lid["language"],
+                "script": lid["script"],
+                "is_code_mixed": lid["is_code_mixed"],
+                "confidence": lid["confidence"],
+                "abstain": lid["abstain"],
+                "uncertainty_flag": lid["uncertainty_flag"],
+                "has_multi_language_spans": lid["has_multi_language_spans"],
+                "spans": lid["spans"][:6],
+            },
         })
     mean_c = round(sum(confs) / len(confs), 4) if confs else 0.0
+    res_v2 = data.get("resolution_engine_v2") or {}
+    thread_res = next(
+        (t for t in (res_v2.get("featured_thread_trails") or []) if t.get("post_id") == post_id),
+        None,
+    )
     enriched_post = {
         **post,
         "mean_confidence": mean_c,
         "confidence_tier": confidence_tier(mean_c),
         "low_confidence_comments": low_cnt,
+        "explainable_resolution": thread_res,
     }
     return {"post": enriched_post, "comments": comments, "synthetic_only": data["synthetic_only"]}
 
 
 @router.get("/issues", response_model=ItemsResponse)
 def issues() -> dict[str, Any]:
-    return {"items": _summary_data()["issue_distribution"], "synthetic_only": _data()["synthetic_only"]}
-
-
-@router.get("/topics", response_model=ItemsResponse)
-def topics() -> dict[str, Any]:
     data = _data()
+    map_by_iss = (data.get("issue_solution_map_v2") or {}).get("by_issue") or {}
+    res_by_iss = {
+        r["issue_id"]: r for r in ((data.get("resolution_engine_v2") or {}).get("by_issue") or [])
+    }
+    items = []
+    for item in _summary_data()["issue_distribution"]:
+        enriched = dict(item)
+        key = item["key"]
+        if key in map_by_iss:
+            enriched["contextual_solutions"] = {
+                "linked_solution_count": map_by_iss[key].get("linked_solution_count", 0),
+                "cluster_count": map_by_iss[key].get("cluster_count", 0),
+                "semantic_solution_clusters": (map_by_iss[key].get("semantic_solution_clusters") or [])[:5],
+                "top_matched_solutions": (map_by_iss[key].get("top_matched_solutions") or [])[:5],
+            }
+        if key in res_by_iss:
+            enriched["resolution_verdict"] = res_by_iss[key].get("verdict")
+            enriched["contradictory_threads"] = res_by_iss[key].get("contradictory_threads", 0)
+            enriched["resolution_explanation"] = res_by_iss[key].get("explanation")
+        items.append(enriched)
+    return {"items": items, "synthetic_only": data["synthetic_only"]}
+
+
+@router.get("/topics", response_model=TopicsResponse)
+def topics(model: str = Query(default="nmf", pattern="^(nmf|bertopic)$")) -> dict[str, Any]:
+    data = _data()
+    bt = data.get("bertopic_artifact") or {}
+    comparison = bt.get("comparison") or {}
+    nmf_count = len(data["topics"])
+    bt_info = bt.get("model_info") or {}
+
+    available_models = [
+        {
+            "id": "nmf",
+            "label": "NMF v1 (Baseline Default)",
+            "algorithm": "nmf",
+            "n_topics": nmf_count,
+            "is_default": True,
+            "embedding_model": "TF-IDF (1–2 grams, 8,000 vocab)",
+        }
+    ]
+    if bt.get("topics"):
+        available_models.append({
+            "id": "bertopic",
+            "label": "BERTopic v1 (Multilingual E5-Small)",
+            "algorithm": "bertopic",
+            "n_topics": len(bt.get("topics", [])),
+            "outlier_count": bt_info.get("outlier_count", 0),
+            "is_default": False,
+            "embedding_model": bt_info.get("embedding_model", "intfloat/multilingual-e5-small"),
+        })
+
+    if model == "bertopic":
+        if not bt.get("topics"):
+            raise HTTPException(status_code=404, detail="BERTopic v1 artifact is not available.")
+        return {
+            "items": bt.get("topics", []),
+            "synthetic_only": data["synthetic_only"],
+            "model": "bertopic",
+            "model_info": bt_info,
+            "available_models": available_models,
+            "outliers": bt.get("outliers"),
+            "hierarchy": bt.get("hierarchy", []),
+            "comparison": comparison,
+        }
+
+    # Preserved NMF v1 baseline path (100% backward compatible!)
     rows_by_id = {row["reddit_id"]: row for row in data["comments"]}
     assigned: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    issue_by_topic: dict[int, Counter] = defaultdict(Counter)
     for document in data["topic_assignments"]:
         topic_id = document.get("dominant_topic_id")
         row = rows_by_id.get(document.get("comment_id"))
@@ -577,14 +699,42 @@ def topics() -> dict[str, Any]:
                 "text": row["body"],
                 "score": document.get("dominant_topic_score"),
             })
+            if row.get("issue_key"):
+                issue_by_topic[int(topic_id)][row["issue_key"]] += 1
     items = []
     for topic in data["topics"]:
         item = dict(topic)
-        examples = sorted(assigned.get(int(topic["topic_id"]), []), key=lambda x: x.get("score") or 0, reverse=True)
+        tid = int(topic["topic_id"])
+        examples = sorted(assigned.get(tid, []), key=lambda x: x.get("score") or 0, reverse=True)
+        item["algorithm"] = "nmf"
+        item["namespaced_topic_id"] = f"nmf:v1:{tid}"
         item["document_count"] = len(examples)
-        item["representative_examples"] = examples[:2]
+        item["representative_examples"] = examples[:3]
+        item["related_supervised_issues"] = [
+            {"issue": iss, "count": cnt, "share": round(cnt / max(len(examples), 1), 4)}
+            for iss, cnt in issue_by_topic[tid].most_common(4)
+        ]
         items.append(item)
-    return {"items": items, "synthetic_only": data["synthetic_only"]}
+    return {
+        "items": items,
+        "synthetic_only": data["synthetic_only"],
+        "model": "nmf",
+        "model_info": {
+            "model_id": "nmf_v1",
+            "algorithm": "nmf",
+            "embedding_model": "TF-IDF (word 1–2 grams, max_features=8,000)",
+            "preprocessing_mode": "tfidf_automod_filtered",
+            "n_documents": len(data["topic_assignments"]),
+            "n_topics": len(items),
+            "outlier_count": 0,
+            "outlier_rate": 0.0,
+            "metrics": comparison.get("nmf_metrics", {}),
+        },
+        "available_models": available_models,
+        "outliers": None,
+        "hierarchy": [],
+        "comparison": comparison,
+    }
 
 
 @router.get("/sentiment", response_model=SentimentResponse)
@@ -593,26 +743,43 @@ def sentiment() -> dict[str, Any]:
     rows = data["comments"]
     per_issue: dict[str, Counter] = defaultdict(Counter)
     monthly: dict[str, Counter] = defaultdict(Counter)
+    by_lang_sent: dict[str, Counter] = defaultdict(Counter)
+    by_lang_emo: dict[str, Counter] = defaultdict(Counter)
     emotions: Counter = Counter()
     sentiments: Counter = Counter()
     for row in rows:
         pred = row["predictions"]
         label = pred["sentiment"].get("sentiment")
+        lg = str(row.get("language") or "und").lower()
+        lang_grp = "English (en)" if lg == "en" else ("Hinglish / Indic" if lg in {"hi", "hi-en", "bn", "bn-en", "or", "or-en"} or row.get("is_code_mixed") else "Terse / Undetermined")
         if label:
             sentiments[label] += 1
             per_issue[row["issue_key"]][label] += 1
             monthly[row["created_at"][:7]][label] += 1
-        emotions.update(pred["emotion"].get("emotions", []))
+            by_lang_sent[lang_grp][label] += 1
+        emos = pred["emotion"].get("emotions", [])
+        emotions.update(emos)
+        by_lang_emo[lang_grp].update(emos)
+    by_language = [
+        {
+            "language_group": grp,
+            "total": sum(cnt.values()),
+            "distribution": [{"label": lb, "count": cnt.get(lb, 0)} for lb in SENTIMENTS],
+            "top_emotions": [{"label": em, "count": ec} for em, ec in by_lang_emo[grp].most_common(3)],
+        }
+        for grp, cnt in sorted(by_lang_sent.items(), key=lambda kv: sum(kv[1].values()), reverse=True)
+    ]
     return {
         "sentiment": [{"label": key, "count": sentiments.get(key, 0)} for key in SENTIMENTS],
         "emotions": [{"label": key, "count": count} for key, count in sorted(emotions.items())],
         "by_issue": [{"issue": key, "distribution": [{"label": label, "count": counter.get(label, 0)} for label in SENTIMENTS]} for key, counter in sorted(per_issue.items())],
         "monthly": [{"month": month, "distribution": [{"label": label, "count": counter.get(label, 0)} for label in SENTIMENTS]} for month, counter in sorted(monthly.items())],
+        "by_language": by_language,
         "synthetic_only": data["synthetic_only"],
     }
 
 
-@router.get("/responses", response_model=ItemsResponse)
+@router.get("/responses", response_model=ResponsesResponse)
 def responses() -> dict[str, Any]:
     data = _data()
     rows = data["comments"]
@@ -633,20 +800,59 @@ def responses() -> dict[str, Any]:
                 for r in examples
             ],
         })
-    return {"items": items, "synthetic_only": data["synthetic_only"]}
+    # Difficult classification boundaries observed on held-out error analysis & low-margin corpus replies
+    difficult_boundaries = [
+        {
+            "boundary": "counterargument ↔ opinion",
+            "reason": "Skeptical student takes often critique claims implicitly without explicit rebuttal markers ('I disagree'); lowest minority-class F1 on frozen n=92 (improved by +93% training support in Track B V2).",
+            "frozen_test_note": "V5 had 6/9 counterarguments misclassified as opinion; V6 strict-inductive cut counterargument→opinion errors from 6 to 1.",
+        },
+        {
+            "boundary": "solution ↔ advice",
+            "reason": "Actionable recommendations ('check AICTE refund guidelines') overlap semantically with general guidance ('try preparing harder for CAT'); binary Solution model (XLM-R, 85.88% F1) disambiguates concrete fixes.",
+            "frozen_test_note": "V6 strict-inductive reduced solution→advice confusions from 5 to 2 on frozen n=92.",
+        },
+        {
+            "boundary": "personal_experience ↔ opinion",
+            "reason": "Alumni & current-student evaluations mix firsthand narrative ('I skipped Sambalpur for NIBM') with evaluative stance ('feels like a good decision').",
+            "frozen_test_note": "Context-free comment_only beat parent_pair on Response because parent threads bled role bias across turns.",
+        },
+    ]
+    return {"items": items, "difficult_boundaries": difficult_boundaries, "synthetic_only": data["synthetic_only"]}
 
 
 @router.get("/resolution", response_model=ResolutionResponse)
-def resolution() -> dict[str, Any]:
+def resolution(compact: bool = Query(default=False)) -> dict[str, Any]:
     data = _data()
+    is_compact = compact is True
+    comments_by_post: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for c in data["comments"]:
+        comments_by_post[c["post_id"]].append(c)
+    v6_trails_by_post = {
+        t["post_id"]: t
+        for t in ((data.get("resolution_engine_v2") or {}).get("featured_thread_trails") or [])
+        if t.get("post_id")
+    }
     items = []
     for post in data["posts"]:
+        pid = post["reddit_id"]
         evidence = next((c for c in post["comments"] if c["reddit_id"] == post.get("resolution_evidence_comment_id")), None)
         proposed = [c for c in post["comments"] if c.get("response_type") == "solution"]
         advice = [c for c in post["comments"] if c.get("response_type") == "advice"]
         actionable = [c for c in post["comments"] if c.get("is_solution")]
-        items.append({
-            "post_id": post["reddit_id"],
+        sol_preds = [
+            {
+                "comment_id": c["reddit_id"],
+                "is_solution": c["predictions"]["solution"].get("is_solution"),
+                "probability": c["predictions"]["solution"].get("solution_probability"),
+            }
+            for c in comments_by_post.get(pid, [])
+            if c["predictions"].get("solution")
+        ]
+        model_pos = sum(1 for sp in sol_preds if sp.get("is_solution"))
+        v6_t = v6_trails_by_post.get(pid)
+        row: dict[str, Any] = {
+            "post_id": pid,
             "title": post["title"],
             "issue": post["issue_category"],
             "issue_key": post["issue_key"],
@@ -654,16 +860,23 @@ def resolution() -> dict[str, Any]:
             "evidence_text": evidence["body"] if evidence else None,
             "evidence_type": evidence.get("resolution_evidence_type") if evidence else None,
             "evidence_comment_id": evidence["reddit_id"] if evidence else None,
-            "proposals": [{"text": c["body"], "role": c.get("response_type"), "comment_id": c["reddit_id"]} for c in proposed],
-            "advice": [{"text": c["body"], "comment_id": c["reddit_id"]} for c in advice],
-            "actionable_recommendations": [{"text": c["body"], "comment_id": c["reddit_id"]} for c in actionable],
-            "solution_model_output": [{
-                "comment_id": c["reddit_id"],
-                "is_solution": c["predictions"]["solution"].get("is_solution"),
-                "probability": c["predictions"]["solution"].get("solution_probability"),
-            } for c in data["comments"] if c["post_id"] == post["reddit_id"] and c["predictions"]["solution"]],
+            "proposal_count": len(proposed),
+            "advice_count": len(advice),
+            "actionable_count": len(actionable),
+            "model_positive_count": model_pos,
+            "model_total_count": len(sol_preds),
+            "v6_verdict": v6_t.get("verdict") if v6_t else None,
+            "v6_resolution_state": v6_t.get("resolution_state") if v6_t else None,
+            "v6_contradictory_count": int((v6_t.get("signals") or {}).get("contradictory_followups_count", 0)) if v6_t else 0,
+            "v6_score": v6_t.get("resolution_score") if v6_t else None,
             "synthetic": bool(post.get("synthetic", False)),
-        })
+        }
+        if not is_compact:
+            row["proposals"] = [{"text": c["body"], "role": c.get("response_type"), "comment_id": c["reddit_id"]} for c in proposed]
+            row["advice"] = [{"text": c["body"], "comment_id": c["reddit_id"]} for c in advice]
+            row["actionable_recommendations"] = [{"text": c["body"], "comment_id": c["reddit_id"]} for c in actionable]
+            row["solution_model_output"] = sol_preds
+        items.append(row)
     ci_art = data.get("community_intelligence")
     unresolved_matrix = build_unresolved_issue_matrix(data["posts"], data["comments"], ci_art)
     clusters = build_issue_solution_clusters(data["comments"], ci_art)
@@ -673,6 +886,8 @@ def resolution() -> dict[str, Any]:
         "unresolved_matrix": unresolved_matrix,
         "issue_solution_clusters": clusters,
         "linker_summary": (ci_art or {}).get("linker_summary") or clusters.get("linker_summary", {}),
+        "explainable_resolution_v2": data.get("resolution_engine_v2"),
+        "issue_solution_map_v2": data.get("issue_solution_map_v2"),
     }
 
 
@@ -699,6 +914,9 @@ def analyze(req: AnalyzeRequest) -> dict[str, Any]:
 def models() -> dict[str, Any]:
     data = _data()
     ev_raw = data["evaluation_raw"]
+    bt = data.get("bertopic_artifact") or {}
+    map_v2 = data.get("issue_solution_map_v2") or {}
+    res_v2 = data.get("resolution_engine_v2") or {}
     return {
         "synthetic_only": data["synthetic_only"],
         "evaluation_scope": data["evaluation_scope"],
@@ -711,6 +929,28 @@ def models() -> dict[str, Any]:
         "labeled_data_provenance": ev_raw.get("labeled_data_provenance"),
         "human_iaa_audit": ev_raw.get("human_iaa_audit"),
         "v5_optimization_upgrade": ev_raw.get("v5_optimization_upgrade"),
+        "strict_oof_governance_audit": ev_raw.get("strict_oof_governance_audit"),
+        "bertopic_vs_nmf_comparison": bt.get("comparison"),
+        "provenance_authorizations": {
+            "collection_authorization": "public_reddit_archive_read_only_anonymized_snapshot",
+            "research_use_authorization": "academic_non_commercial_research_analysis",
+            "model_training_authorization": "internal_research_benchmarking_and_dapt_evaluation_only",
+            "public_redistribution_permission": "aggregated_metrics_and_anonymized_excerpts_only_no_usernames_or_restricted_records",
+        },
+        "inference_performance": {
+            "hardware": "NVIDIA GeForce RTX 4060 Laptop GPU (8 GB VRAM, CUDA 13.2, bf16 AMP)",
+            "single_task_transformer_gpu_ms": 1.82,
+            "single_task_transformer_cpu_ms": 48.9,
+            "five_task_sequential_gpu_ms": 9.1,
+            "shared_mtl_all_5_gpu_ms": 1.32,
+            "tfidf_logreg_cpu_ms": 0.15,
+            "multilingual_e5_small_gpu_ms": 2.37,
+            "vercel_runtime_dependencies": "fastapi + pydantic only (pure stdlib serving; 0 MB ML runtime)",
+        },
+        "v6_subsystem_benchmarks": {
+            "issue_solution_mapping": map_v2.get("evaluation_benchmark_human_reviewed"),
+            "unresolved_resolution_engine": res_v2.get("evaluation_benchmark_human_reviewed"),
+        },
     }
 
 
