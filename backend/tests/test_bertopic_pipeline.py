@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,15 +17,24 @@ if str(ROOT) not in sys.path:
 
 from app.main import app
 
+HAS_BERTOPIC_ML = (
+    importlib.util.find_spec("torch") is not None
+    and importlib.util.find_spec("bertopic") is not None
+    and importlib.util.find_spec("umap") is not None
+    and importlib.util.find_spec("hdbscan") is not None
+)
+
 
 def test_nmf_artifact_preserved_intact_alongside_bertopic() -> None:
     nmf_path = ROOT / "ml" / "artifacts" / "live_corpus" / "topic_discovery.json"
     bt_path = ROOT / "ml" / "artifacts" / "live_corpus" / "bertopic_v1_topics.json"
-    reg_path = ROOT / "ml" / "artifacts" / "topic_models" / "registry.json"
+    tracked_reg_path = ROOT / "ml" / "artifacts" / "live_corpus" / "topic_model_registry.json"
+    local_reg_path = ROOT / "ml" / "artifacts" / "topic_models" / "registry.json"
+    reg_path = local_reg_path if local_reg_path.is_file() else tracked_reg_path
 
     assert nmf_path.is_file(), "Existing NMF topic_discovery.json must never be removed"
     assert bt_path.is_file(), "BERTopic v1 serving artifact must exist separately"
-    assert reg_path.is_file(), "Topic model registry must exist"
+    assert tracked_reg_path.is_file(), "Tracked topic model registry metadata must exist"
 
     nmf = json.loads(nmf_path.read_text(encoding="utf-8"))
     assert nmf["result"]["topic_model"] == "nmf"
@@ -71,6 +82,10 @@ def test_topics_api_backward_compatible_nmf_and_bertopic_switch() -> None:
     assert r_bad.status_code == 422
 
 
+@pytest.mark.skipif(
+    not HAS_BERTOPIC_ML,
+    reason="Optional offline ML extras (torch/bertopic/umap/hdbscan) not installed in lightweight CI",
+)
 def test_bertopic_fit_save_load_reproducibility_and_outliers(tmp_path: Path) -> None:
     """Fast deterministic synthetic-embedding test of BERTopic fit/save/load/transform/outliers."""
     from ml.topics.bertopic.config import BERTopicExperimentConfig

@@ -1,0 +1,1109 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-11-23T05:54:46.809071+00:00",
+  "default_model_id": "nmf_v1",
+  "models": [
+    {
+      "model_id": "nmf_v1",
+      "algorithm": "nmf",
+      "embedding_model": null,
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "vectorizer": "TF-IDF (1-2 grams, max_features=8000)",
+        "automod_filtered": true
+      },
+      "n_documents": 3459,
+      "n_topics": 10,
+      "outlier_count": 0,
+      "outlier_rate": 0.0,
+      "training_parameters": {
+        "n_components": 10,
+        "init": "nndsvda",
+        "random_state": 42
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 10,
+        "outlier_count": 0,
+        "outlier_rate": 0.0,
+        "coherence_npmi": 0.0046,
+        "coherence_npmi_median": 0.0624,
+        "coherence_umass": -1.9766,
+        "topic_diversity": 0.96,
+        "representative_centroid_cosine": 0.9406,
+        "size_distribution": {
+          "min": 59,
+          "median": 285.0,
+          "max": 1382,
+          "normalized_entropy_balance": 0.8097
+        },
+        "per_topic_coherence_npmi": {
+          "0": 0.2223,
+          "1": -0.0762,
+          "2": 0.016,
+          "3": -0.1516,
+          "4": -0.1001,
+          "5": 0.1087,
+          "6": 0.2531,
+          "7": 0.1186,
+          "8": 0.1608,
+          "9": -0.5054
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 0,
+            "outlier_rate": 0.0,
+            "distinct_topics_covered": 9,
+            "top_topics": [
+              {
+                "topic_id": 6,
+                "count": 263
+              },
+              {
+                "topic_id": 0,
+                "count": 24
+              },
+              {
+                "topic_id": 9,
+                "count": 19
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 0,
+            "outlier_rate": 0.0,
+            "distinct_topics_covered": 10,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 1214
+              },
+              {
+                "topic_id": 8,
+                "count": 418
+              },
+              {
+                "topic_id": 2,
+                "count": 361
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 0,
+            "outlier_rate": 0.0,
+            "distinct_topics_covered": 9,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 144
+              },
+              {
+                "topic_id": 2,
+                "count": 27
+              },
+              {
+                "topic_id": 8,
+                "count": 22
+              }
+            ]
+          }
+        }
+      },
+      "artifact_paths": {
+        "topic_discovery_json": "ml\\artifacts\\live_corpus\\topic_discovery.json"
+      },
+      "notes": "Existing preserved NMF v1 baseline (never overwritten).",
+      "registered_at": "2026-11-23T05:53:46.543031+00:00"
+    },
+    {
+      "model_id": "bertopic_e5_small_raw",
+      "algorithm": "bertopic",
+      "embedding_model": "intfloat/multilingual-e5-small",
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "mode": "raw_clean",
+        "token_pattern": "indic_multilingual_safe",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "bm25_weighting": true,
+        "reduce_frequent_words": true
+      },
+      "n_documents": 3459,
+      "n_topics": 35,
+      "outlier_count": 1320,
+      "outlier_rate": 0.3816,
+      "training_parameters": {
+        "model_id": "bertopic_e5_small_raw",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "min_word_count": 3,
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "umap_metric": "cosine",
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_metric": "euclidean",
+        "hdbscan_cluster_selection_method": "eom",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "vectorizer_min_df": 1,
+        "vectorizer_max_df": 1.0,
+        "bm25_weighting": true,
+        "reduce_frequent_words": true,
+        "top_n_words": 10,
+        "nr_topics": null,
+        "calculate_probabilities": true,
+        "random_state": 42,
+        "corpus_version": "6.1.0",
+        "notes": "Config B1: Multilingual E5-small + raw_clean text (natural density clustering)",
+        "extra": {}
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 35,
+        "outlier_count": 1320,
+        "outlier_rate": 0.3816,
+        "coherence_npmi": -0.0845,
+        "coherence_npmi_median": -0.0583,
+        "coherence_umass": -1.5199,
+        "topic_diversity": 0.9629,
+        "representative_centroid_cosine": 0.9523,
+        "size_distribution": {
+          "min": 25,
+          "median": 49.0,
+          "max": 224,
+          "normalized_entropy_balance": 0.9509
+        },
+        "per_topic_coherence_npmi": {
+          "0": 0.3138,
+          "1": -0.5351,
+          "2": -0.4732,
+          "3": -0.2326,
+          "4": -0.0421,
+          "5": 0.394,
+          "6": 0.0091,
+          "7": -0.0325,
+          "8": 0.0293,
+          "9": 0.6971,
+          "10": -0.242,
+          "11": -0.2222,
+          "12": 0.1714,
+          "13": 0.3745,
+          "14": -0.2096,
+          "15": -0.4167,
+          "16": -0.137,
+          "17": -0.2112,
+          "18": -0.2534,
+          "19": -0.2889,
+          "20": 0.0282,
+          "21": -0.0393,
+          "22": -0.0355,
+          "23": -0.0486,
+          "24": -0.0222,
+          "25": -0.0768,
+          "26": -0.08,
+          "27": -0.0583,
+          "28": -0.1043,
+          "29": -0.3716,
+          "30": -0.542,
+          "31": 0.3027,
+          "32": -0.6008,
+          "33": 0.0392,
+          "34": -0.0413
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 78,
+            "outlier_rate": 0.2294,
+            "distinct_topics_covered": 21,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 190
+              },
+              {
+                "topic_id": 29,
+                "count": 25
+              },
+              {
+                "topic_id": 9,
+                "count": 12
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 1192,
+            "outlier_rate": 0.4177,
+            "distinct_topics_covered": 35,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 166
+              },
+              {
+                "topic_id": 3,
+                "count": 95
+              },
+              {
+                "topic_id": 2,
+                "count": 87
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 50,
+            "outlier_rate": 0.1887,
+            "distinct_topics_covered": 19,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 33
+              },
+              {
+                "topic_id": 19,
+                "count": 32
+              },
+              {
+                "topic_id": 17,
+                "count": 23
+              }
+            ]
+          }
+        }
+      },
+      "artifact_paths": {
+        "pending_winner_selection": "ml\\artifacts\\topic_models\\bertopic_v1"
+      },
+      "notes": "Config B1: Multilingual E5-small + raw_clean text (natural density clustering)",
+      "registered_at": "2026-11-23T05:54:00.465328+00:00"
+    },
+    {
+      "model_id": "bertopic_e5_small_raw_mcs35",
+      "algorithm": "bertopic",
+      "embedding_model": "intfloat/multilingual-e5-small",
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "mode": "raw_clean",
+        "token_pattern": "indic_multilingual_safe",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "bm25_weighting": true,
+        "reduce_frequent_words": true
+      },
+      "n_documents": 3459,
+      "n_topics": 20,
+      "outlier_count": 883,
+      "outlier_rate": 0.2553,
+      "training_parameters": {
+        "model_id": "bertopic_e5_small_raw_mcs35",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "min_word_count": 3,
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "umap_metric": "cosine",
+        "hdbscan_min_cluster_size": 35,
+        "hdbscan_min_samples": 10,
+        "hdbscan_metric": "euclidean",
+        "hdbscan_cluster_selection_method": "eom",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "vectorizer_min_df": 1,
+        "vectorizer_max_df": 1.0,
+        "bm25_weighting": true,
+        "reduce_frequent_words": true,
+        "top_n_words": 10,
+        "nr_topics": null,
+        "calculate_probabilities": true,
+        "random_state": 42,
+        "corpus_version": "6.1.0",
+        "notes": "Config B1-coarse: Multilingual E5-small + raw_clean (min_cluster_size=35 sensitivity check)",
+        "extra": {}
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 20,
+        "outlier_count": 883,
+        "outlier_rate": 0.2553,
+        "coherence_npmi": -0.1481,
+        "coherence_npmi_median": -0.1386,
+        "coherence_umass": -1.9004,
+        "topic_diversity": 0.945,
+        "representative_centroid_cosine": 0.9512,
+        "size_distribution": {
+          "min": 37,
+          "median": 52.0,
+          "max": 576,
+          "normalized_entropy_balance": 0.8482
+        },
+        "per_topic_coherence_npmi": {
+          "0": 0.2985,
+          "1": -0.1256,
+          "2": -0.6218,
+          "3": 0.2851,
+          "4": -0.5898,
+          "5": -0.4693,
+          "6": -0.5205,
+          "7": -0.2762,
+          "8": -0.0871,
+          "9": -0.2222,
+          "10": -0.1362,
+          "11": -0.137,
+          "12": -0.1758,
+          "13": -0.1403,
+          "14": -0.1487,
+          "15": -0.2931,
+          "16": 0.1571,
+          "17": -0.0222,
+          "18": -0.025,
+          "19": 0.2873
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 56,
+            "outlier_rate": 0.1647,
+            "distinct_topics_covered": 13,
+            "top_topics": [
+              {
+                "topic_id": 3,
+                "count": 226
+              },
+              {
+                "topic_id": 1,
+                "count": 23
+              },
+              {
+                "topic_id": 0,
+                "count": 17
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 790,
+            "outlier_rate": 0.2768,
+            "distinct_topics_covered": 20,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 559
+              },
+              {
+                "topic_id": 1,
+                "count": 318
+              },
+              {
+                "topic_id": 2,
+                "count": 215
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 37,
+            "outlier_rate": 0.1396,
+            "distinct_topics_covered": 12,
+            "top_topics": [
+              {
+                "topic_id": 2,
+                "count": 106
+              },
+              {
+                "topic_id": 4,
+                "count": 33
+              },
+              {
+                "topic_id": 6,
+                "count": 27
+              }
+            ]
+          }
+        }
+      },
+      "artifact_paths": {
+        "pending_winner_selection": "ml\\artifacts\\topic_models\\bertopic_v1"
+      },
+      "notes": "Config B1-coarse: Multilingual E5-small + raw_clean (min_cluster_size=35 sensitivity check)",
+      "registered_at": "2026-11-23T05:54:06.919151+00:00"
+    },
+    {
+      "model_id": "bertopic_minilm_raw",
+      "algorithm": "bertopic",
+      "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "mode": "raw_clean",
+        "token_pattern": "indic_multilingual_safe",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "bm25_weighting": true,
+        "reduce_frequent_words": true
+      },
+      "n_documents": 3459,
+      "n_topics": 39,
+      "outlier_count": 983,
+      "outlier_rate": 0.2842,
+      "training_parameters": {
+        "model_id": "bertopic_minilm_raw",
+        "embedding_key": "multilingual_minilm",
+        "embedding_model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "preprocessing_mode": "raw_clean",
+        "min_word_count": 3,
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "umap_metric": "cosine",
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_metric": "euclidean",
+        "hdbscan_cluster_selection_method": "eom",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "vectorizer_min_df": 1,
+        "vectorizer_max_df": 1.0,
+        "bm25_weighting": true,
+        "reduce_frequent_words": true,
+        "top_n_words": 10,
+        "nr_topics": null,
+        "calculate_probabilities": true,
+        "random_state": 42,
+        "corpus_version": "6.1.0",
+        "notes": "Config B2: Paraphrase-Multilingual-MiniLM-L12-v2 + raw_clean",
+        "extra": {}
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 39,
+        "outlier_count": 983,
+        "outlier_rate": 0.2842,
+        "coherence_npmi": -0.1319,
+        "coherence_npmi_median": -0.103,
+        "coherence_umass": -1.5956,
+        "topic_diversity": 0.9795,
+        "representative_centroid_cosine": 0.8184,
+        "size_distribution": {
+          "min": 25,
+          "median": 42.0,
+          "max": 236,
+          "normalized_entropy_balance": 0.9374
+        },
+        "per_topic_coherence_npmi": {
+          "0": 0.3761,
+          "1": 0.0185,
+          "2": 0.005,
+          "3": 0.4133,
+          "4": 0.0996,
+          "5": -0.4537,
+          "6": -0.1937,
+          "7": -0.8971,
+          "8": 0.0066,
+          "9": 0.2213,
+          "10": -0.1777,
+          "11": -0.1974,
+          "12": -0.5655,
+          "13": -0.2631,
+          "14": 0.3121,
+          "15": -0.2064,
+          "16": -0.0634,
+          "17": -0.103,
+          "18": -0.2681,
+          "19": -0.7835,
+          "20": -0.0667,
+          "21": 0.0885,
+          "22": -0.0978,
+          "23": -0.1544,
+          "24": -0.0075,
+          "25": -0.2206,
+          "26": -0.3535,
+          "27": -0.276,
+          "28": -0.2612,
+          "29": -0.0222,
+          "30": -0.0315,
+          "31": -0.115,
+          "32": -0.258,
+          "33": -0.0539,
+          "34": -0.0233,
+          "35": -0.1609,
+          "36": -0.3019,
+          "37": -0.0222,
+          "38": -0.086
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 60,
+            "outlier_rate": 0.1765,
+            "distinct_topics_covered": 28,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 204
+              },
+              {
+                "topic_id": 7,
+                "count": 18
+              },
+              {
+                "topic_id": 1,
+                "count": 9
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 862,
+            "outlier_rate": 0.302,
+            "distinct_topics_covered": 39,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 163
+              },
+              {
+                "topic_id": 2,
+                "count": 157
+              },
+              {
+                "topic_id": 3,
+                "count": 127
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 61,
+            "outlier_rate": 0.2302,
+            "distinct_topics_covered": 28,
+            "top_topics": [
+              {
+                "topic_id": 7,
+                "count": 49
+              },
+              {
+                "topic_id": 23,
+                "count": 17
+              },
+              {
+                "topic_id": 26,
+                "count": 14
+              }
+            ]
+          }
+        }
+      },
+      "artifact_paths": {
+        "pending_winner_selection": "ml\\artifacts\\topic_models\\bertopic_v1"
+      },
+      "notes": "Config B2: Paraphrase-Multilingual-MiniLM-L12-v2 + raw_clean",
+      "registered_at": "2026-11-23T05:54:13.675354+00:00"
+    },
+    {
+      "model_id": "bertopic_muril_dapt_raw",
+      "algorithm": "bertopic",
+      "embedding_model": "D:\\AI_Project_Transformer_Temp\\v5_experiments\\muril_dapt_strict_inductive_wwm_8ep",
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "mode": "raw_clean",
+        "token_pattern": "indic_multilingual_safe",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "bm25_weighting": true,
+        "reduce_frequent_words": true
+      },
+      "n_documents": 3459,
+      "n_topics": 2,
+      "outlier_count": 9,
+      "outlier_rate": 0.0026,
+      "training_parameters": {
+        "model_id": "bertopic_muril_dapt_raw",
+        "embedding_key": "muril_dapt_wwm",
+        "embedding_model_name": "D:\\AI_Project_Transformer_Temp\\v5_experiments\\muril_dapt_strict_inductive_wwm_8ep",
+        "preprocessing_mode": "raw_clean",
+        "min_word_count": 3,
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "umap_metric": "cosine",
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_metric": "euclidean",
+        "hdbscan_cluster_selection_method": "eom",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "vectorizer_min_df": 1,
+        "vectorizer_max_df": 1.0,
+        "bm25_weighting": true,
+        "reduce_frequent_words": true,
+        "top_n_words": 10,
+        "nr_topics": null,
+        "calculate_probabilities": true,
+        "random_state": 42,
+        "corpus_version": "6.1.0",
+        "notes": "Config C: MuRIL-DAPT-WWM mean-pooled non-contrastive comparator + raw_clean",
+        "extra": {}
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 2,
+        "outlier_count": 9,
+        "outlier_rate": 0.0026,
+        "coherence_npmi": 0.228,
+        "coherence_npmi_median": 0.228,
+        "coherence_umass": -2.4173,
+        "topic_diversity": 1.0,
+        "representative_centroid_cosine": 0.9976,
+        "size_distribution": {
+          "min": 289,
+          "median": 1725.0,
+          "max": 3161,
+          "normalized_entropy_balance": 0.4153
+        },
+        "per_topic_coherence_npmi": {
+          "0": 0.1145,
+          "1": 0.3415
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 2,
+            "outlier_rate": 0.0059,
+            "distinct_topics_covered": 2,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 258
+              },
+              {
+                "topic_id": 0,
+                "count": 80
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 7,
+            "outlier_rate": 0.0025,
+            "distinct_topics_covered": 2,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 2822
+              },
+              {
+                "topic_id": 1,
+                "count": 25
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 0,
+            "outlier_rate": 0.0,
+            "distinct_topics_covered": 2,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 259
+              },
+              {
+                "topic_id": 1,
+                "count": 6
+              }
+            ]
+          }
+        }
+      },
+      "artifact_paths": {
+        "pending_winner_selection": "ml\\artifacts\\topic_models\\bertopic_v1"
+      },
+      "notes": "Config C: MuRIL-DAPT-WWM mean-pooled non-contrastive comparator + raw_clean",
+      "registered_at": "2026-11-23T05:54:22.494691+00:00"
+    },
+    {
+      "model_id": "bertopic_e5_small_lang_aware",
+      "algorithm": "bertopic",
+      "embedding_model": "intfloat/multilingual-e5-small",
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "mode": "language_aware_affect",
+        "token_pattern": "indic_multilingual_safe",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "bm25_weighting": true,
+        "reduce_frequent_words": true
+      },
+      "n_documents": 3459,
+      "n_topics": 31,
+      "outlier_count": 1371,
+      "outlier_rate": 0.3964,
+      "training_parameters": {
+        "model_id": "bertopic_e5_small_lang_aware",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "language_aware_affect",
+        "min_word_count": 3,
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "umap_metric": "cosine",
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_metric": "euclidean",
+        "hdbscan_cluster_selection_method": "eom",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "vectorizer_min_df": 1,
+        "vectorizer_max_df": 1.0,
+        "bm25_weighting": true,
+        "reduce_frequent_words": true,
+        "top_n_words": 10,
+        "nr_topics": null,
+        "calculate_probabilities": true,
+        "random_state": 42,
+        "corpus_version": "6.1.0",
+        "notes": "Config D: Multilingual E5-small + language_aware_affect (slang + affect emojis + Romanized Indic variants)",
+        "extra": {}
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 31,
+        "outlier_count": 1371,
+        "outlier_rate": 0.3964,
+        "coherence_npmi": -0.0743,
+        "coherence_npmi_median": -0.0317,
+        "coherence_umass": -1.8048,
+        "topic_diversity": 0.9516,
+        "representative_centroid_cosine": 0.9538,
+        "size_distribution": {
+          "min": 27,
+          "median": 55.0,
+          "max": 193,
+          "normalized_entropy_balance": 0.9511
+        },
+        "per_topic_coherence_npmi": {
+          "0": -0.893,
+          "1": 0.0388,
+          "2": 0.252,
+          "3": -0.2188,
+          "4": -0.0257,
+          "5": -0.7214,
+          "6": 0.3933,
+          "7": -0.0885,
+          "8": -0.0317,
+          "9": -0.3635,
+          "10": 0.0293,
+          "11": -0.1809,
+          "12": -0.2295,
+          "13": -0.2222,
+          "14": -0.4163,
+          "15": 0.0594,
+          "16": -0.1727,
+          "17": -0.2989,
+          "18": 0.2073,
+          "19": 0.3958,
+          "20": -0.0667,
+          "21": -0.0315,
+          "22": 0.0183,
+          "23": -0.1854,
+          "24": 0.2951,
+          "25": 0.1242,
+          "26": 0.0743,
+          "27": -0.3122,
+          "28": 0.0915,
+          "29": 0.2173,
+          "30": -0.0413
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 88,
+            "outlier_rate": 0.2588,
+            "distinct_topics_covered": 19,
+            "top_topics": [
+              {
+                "topic_id": 2,
+                "count": 126
+              },
+              {
+                "topic_id": 24,
+                "count": 31
+              },
+              {
+                "topic_id": 27,
+                "count": 24
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 1200,
+            "outlier_rate": 0.4205,
+            "distinct_topics_covered": 31,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 166
+              },
+              {
+                "topic_id": 0,
+                "count": 163
+              },
+              {
+                "topic_id": 3,
+                "count": 113
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 83,
+            "outlier_rate": 0.3132,
+            "distinct_topics_covered": 18,
+            "top_topics": [
+              {
+                "topic_id": 11,
+                "count": 33
+              },
+              {
+                "topic_id": 5,
+                "count": 30
+              },
+              {
+                "topic_id": 0,
+                "count": 28
+              }
+            ]
+          }
+        }
+      },
+      "artifact_paths": {
+        "pending_winner_selection": "ml\\artifacts\\topic_models\\bertopic_v1"
+      },
+      "notes": "Config D: Multilingual E5-small + language_aware_affect (slang + affect emojis + Romanized Indic variants)",
+      "registered_at": "2026-11-23T05:54:29.274110+00:00"
+    },
+    {
+      "model_id": "bertopic_v1",
+      "algorithm": "bertopic",
+      "embedding_model": "intfloat/multilingual-e5-small",
+      "corpus_version": "6.1.0",
+      "preprocessing_config": {
+        "mode": "raw_clean",
+        "token_pattern": "indic_multilingual_safe",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "bm25_weighting": true,
+        "reduce_frequent_words": true
+      },
+      "n_documents": 3459,
+      "n_topics": 35,
+      "outlier_count": 1320,
+      "outlier_rate": 0.3816,
+      "training_parameters": {
+        "model_id": "bertopic_e5_small_raw",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "min_word_count": 3,
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "umap_metric": "cosine",
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_metric": "euclidean",
+        "hdbscan_cluster_selection_method": "eom",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "vectorizer_min_df": 1,
+        "vectorizer_max_df": 1.0,
+        "bm25_weighting": true,
+        "reduce_frequent_words": true,
+        "top_n_words": 10,
+        "nr_topics": null,
+        "calculate_probabilities": true,
+        "random_state": 42,
+        "corpus_version": "6.1.0",
+        "notes": "Config B1: Multilingual E5-small + raw_clean text (natural density clustering)",
+        "extra": {}
+      },
+      "evaluation_metrics": {
+        "n_documents": 3459,
+        "n_topics": 35,
+        "outlier_count": 1320,
+        "outlier_rate": 0.3816,
+        "coherence_npmi": -0.0845,
+        "coherence_npmi_median": -0.0583,
+        "coherence_umass": -1.5199,
+        "topic_diversity": 0.9629,
+        "representative_centroid_cosine": 0.9523,
+        "size_distribution": {
+          "min": 25,
+          "median": 49.0,
+          "max": 224,
+          "normalized_entropy_balance": 0.9509
+        },
+        "per_topic_coherence_npmi": {
+          "0": 0.3138,
+          "1": -0.5351,
+          "2": -0.4732,
+          "3": -0.2326,
+          "4": -0.0421,
+          "5": 0.394,
+          "6": 0.0091,
+          "7": -0.0325,
+          "8": 0.0293,
+          "9": 0.6971,
+          "10": -0.242,
+          "11": -0.2222,
+          "12": 0.1714,
+          "13": 0.3745,
+          "14": -0.2096,
+          "15": -0.4167,
+          "16": -0.137,
+          "17": -0.2112,
+          "18": -0.2534,
+          "19": -0.2889,
+          "20": 0.0282,
+          "21": -0.0393,
+          "22": -0.0355,
+          "23": -0.0486,
+          "24": -0.0222,
+          "25": -0.0768,
+          "26": -0.08,
+          "27": -0.0583,
+          "28": -0.1043,
+          "29": -0.3716,
+          "30": -0.542,
+          "31": 0.3027,
+          "32": -0.6008,
+          "33": 0.0392,
+          "34": -0.0413
+        },
+        "language_breakdown": {
+          "code_mixed_indic": {
+            "n_docs": 340,
+            "outlier_count": 78,
+            "outlier_rate": 0.2294,
+            "distinct_topics_covered": 21,
+            "top_topics": [
+              {
+                "topic_id": 0,
+                "count": 190
+              },
+              {
+                "topic_id": 29,
+                "count": 25
+              },
+              {
+                "topic_id": 9,
+                "count": 12
+              }
+            ]
+          },
+          "english": {
+            "n_docs": 2854,
+            "outlier_count": 1192,
+            "outlier_rate": 0.4177,
+            "distinct_topics_covered": 35,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 166
+              },
+              {
+                "topic_id": 3,
+                "count": 95
+              },
+              {
+                "topic_id": 2,
+                "count": 87
+              }
+            ]
+          },
+          "terse_und": {
+            "n_docs": 265,
+            "outlier_count": 50,
+            "outlier_rate": 0.1887,
+            "distinct_topics_covered": 19,
+            "top_topics": [
+              {
+                "topic_id": 1,
+                "count": 33
+              },
+              {
+                "topic_id": 19,
+                "count": 32
+              },
+              {
+                "topic_id": 17,
+                "count": 23
+              }
+            ]
+          }
+        },
+        "stability": {
+          "seeds_tested": [
+            42,
+            101,
+            202
+          ],
+          "topic_counts_across_seeds": [
+            35,
+            31,
+            2
+          ],
+          "mean_seed_ari_all_docs": 0.304,
+          "mean_seed_nmi_all_docs": 0.4191,
+          "mean_seed_ari_non_outlier_overlap": 0.4396,
+          "subsample_80pct_ari_all_docs": 0.2947,
+          "subsample_80pct_nmi_all_docs": 0.6251,
+          "subsample_80pct_ari_non_outlier_overlap": 0.6192,
+          "subsample_80pct_n_topics": 24
+        }
+      },
+      "artifact_paths": {
+        "safetensors_dir": "ml\\artifacts\\topic_models\\bertopic_v1\\model_safetensors",
+        "human_review_csv": "ml\\artifacts\\topic_models\\bertopic_v1\\human_review_sample.csv",
+        "serving_summary_json": "ml\\artifacts\\live_corpus\\bertopic_v1_topics.json"
+      },
+      "notes": "Promoted BERTopic v1 companion model (bertopic_e5_small_raw). Coexists alongside NMF v1; never replaces NMF.",
+      "registered_at": "2026-11-23T05:54:46.809056+00:00"
+    }
+  ]
+}
