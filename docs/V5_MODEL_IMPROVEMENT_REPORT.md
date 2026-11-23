@@ -182,3 +182,30 @@ Selection criteria weighted: (1) strict OOF generalization & 3-seed stability, (
 - **Experimental Code & Reproducible Runners:** `ml/experiments/v5_optimization/`
 - **Isolated Artifacts, Manifests, Logits & Active-Learning CSVs:** `ml/artifacts/v5_experiments/`
 - **Isolated Expanded Real Dataset (`707` real comments):** `data/annotations/real_reddit_labeled_v2/`
+
+
+---
+
+## L. V6 Phase 6 — Strict OOF-Selection Integrity Audit & Stage 3 Governance Reconciliation
+
+> **Scientific Integrity Rule Enforced:** *"Either report the strict-selection number, or collect a fresh test set that's only scored once."*
+
+During the V6 Phase 6 audit, we audited `ml/artifacts/v5_experiments/stage3_tuning_results.json` against the `v6.1.0` promotion ledger and identified a post-hoc selection bias that is now transparently corrected across `ml/artifacts/live_corpus/evaluation.json`, all reports, and the `Models & Data` dashboard:
+
+1. **What Happened in Stage 3 Tuning:** All three Stage 3 candidates cleared the pre-registered `≥ +1.0 pp` OOF Macro F1 gate on `trainval_v1 (n = 367)`:
+   - `resp_xlmr_raw`: OOF `+1.74 pp` (`52.97% → 54.71%`), frozen `n = 92` test `58.00%` (build seed `56.39%`).
+   - `sent_muril_affect`: OOF `+1.55 pp` (`69.40% → 70.95%`), frozen `n = 92` test `65.12%` (ECE degraded `0.068 → 0.145`).
+   - `emo_muril_affect`: OOF `+3.52 pp` (`57.28% → 60.80%`), frozen `n = 92` test `53.39%` (`−3.30 pp` vs. baseline).
+2. **Why `65.59%` (`v6.1.0`) Must NOT Be Reported as an Unbiased Strict-Selection Score:** Retaining `resp_xlmr_raw` while reverting `sent_muril_affect` and `emo_muril_affect` *after* inspecting frozen `n = 92` test scores/ECE constitutes **post-hoc test-set selection (`+1.21 pp` optimistic bias)** relative to blindly applying all three Stage 3 OOF winners (`64.38%`).
+3. **Canonical Strictly Unbiased Numbers Reported Across RCI V6:**
+
+| Governance Track | Zero Test Peeking? | `Issue` | `Sentiment` | `Emotion` | `Response` | `Solution` | **5-Task Mean** | Reporting Status |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| **V5 Production Baseline** | Historical transductive DAPT (37 test threads exposed) | 45.72% | 59.50% | 62.31% | 53.79% | 76.10% | **59.48%** | Preserved historical baseline |
+| **V6 Strict Inductive (3-Seed Mean)** | **YES — 100% OOF-only (`0/44` DAPT overlap)** | 59.85% | 64.33% | 59.28% | 54.64% | 85.02% | **64.62%** (`+5.14 pp`) | **Primary Unbiased Headline** |
+| **V6 Strict Inductive (Hybrid-Inclusive Seed 1)** | **YES — 100% OOF-only** | 59.93% | 65.11% | 57.45% | 53.52% | 85.88% | **64.38%** (`+4.90 pp`) | **Strict Single-Seed Benchmark** |
+| **V6.0 Strict Pure Neural (Pre-Stage-3)** | **YES — 100% OOF-only (`SEED+13f`)** | 60.83% | 65.11% | 61.04% | 53.52% | 84.57% | **65.01%** (`+5.53 pp`) | **Strict OOF Pure-Neural Headline** |
+| **V6 Strict Stage 3 (All 3 OOF Winners Applied)** | **YES — 100% OOF-only** | 60.83% | 65.12% | 53.39% | 58.00% | 84.57% | **64.38%** (`+4.90 pp`) | **Strict Stage 3 Audit** |
+| *V6.1 Partial Stage 3 (Post-Hoc Reverted Sent/Emo)* | ***NO — Post-hoc test-inspected*** | *60.83%* | *65.11%* | *61.04%* | *56.39%* | *84.57%* | ***65.59%*** | ***Flagged Diagnostic Only (NOT headline)*** |
+
+Going forward, every academic deliverable and dashboard metric reports the **strict OOF-only benchmarks (`64.62%` 3-seed / `65.01%` V6.0 strict pure neural / `64.38%` strict Stage 3)** and never presents `65.59%` as an unbiased strict-selection figure unless validated on a fresh, never-scored held-out test set.
