@@ -1,6 +1,7 @@
-# Deliverable 5b — Complete RCI V6 System Pseudocode
+# Deliverable 5b — Complete RCI V6.2 System Pseudocode
 
-> This pseudocode documents the **exact implemented V6 pipeline** in `D:\AI_Project` (module names and artifacts match actual repository files).
+> **Document ID:** `RCI-V6.2-D5b` · **Navigation:** [← Deliverable 5a (Math)](./MATHEMATICAL_FOUNDATIONS.md) · [Submission Index](./README.md) · [Deliverable 6 (Insight Report) →](./FINAL_INSIGHT_REPORT.md)  
+> This pseudocode documents the **exact implemented V6.2 pipeline** in this repository (module names and artifacts match actual repository files).
 
 ---
 

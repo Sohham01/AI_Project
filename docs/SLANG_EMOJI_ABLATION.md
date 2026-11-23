@@ -6,7 +6,7 @@
 
 ## 1. Context-Aware Informal Language Normalization Layer
 
-Implemented in pure Python stdlib in [`backend/app/services/nlp/preprocessing/context_normalizer.py`](file:///D:/AI_Project/backend/app/services/nlp/preprocessing/context_normalizer.py) alongside `slang_normalizer.py` and `emoji_normalizer.py`.
+Implemented in pure Python stdlib in [`backend/app/services/nlp/preprocessing/context_normalizer.py`](../backend/app/services/nlp/preprocessing/context_normalizer.py) alongside `slang_normalizer.py` and `emoji_normalizer.py`.
 
 ### 1.1 Four Evaluated Ablation Regimes
 - **(A) `original`:** Unaltered Reddit comment text (strict baseline).
@@ -41,8 +41,8 @@ Blindly rewriting polysemous Gen-Z slang corrupts real MBA discussions (*"mid-se
 
 ## 3. Five-Task Strict OOF Ablation Results (`trainval_v1`, `n = 367`, 5-Fold `post_id` GroupKFold)
 
-Script: [`ml/experiments/v6_programme/run_slang_emoji_5task_ablation.py`](file:///D:/AI_Project/ml/experiments/v6_programme/run_slang_emoji_5task_ablation.py)  
-Raw results artifact: [`ml/artifacts/v6_programme/slang_emoji_5task_ablation.json`](file:///D:/AI_Project/ml/artifacts/v6_programme/slang_emoji_5task_ablation.json)
+Script: [`ml/experiments/v6_programme/run_slang_emoji_5task_ablation.py`](../ml/experiments/v6_programme/run_slang_emoji_5task_ablation.py)  
+Raw results artifact: [`ml/artifacts/v6_programme/slang_emoji_5task_ablation.json`](../ml/artifacts/v6_programme/slang_emoji_5task_ablation.json)
 
 ### 3.1 Model Family 1 — Lexical Word(1–2) + Char_wb(3–5) TF-IDF + Balanced LogisticRegression
 

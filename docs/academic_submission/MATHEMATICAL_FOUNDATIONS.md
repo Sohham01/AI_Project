@@ -1,6 +1,7 @@
-# Deliverable 5a — Mathematical Foundations of Reddit Community Intelligence (RCI V6)
+# Deliverable 5a — Mathematical Foundations of Reddit Community Intelligence (RCI V6.2)
 
-Every equation below corresponds directly to an implemented module in `D:\AI_Project` — no generic textbook abstractions unrelated to the codebase are included.
+> **Document ID:** `RCI-V6.2-D5a` · **Navigation:** [← Deliverable 4 (Architecture)](./AI_ARCHITECTURE.md) · [Submission Index](./README.md) · [Deliverable 5b (Pseudocode) →](./SYSTEM_PSEUDOCODE.md)  
+> Every equation below corresponds directly to an implemented module in this repository — no generic textbook abstractions unrelated to the codebase are included.
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## 1. Canonical Four-State Resolution Taxonomy (Preserved Distinct)
 
-Implemented in [`ml/linking/resolution_engine.py`](file:///D:/AI_Project/ml/linking/resolution_engine.py) alongside RCI's preserved deterministic [`EvidenceBasedResolver`](file:///D:/AI_Project/backend/app/services/nlp/resolution_detection/evidence_based_resolver.py):
+Implemented in [`ml/linking/resolution_engine.py`](../ml/linking/resolution_engine.py) alongside RCI's preserved deterministic [`EvidenceBasedResolver`](../backend/app/services/nlp/resolution_detection/evidence_based_resolver.py):
 
 | Resolution State | Strict Definition | Corpus Threads (`n = 365`) | Share |
 |---|---|---:|---:|
@@ -50,7 +50,7 @@ $$S_{\text{raw}} = 0.42\, I[\text{success}] + 0.24\, r_{\text{best}} + 0.14\, \m
 
 ## 3. Issue-Domain Unresolved Matrix (`n = 365` Real Threads)
 
-Artifact: [`ml/artifacts/live_corpus/resolution_engine_v2.json`](file:///D:/AI_Project/ml/artifacts/live_corpus/resolution_engine_v2.json)
+Artifact: [`ml/artifacts/live_corpus/resolution_engine_v2.json`](../ml/artifacts/live_corpus/resolution_engine_v2.json)
 
 | Issue Domain | Threads | Issue Verdict | `reported_success` | `reported_pending` | `proposed_only` | `insufficient_evidence` | Contradictory Threads |
 |---|---:|---|---:|---:|---:|---:|---:|
@@ -68,8 +68,8 @@ Artifact: [`ml/artifacts/live_corpus/resolution_engine_v2.json`](file:///D:/AI_P
 
 ## 4. Human-Reviewed Evaluation (`n = 40` Real Threads)
 
-Benchmark dataset: [`data/annotations/resolution_eval_v1.csv`](file:///D:/AI_Project/data/annotations/resolution_eval_v1.csv)  
-Raw results artifact: [`ml/artifacts/v6_programme/phase5_resolution_eval.json`](file:///D:/AI_Project/ml/artifacts/v6_programme/phase5_resolution_eval.json)
+Benchmark dataset: [`data/annotations/resolution_eval_v1.csv`](../data/annotations/resolution_eval_v1.csv)  
+Raw results artifact: [`ml/artifacts/v6_programme/phase5_resolution_eval.json`](../ml/artifacts/v6_programme/phase5_resolution_eval.json)
 
 | Evaluation Metric (`n = 40` real threads) | Initial V6 Draft (Comments-Only) | Refined V6 Final (OP Title + Procedural/Rhetorical Split + Credential Guard) | Change |
 |---|---:|---:|---:|

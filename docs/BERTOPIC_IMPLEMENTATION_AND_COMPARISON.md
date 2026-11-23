@@ -6,13 +6,13 @@
 
 ## 1. Architecture
 
-Implemented modularly under [`ml/topics/bertopic/`](file:///D:/AI_Project/ml/topics/bertopic/):
-- [`config.py`](file:///D:/AI_Project/ml/topics/bertopic/config.py): JSON-serializable `BERTopicExperimentConfig` capturing UMAP, HDBSCAN, c-TF-IDF, embedding, and preprocessing settings.
-- [`embeddings.py`](file:///D:/AI_Project/ml/topics/bertopic/embeddings.py): Multilingual dense embedding backend (`intfloat/multilingual-e5-small`, `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, and local mean-pooled `muril_dapt_strict_inductive_wwm_8ep`) with GPU acceleration (RTX 4060 CUDA), SHA-256 deterministic `.npy` caching, and a controlled synthetic cross-lingual alignment probe.
-- [`pipeline.py`](file:///D:/AI_Project/ml/topics/bertopic/pipeline.py): Official `bertopic==0.17.4` pipeline implementing all 10 stages: (1) multilingual embedding generation, (2) seeded UMAP reduction, (3) density-based HDBSCAN clustering, (4) Indic-script-safe `CountVectorizer` + BM25 `ClassTfidfTransformer`, (5) top-10 unigram/bigram keyword extraction, (6) centroid-cosine representative document ranking, (7) soft/hard topic assignment, (8) explicit `-1` outlier preservation, (9) agglomerative `hierarchical_topics` extraction, and (10) SafeTensors persistence + round-trip `load`/`transform` verification.
-- [`evaluation.py`](file:///D:/AI_Project/ml/topics/bertopic/evaluation.py): Corpus-grounded multi-metric evaluator (NPMI coherence, UMass coherence, topic diversity, outlier rate, size balance entropy, representative centroid cosine, and per-language-register breakdown).
-- [`registry.py`](file:///D:/AI_Project/ml/topics/bertopic/registry.py): Versioned JSON registry at [`ml/artifacts/topic_models/registry.json`](file:///D:/AI_Project/ml/artifacts/topic_models/registry.json).
-- [`run_bertopic_benchmark.py`](file:///D:/AI_Project/ml/topics/bertopic/run_bertopic_benchmark.py): Reproducible experiment runner executing all 5 BERTopic configurations + NMF baseline on the exact same `3,459` eligible documents.
+Implemented modularly under [`ml/topics/bertopic/`](../ml/topics/bertopic):
+- [`config.py`](../ml/topics/bertopic/config.py): JSON-serializable `BERTopicExperimentConfig` capturing UMAP, HDBSCAN, c-TF-IDF, embedding, and preprocessing settings.
+- [`embeddings.py`](../ml/topics/bertopic/embeddings.py): Multilingual dense embedding backend (`intfloat/multilingual-e5-small`, `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, and local mean-pooled `muril_dapt_strict_inductive_wwm_8ep`) with GPU acceleration (RTX 4060 CUDA), SHA-256 deterministic `.npy` caching, and a controlled synthetic cross-lingual alignment probe.
+- [`pipeline.py`](../ml/topics/bertopic/pipeline.py): Official `bertopic==0.17.4` pipeline implementing all 10 stages: (1) multilingual embedding generation, (2) seeded UMAP reduction, (3) density-based HDBSCAN clustering, (4) Indic-script-safe `CountVectorizer` + BM25 `ClassTfidfTransformer`, (5) top-10 unigram/bigram keyword extraction, (6) centroid-cosine representative document ranking, (7) soft/hard topic assignment, (8) explicit `-1` outlier preservation, (9) agglomerative `hierarchical_topics` extraction, and (10) SafeTensors persistence + round-trip `load`/`transform` verification.
+- [`evaluation.py`](../ml/topics/bertopic/evaluation.py): Corpus-grounded multi-metric evaluator (NPMI coherence, UMass coherence, topic diversity, outlier rate, size balance entropy, representative centroid cosine, and per-language-register breakdown).
+- [`registry.py`](../ml/topics/bertopic/registry.py): Versioned JSON registry at [`ml/artifacts/topic_models/registry.json`](../ml/artifacts/topic_models/registry.json).
+- [`run_bertopic_benchmark.py`](../ml/topics/bertopic/run_bertopic_benchmark.py): Reproducible experiment runner executing all 5 BERTopic configurations + NMF baseline on the exact same `3,459` eligible documents.
 
 ---
 
@@ -97,7 +97,7 @@ Before selecting a BERTopic encoder, we evaluated three candidate encoders on **
 
 ## 7. Representative Discovered BERTopic Themes (Machine-Suggested Labels, Pending Human Review)
 
-*(All labels are explicitly marked `machine_suggested_pending_human_review`. A complete human-review worksheet with top-3 representative comments per topic is saved at [`ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv`](file:///D:/AI_Project/ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv). Unsupervised topics are strictly separated from the 8 supervised issue domains.)*
+*(All labels are explicitly marked `machine_suggested_pending_human_review`. A complete human-review worksheet with top-3 representative comments per topic is saved at [`ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv`](../ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv). Unsupervised topics are strictly separated from the 8 supervised issue domains.)*
 
 | BERTopic ID | Docs | Share | Top c-TF-IDF Keywords | Related Supervised Issues (Observational) |
 |---|---:|---:|---|---|

@@ -6,7 +6,7 @@
 
 ## 1. Architecture: Language vs. Script Separation & Span-Level Detection
 
-Implemented in pure Python stdlib (zero external ML dependencies; runs identically across offline pipelines, Docker, and Vercel serverless endpoints) in [`backend/app/services/nlp/indian_reddit_lid.py`](file:///D:/AI_Project/backend/app/services/nlp/indian_reddit_lid.py).
+Implemented in pure Python stdlib (zero external ML dependencies; runs identically across offline pipelines, Docker, and Vercel serverless endpoints) in [`backend/app/services/nlp/indian_reddit_lid.py`](../backend/app/services/nlp/indian_reddit_lid.py).
 
 ### 1.1 Supported Languages & Scripts
 - **Languages:** English (`en`), Hindi (`hi`), Bengali (`bn`), Odia (`or`), code-mixed pairs (`hi-en`, `bn-en`, `or-en`), and Other/Unknown (`und` with explicit `abstain: true`).
@@ -30,9 +30,9 @@ A single Reddit comment frequently switches languages across sentences or clause
 
 ## 2. Real-Corpus Evaluation (`n = 84` Manually Reviewed Comments)
 
-Dataset: [`data/annotations/multilingual_eval_real_v1.csv`](file:///D:/AI_Project/data/annotations/multilingual_eval_real_v1.csv)  
-Evaluation script: [`ml/experiments/v6_programme/eval_multilingual_lid.py`](file:///D:/AI_Project/ml/experiments/v6_programme/eval_multilingual_lid.py)  
-Raw results artifact: [`ml/artifacts/v6_programme/multilingual_lid_eval.json`](file:///D:/AI_Project/ml/artifacts/v6_programme/multilingual_lid_eval.json)
+Dataset: [`data/annotations/multilingual_eval_real_v1.csv`](../data/annotations/multilingual_eval_real_v1.csv)  
+Evaluation script: [`ml/experiments/v6_programme/eval_multilingual_lid.py`](../ml/experiments/v6_programme/eval_multilingual_lid.py)  
+Raw results artifact: [`ml/artifacts/v6_programme/multilingual_lid_eval.json`](../ml/artifacts/v6_programme/multilingual_lid_eval.json)
 
 ### 2.1 Overall & Refinement Comparison (Before vs. After Real-Data Error Audit)
 
@@ -82,7 +82,7 @@ Raw results artifact: [`ml/artifacts/v6_programme/multilingual_lid_eval.json`](f
 
 ## 3. Strictly Separate Controlled Synthetic Multilingual Diagnostic (`n = 24`)
 
-Dataset: [`data/annotations/multilingual_eval_synthetic_probes_v1.csv`](file:///D:/AI_Project/data/annotations/multilingual_eval_synthetic_probes_v1.csv)
+Dataset: [`data/annotations/multilingual_eval_synthetic_probes_v1.csv`](../data/annotations/multilingual_eval_synthetic_probes_v1.csv)
 
 > **Scope Warning:** Because the real anonymized IIM Reddit corpus (`3,557` comments) contains `0` native Bengali-script, `0` native Odia-script, `1` mixed Devanagari-Latin (`cmt_01610`), and `1` Roman-Odia (`cmt_01936`) comment, the synthetic probe suite verifies functional correctness of Bengali, Odia, Devanagari, Banglish, and multi-script span code paths — **not** real-world recall on unseen Bengali/Odia Reddit dialects.
 

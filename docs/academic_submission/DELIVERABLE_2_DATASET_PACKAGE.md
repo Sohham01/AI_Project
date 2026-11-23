@@ -1,5 +1,6 @@
 # Deliverable 2 — Reddit Dataset Package, Data Dictionary & Provenance Governance
 
+> **Document ID:** `RCI-V6.2-D2` · **Navigation:** [← Deliverable 1 (Video)](./DELIVERABLE_1_VIDEO_PACKAGE.md) · [Submission Index](./README.md) · [Deliverable 3 (Prototype) →](./DELIVERABLE_3_PROTOTYPE_GUIDE.md)  
 > **Data Protection & Redistribution Notice:** No restricted, quarantined, or personally identifiable raw Reddit user records are bundled into public submission assets. All usernames are excluded, Reddit identifiers are pseudonymized (`post_XXXX`, `cmt_XXXXX`), AutoMod/GIF noise is filtered transparently, and the four provenance authorization scopes are recorded separately below without inferring permission from ingestion.
 
 ---
@@ -102,8 +103,9 @@
 | `data/annotations/real_reddit_labeled_v2/` | Track B expanded real dataset | `707` real comments | `545` trainval + `162` test (`92` frozen + `70` unseen threads); pending full dual-human IAA merge gate. |
 | `data/annotations/multilingual_eval_real_v1.csv` | Phase 2 real LID & span eval | `84` real comments | Manually reviewed real comments (`88.1%` acc, `95.8%` selective acc, `100%` script acc). |
 | `data/annotations/multilingual_eval_synthetic_probes_v1.csv` | Phase 2 synthetic capability probe | `24` synthetic probes | **Strictly separated diagnostic** covering Devanagari, Bengali, Odia, Banglish, Roman-Odia. |
-| `data/annotations/issue_solution_eval_v1.csv` | Phase 4 issue–solution mapping eval | `64` real candidate pairs (`8` per issue) | Manually graded `0/1/2` (`verification_status: human_reviewed_v1`). |
-| `data/annotations/resolution_eval_v1.csv` | Phase 5 resolution state eval | `40` real threads | Stratified across all 4 states + contradictory follow-ups (`0.0%` false resolution claims). |
+| `data/annotations/issue_solution_eval_v1.csv` | Issue–solution mapping eval | `64` real candidate pairs (`8` per issue) | Manually graded `0/1/2` (`verification_status: human_reviewed_v1`). |
+| `data/annotations/resolution_eval_v1.csv` | Resolution state & contradiction eval | `40` real threads | Stratified across all 4 states + contradictory follow-ups (`0.0%` false resolution claims). |
+| `data/annotations/bertopic_human_review_v1.csv` | BERTopic v1 cluster review & labeling | `35` clusters (`105` top-3 centroid rows) | Manually reviewed & refined all 35 labels (`4.51/5.0` mean coherence; `13` substantive, `12` logistics, `9` conversational, `1` URL-media). |
 
 ### 6.3 Illustrative Anonymized Cleaned Samples
 - **English Advice (`cmt_00016`, `post_0004`, `financial_concerns`):** *"If you are withdrawing 15 days before classes start, they have to do a full refund except for charges to the tune of 1k..."*

@@ -1,12 +1,12 @@
 # Contextual Issue–Solution Mapping Engine Report (V6 — Phase 4)
 
-> **Research Integrity & Separation Notice:** All `951` corpus-wide issue–solution links produced by the V6 Contextual Mapper are explicitly labelled `verification_status: "model_inferred"` in [`ml/artifacts/live_corpus/issue_solution_map_v2.json`](file:///D:/AI_Project/ml/artifacts/live_corpus/issue_solution_map_v2.json). The human-reviewed `64`-pair evaluation benchmark is stored separately in [`data/annotations/issue_solution_eval_v1.csv`](file:///D:/AI_Project/data/annotations/issue_solution_eval_v1.csv) (`verification_status: "human_reviewed_v1"`). V5's lexical `TfidfCosineIssueSolutionLinker` remains 100% intact as the lexical baseline.
+> **Research Integrity & Separation Notice:** All `951` corpus-wide issue–solution links produced by the V6 Contextual Mapper are explicitly labelled `verification_status: "model_inferred"` in [`ml/artifacts/live_corpus/issue_solution_map_v2.json`](../ml/artifacts/live_corpus/issue_solution_map_v2.json). The human-reviewed `64`-pair evaluation benchmark is stored separately in [`data/annotations/issue_solution_eval_v1.csv`](../data/annotations/issue_solution_eval_v1.csv) (`verification_status: "human_reviewed_v1"`). V5's lexical `TfidfCosineIssueSolutionLinker` remains 100% intact as the lexical baseline.
 
 ---
 
 ## 1. End-to-End Analytical Workflow
 
-Implemented in [`ml/linking/contextual_mapper.py`](file:///D:/AI_Project/ml/linking/contextual_mapper.py) and executed by [`ml/experiments/v6_programme/run_phase4_phase5_linking_resolution.py`](file:///D:/AI_Project/ml/experiments/v6_programme/run_phase4_phase5_linking_resolution.py):
+Implemented in [`ml/linking/contextual_mapper.py`](../ml/linking/contextual_mapper.py) and executed by [`ml/experiments/v6_programme/run_phase4_phase5_linking_resolution.py`](../ml/experiments/v6_programme/run_phase4_phase5_linking_resolution.py):
 
 ```
 ISSUE DOMAIN (8 canonical domains + rich domain description)
@@ -68,7 +68,7 @@ A link is asserted iff `matching_score >= 0.56` AND `p_neg < 0.28`. Every link r
 
 ## 4. Human-Reviewed Benchmark: V5 TF-IDF Baseline vs. V6 Contextual E5 Mapper (`n = 64` Real Pairs)
 
-Evaluated on [`data/annotations/issue_solution_eval_v1.csv`](file:///D:/AI_Project/data/annotations/issue_solution_eval_v1.csv) (`8` candidate pairs per issue × `8` issue domains = `64` real corpus pairs graded `0 = irrelevant/non-actionable/contradictory`, `1 = partial helpful advice`, `2 = strong actionable solution`):
+Evaluated on [`data/annotations/issue_solution_eval_v1.csv`](../data/annotations/issue_solution_eval_v1.csv) (`8` candidate pairs per issue × `8` issue domains = `64` real corpus pairs graded `0 = irrelevant/non-actionable/contradictory`, `1 = partial helpful advice`, `2 = strong actionable solution`):
 
 | Metric (`n = 64` real pairs across 8 issues) | V5 TF-IDF Baseline (`th = 0.35`) | V6 Contextual Multilingual E5 + Negation (`th = 0.56`) | Delta (V6 − V5) |
 |---|---:|---:|---:|

@@ -29,11 +29,11 @@ To start the first real-world pilot (**target: 10–20 relevant public discussio
    ```text
    D:\AI_Project\data\raw\pilot_v1\
    ```
-2. Any of these **four authorized formats** are supported directly by [backend/import_reddit_export.py](file:///D:/AI_Project/backend/import_reddit_export.py):
+2. Any of these **four authorized formats** are supported directly by [backend/import_reddit_export.py](../backend/import_reddit_export.py):
    - **Format 1 — Reddit Thread JSON (`.json`):** One file per thread (`[post_listing, comment_listing]`).
    - **Format 2 — Reddit Subreddit / Search Listing JSON (`.json`):** `{"kind": "Listing", "data": {"children": [...]}}`.
    - **Format 3 — Arctic Shift / Pushshift Archive JSONL (`.jsonl` / `.ndjson`) or JSON envelope (`{"data": [...]}`):** Separate or combined post and comment records.
-   - **Format 4 — Pre-structured `format_version: 1` Static Export JSON/JSONL:** Matching [docs/static_dataset_intake.md](file:///D:/AI_Project/docs/static_dataset_intake.md).
+   - **Format 4 — Pre-structured `format_version: 1` Static Export JSON/JSONL:** Matching [docs/static_dataset_intake.md](./static_dataset_intake.md).
 3. **Permitted scope & privacy checklist before placing files in `data/raw/pilot_v1/`:**
    - Only public discussions legitimately obtained for academic research.
    - Exclude private messages, moderator logs, doxxing threads, or sensitive personal/medical/financial-account disclosures.
@@ -45,7 +45,7 @@ To start the first real-world pilot (**target: 10–20 relevant public discussio
 
 ### Step 1 — Sanitize, Validate & Generate Blank-Label Candidates
 
-Run [backend/import_reddit_export.py](file:///D:/AI_Project/backend/import_reddit_export.py) (read-only on `data/raw/pilot_v1/`):
+Run [backend/import_reddit_export.py](../backend/import_reddit_export.py) (read-only on `data/raw/pilot_v1/`):
 
 ```powershell
 Set-Location D:\AI_Project
@@ -64,7 +64,7 @@ Set-Location D:\AI_Project
 
 **What this guarantees automatically:**
 - **Author & PII Minimization:** Strips `author`, `author_fullname`, and author flair keys; redacts inline email addresses (`<EMAIL>`), 10–13 digit phone numbers (`<PHONE>`), and Reddit username mentions `u/...` / `/u/...` (`<USER_MENTION>`) without corrupting academic numbers (`CAT 2026`, percentiles, fee amounts).
-- **Zero Silent Fabrication:** Absent `score` or `num_comments` values are omitted rather than turned into `0`, allowing [static_export.py](file:///D:/AI_Project/backend/app/services/ingestion/static_export.py) to flag `lossy_default_fields` honestly. Naive/invalid timestamps, `[deleted]`/`[removed]` comments, blank bodies, duplicate IDs, orphaned comments, and unresolved parent references are explicitly counted in `dataset_quality_provenance_report.json`.
+- **Zero Silent Fabrication:** Absent `score` or `num_comments` values are omitted rather than turned into `0`, allowing [static_export.py](../backend/app/services/ingestion/static_export.py) to flag `lossy_default_fields` honestly. Naive/invalid timestamps, `[deleted]`/`[removed]` comments, blank bodies, duplicate IDs, orphaned comments, and unresolved parent references are explicitly counted in `dataset_quality_provenance_report.json`.
 - **Canonical Artifacts Produced (All Separate from Raw Input):**
   1. `data/processed/pilot_v1/sanitized_static_export.json` — Validated `format_version: 1` export.
   2. `data/processed/pilot_v1/dataset_quality_provenance_report.json` — Safe counts, SHA-256 hash, PII redaction totals, parent-context breakdown, and validation summary (zero raw text).
@@ -73,7 +73,7 @@ Set-Location D:\AI_Project
 
 ### Step 2 — Inspect Quality Report & Confirm Authorization Gate
 
-Before starting annotation, inspect `dataset_quality_provenance_report.json`. Once the responsible project authority approves the sanitized batch, update `metadata.authorization.authorization_status` to `"approved"` and verify the explicit gate in [backend/app/services/pilot.py](file:///D:/AI_Project/backend/app/services/pilot.py#L295-L326):
+Before starting annotation, inspect `dataset_quality_provenance_report.json`. Once the responsible project authority approves the sanitized batch, update `metadata.authorization.authorization_status` to `"approved"` and verify the explicit gate in [backend/app/services/pilot.py](../backend/app/services/pilot.py#L295-L326):
 
 ```python
 from app.services.ingestion.static_export import load_static_export
@@ -86,13 +86,13 @@ assert pilot.summary["status"] == "ready_for_review"
 
 ### Step 3 — Human Annotation (No Model-Generated Labels)
 
-Annotators label `data/annotations/pilot_v1/real_annotation_candidates.csv` strictly following [docs/ANNOTATION_GUIDELINES.md](file:///D:/AI_Project/docs/ANNOTATION_GUIDELINES.md):
+Annotators label `data/annotations/pilot_v1/real_annotation_candidates.csv` strictly following [docs/ANNOTATION_GUIDELINES.md](./ANNOTATION_GUIDELINES.md):
 - Set `review_status = labeled` only when confident across all applicable tasks.
 - Set `review_status = uncertain` / `abstain` / `excluded` + controlled `abstain_reason` whenever context is missing or ambiguous (never write `unknown`/`none` into label cells).
 
 ### Step 4 — Validate Annotations, Route Adjudication & Check Training Readiness Gate
 
-Run [backend/validate_pilot_annotations.py](file:///D:/AI_Project/backend/validate_pilot_annotations.py):
+Run [backend/validate_pilot_annotations.py](../backend/validate_pilot_annotations.py):
 
 ```powershell
 .\backend\.venv\Scripts\python.exe backend\validate_pilot_annotations.py `
@@ -116,7 +116,7 @@ Once `ready_for_training: true`:
 
 ### Live-Verified Arctic Shift Collector (`backend/run_arctic_shift_pilot.py`)
 
-Live verification against `https://arctic-shift.photon-reddit.com/api` confirmed Arctic Shift is **free, keyless, and operational** for direct and context communities (`r/IIMSambalpur`, `r/IIMSambalpurUG`, `r/MBAIndia`, `r/CATPrep`, `r/CATpreparation`), with two upstream behaviors now handled automatically by [arctic_shift.py](file:///D:/AI_Project/backend/app/services/ingestion/arctic_shift.py) and [run_arctic_shift_pilot.py](file:///D:/AI_Project/backend/run_arctic_shift_pilot.py):
+Live verification against `https://arctic-shift.photon-reddit.com/api` confirmed Arctic Shift is **free, keyless, and operational** for direct and context communities (`r/IIMSambalpur`, `r/IIMSambalpurUG`, `r/MBAIndia`, `r/CATPrep`, `r/CATpreparation`), with two upstream behaviors now handled automatically by [arctic_shift.py](../backend/app/services/ingestion/arctic_shift.py) and [run_arctic_shift_pilot.py](../backend/run_arctic_shift_pilot.py):
 
 1. **HTTP 422 Server Timeout / Rate Throttling:** Arctic Shift returns `HTTP 422 {"data": null, "error": "Timeout. Maybe slow down a bit"}` with `x-ratelimit-reset` when full-text `query=` scans a large subreddit or exceeds the sliding window. `ArcticShiftClient` now classifies this as a retryable `timeout` (`status=422`, leaking zero body text), records `x-ratelimit-reset` / `x-ratelimit-remaining`, and `run_arctic_shift_pilot.py` automatically falls back from `query=` to the faster `title=` index.
 2. **Relative Crosspost URLs:** `ArcticShiftNormalizer._url()` normalizes valid relative `/r/<sub>/comments/<id>/...` paths to canonical `https://www.reddit.com/...` URLs while still rejecting malformed URLs.
@@ -140,11 +140,11 @@ Set-Location D:\AI_Project
 To demonstrate and verify the complete intake workflow without fabricating real Reddit ingestion, we ran `backend/import_reddit_export.py` on a clearly labeled **synthetic intake fixture** (`synthetic-intake-example-v1`) containing both browser thread JSON and Arctic Shift JSONL formats plus deliberate edge cases (usernames, emails, Indian phone numbers, `[deleted]` comment, missing `score`, duplicate comment ID, and an omitted parent comment).
 
 **Generated Example Bundle under `docs/pilot_examples/` (Synthetic Fixture Only):**
-- [sanitized_static_export_example.json](file:///D:/AI_Project/docs/pilot_examples/sanitized_static_export_example.json)
-- [real_annotation_candidates.csv](file:///D:/AI_Project/docs/pilot_examples/real_annotation_candidates.csv) (blank labels + `review_status` + `abstain_reason`)
-- [response_candidates.csv](file:///D:/AI_Project/docs/pilot_examples/response_candidates.csv)
-- [review_manifest.jsonl](file:///D:/AI_Project/docs/pilot_examples/review_manifest.jsonl) (manifest v1.0, `status: unreviewed`, `dataset_approval: pending`, zero raw text)
-- [dataset_quality_provenance_report_example.json](file:///D:/AI_Project/docs/pilot_examples/dataset_quality_provenance_report_example.json)
+- [sanitized_static_export_example.json](./pilot_examples/sanitized_static_export_example.json)
+- [real_annotation_candidates.csv](./pilot_examples/real_annotation_candidates.csv) (blank labels + `review_status` + `abstain_reason`)
+- [response_candidates.csv](./pilot_examples/response_candidates.csv)
+- [review_manifest.jsonl](./pilot_examples/review_manifest.jsonl) (manifest v1.0, `status: unreviewed`, `dataset_approval: pending`, zero raw text)
+- [dataset_quality_provenance_report_example.json](./pilot_examples/dataset_quality_provenance_report_example.json)
 
 **Verified Example Report Highlights:**
 - `pii_redactions`: `10` author metadata fields stripped, `3` emails redacted (`<EMAIL>`), `1` phone number redacted (`<PHONE>`, while `"CAT 2026"` stayed untouched), `2` username mentions redacted (`<USER_MENTION>`).
@@ -159,7 +159,7 @@ To demonstrate and verify the complete intake workflow without fabricating real 
 
 **Answer: YES — with 100% isolation.**
 
-1. [backend/app/api/demo.py](file:///D:/AI_Project/backend/app/api/demo.py#L20-L26) hard-pins `DATA_DIR = ROOT / "data" / "demo_synthetic"` and `ARTIFACT_DIR = ROOT / "ml" / "artifacts" / "demo_synthetic_v2"`.
+1. [backend/app/api/demo.py](../backend/app/api/demo.py#L20-L26) hard-pins `DATA_DIR = ROOT / "data" / "demo_synthetic"` and `ARTIFACT_DIR = ROOT / "ml" / "artifacts" / "demo_synthetic_v2"`.
 2. Real-pilot raw exports (`data/raw/`), sanitized exports (`data/processed/`), annotation workbooks (`data/annotations/pilot_v1/`), and future real-pilot model artifacts (`ml/artifacts/real_pilot_v1/`) live in completely separate directories that are **gitignored** (`.gitignore` lines 190, 210–213) and **never read** by `/api/demo/*` or included in Vercel's `includeFiles` glob (`vercel.json`).
 3. No real usernames, raw Reddit bodies, or unapproved pilot records are ever exposed through public FastAPI/Vercel endpoints.
 4. Any future decision to surface aggregated, privacy-reviewed real-data insights in the web UI must be built on a separate authenticated/governed API namespace (never mutating the synthetic-only `/api/demo` contract).

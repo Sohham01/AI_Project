@@ -7,9 +7,9 @@
 ![Pipeline Integrity 7/7](https://img.shields.io/badge/pipeline%20integrity-7%2F7%20checks-15803d?style=flat&labelColor=1e2235)
 ![License MIT](https://img.shields.io/badge/license-MIT-4a526e?style=flat&labelColor=1e2235)
 
-**Multilingual research studio for anonymized & pseudonymized public Reddit discussions** around **IIM Sambalpur** and Indian MBA/CAT communities. **V6.1 (`v6.1.0`)** promotes our **100% strictly inductive, zero-leakage Track A 5-fold ensembles** (`MuRIL-DAPT-WWM-8ep` for Issue/Sentiment/Emotion + `XLM-RoBERTa-base` for Response & Solution; `0/44` test-thread DAPT overlap; `0` synthetic training/test rows), apples-to-apples **4-architecture 5-fold benchmarking** (Logistic Regression, ANN/MLP, 1D TextCNN, Transformer), **OOF per-label monotonic Platt calibration** (`0.059` mean 5-bin ECE), **TF-IDF Cosine Issue–Solution Linking** (`859` links across `162` threads) + **Quantitative Unresolved Issue Criteria**, **Cross-IIM (`19` IIMs) & Cross-Language analytics**, a **Live Multilingual Analyzer**, and **10-cluster NMF topic discovery** — served via a zero-build FastAPI studio on both **Vercel** and **Docker Compose**.
+**Multilingual research studio for anonymized & pseudonymized public Reddit discussions** around **IIM Sambalpur** and Indian MBA/CAT communities. **V6.2 (`v6.1.0` corpus)** delivers **100% strictly inductive, zero-leakage Track A 5-fold ensembles** (`MuRIL-DAPT-WWM-8ep` + `XLM-RoBERTa-base`; `64.62%` strict 3-seed / `65.01%` V6.0 OOF-selected Macro F1; `0/44` test-thread DAPT overlap; `0` synthetic rows), **dual topic discovery** preserving **10-factor NMF v1** alongside **35 human-reviewed BERTopic v1 clusters** (`intfloat/multilingual-e5-small`, `4.51/5.0` mean coherence, `1,320` explicit `-1` outliers), **Span-Level Multilingual LID** (`88.1%` real acc / `95.8%` selective / `100%` script), **Context-Aware Gen-Z Slang & Affect-Emoji Normalization**, a **Multilingual-E5 Contextual Issue–Solution Mapper** (`951` links across `282` clusters, `86.57%` F1), an **8-Signal Explainable Unresolved-Issue Engine** (`0.00%` false resolution claims, `26` contradictory threads), and a **dual-theme Dusk Dark / Daylight Bone SaaS Studio** with GZip + CDN caching (`11.8×` payload cut), client-side CSV/Markdown export, and zero-ML serving on both **Vercel** and **Docker Compose**.
 
-[Live Studio (Vercel)](https://rci-ten.vercel.app/app/) · [System Architecture](#system-architecture) · [ML Pipeline](#multilingual-nlp-pipeline) · [4-Architecture Real-Data Benchmarks](#4-architecture-benchmarks-on-real-held-out-reddit-comments) · [Deployment & Security](#deployment--security) · [Quickstart](#quickstart)
+[Live Studio (Vercel)](https://rci-ten.vercel.app/app/) · [Academic Deliverables Package](docs/academic_submission/README.md) · [System Architecture](#system-architecture) · [4-Architecture Benchmarks](#4-architecture-benchmarks-on-real-held-out-reddit-comments) · [Deployment & Security](#deployment--security) · [Quickstart](#quickstart)
 
 ![Reddit Community Intelligence Studio Overview](docs/demo_screenshots/overview-v3-desktop.png)
 
@@ -24,7 +24,7 @@
 | **100% Real Labeled Training & Test Set** | Tracked [data/annotations/real_reddit_labeled_v1/](data/annotations/real_reddit_labeled_v1/master_labeled_v1.csv) — **459 curated real Reddit comments across 200 distinct threads** (`367` 5-fold group-aware CV trainval / `92` untouched frozen real held-out test across `37` unseen threads, `0` synthetic rows). A 50-item blind human IAA audit on Track B V2 failed `0/5` threshold gates ([V5_HUMAN_IAA_REPORT.md](docs/V5_HUMAN_IAA_REPORT.md)), so Track B V2 stays archived/blocked and production serves strictly verified Track A V1 |
 | **Strictly Inductive WWM DAPT & NMF** | **MuRIL-DAPT-WWM-8ep** (`##`-aligned Whole-Word Masking, **44 frozen-test & same-title threads / 749 comments strictly excluded, `0` overlap**) trained on `2,135` unlabeled texts reduced **unseen thread-grouped WWM validation perplexity `88.32 → 25.23`** on `347` unseen texts; **10-cluster NMF** (`8,000`-term vocab) fit directly on real comments |
 | **V6.1 Production Models & Calibration** | **5-fold pure neural ensembles (`65.59%` frozen test mean F1, `+6.11 pp` vs. transductive V5 `59.48%`!)**: `MuRIL-DAPT-WWM` (`parent_pair + ASL + OOF Platt` on Issue, `ASL + OOF Platt` on Emotion, `CE-weighted` on Sentiment) + **`XLM-RoBERTa-base`** (zero DAPT, OOF winner on **Solution `84.57%`** & **Response `56.42%`**!). Achieves **`0.059` mean 5-bin ECE**, `72.2%` live mean confidence (`915` high / `2,459` medium / `183` low), and `859` cosine-linked issue–solution edges across `162` threads |
-| **Automated Verification** | **2,196 offline tests** (`973` subtests) + **7/7 automated Pipeline Integrity Checks** + strict zero-test-thread DAPT & IAA governance assertions + slim Vercel zero-ML import audit + HTTP security headers + zero-PII/URL/secret CI gates |
+| **Automated Verification** | **2,204 offline tests** (`973` subtests) + **`16/16` Vercel zero-ML checks** + **7/7 automated Pipeline Integrity Checks** + dual-theme browser QA + HTTP security headers + zero-PII/URL/secret CI gates |
 
 ---
 
@@ -201,16 +201,26 @@ docs/
 
 ---
 
-## Documentation, Formal Deliverables & Contributing
+## Academic Deliverables & Research Reports
 
-- **Deliverable 1 (Video Script):** [DELIVERABLE_1_VIDEO_SCRIPT.md](docs/DELIVERABLE_1_VIDEO_SCRIPT.md)
-- **Deliverable 2 (Data Dictionary & Sample-Size Rationale):** [DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md) · [Human Annotation Guidelines (v2.0)](docs/ANNOTATION_GUIDELINES.md)
-- **Deliverable 3 (Prototype Walkthrough Notebook):** [notebooks/RCI_V6_Prototype_Walkthrough.ipynb](notebooks/RCI_V6_Prototype_Walkthrough.ipynb)
-- **Deliverable 4 (11-Section AI Architecture):** [DELIVERABLE_4_AI_ARCHITECTURE.md](docs/DELIVERABLE_4_AI_ARCHITECTURE.md)
-- **Deliverable 5 (Mathematical Foundations & Pseudocode):** [DELIVERABLE_5_MATH_AND_PSEUDOCODE.md](docs/DELIVERABLE_5_MATH_AND_PSEUDOCODE.md)
-- **Deliverable 6 (Final Insight Report):** [DELIVERABLE_6_FINAL_INSIGHT_REPORT.md](docs/DELIVERABLE_6_FINAL_INSIGHT_REPORT.md)
-- **Research Audits:** [Task 5 & 6 LID/Preprocessing Report](docs/TASK5_TASK6_PREPROCESSING_LID_REPORT.md) · [V6 Stage 3 Tuning Report](docs/V6_STAGE3_MODEL_TUNING_REPORT.md) · [Human IAA Governance Report](docs/V5_HUMAN_IAA_REPORT.md) · [Problem Statement Gap Analysis](docs/PROBLEM_STATEMENT_GAP_ANALYSIS.md)
-- **Policies:** [Security & Data Privacy Policy](SECURITY.md) · [Contributing Guide](CONTRIBUTING.md) · [Local Demo Runbook](docs/LOCAL_DEMO_RUNBOOK.md)
+The complete, consolidated academic submission package lives in [**`docs/academic_submission/`**](docs/academic_submission/README.md), organized cleanly across all six required deliverables with verified V6.2 metrics and zero fabricated evaluations:
+
+| Deliverable | Document | Status | Contents |
+| :---: | :--- | :---: | :--- |
+| **D1** | [**Real-Life Scenario Video Package**](docs/academic_submission/DELIVERABLE_1_VIDEO_PACKAGE.md) | Script & Storyboard Ready | Complete 3m 15s voiceover script, 6-scene storyboard & live Studio shot list *(MP4 capture pending)* |
+| **D2** | [**Reddit Dataset & Provenance Package**](docs/academic_submission/DELIVERABLE_2_DATASET_PACKAGE.md) | Complete | Schemas, data dictionary, 4-field provenance authorizations, taxonomies & all 7 tracked evaluation sets |
+| **D3** | [**AI / NLP Prototype Guide**](docs/academic_submission/DELIVERABLE_3_PROTOTYPE_GUIDE.md) | Complete | Docker / local / Vercel guides, 13-endpoint API reference, human-reviewed BERTopic I/O & 10 Studio views |
+| **D4** | [**AI System Architecture (16 Sections)**](docs/academic_submission/AI_ARCHITECTURE.md) | Complete | Full end-to-end architecture from ingestion and multilingual NLP to linking, resolution & deployment |
+| **D5a** | [**Mathematical Foundations**](docs/academic_submission/MATHEMATICAL_FOUNDATIONS.md) | Complete | Exact equations mapped to repository code (TF-IDF, NMF, E5, BERTopic, HDBSCAN, ASL, Platt, linking, resolution) |
+| **D5b** | [**System Pseudocode**](docs/academic_submission/SYSTEM_PSEUDOCODE.md) | Complete | End-to-end implemented pipeline pseudocode matching actual repository modules and artifacts |
+| **D6** | [**Final Community Insight Report (Q1–Q9)**](docs/academic_submission/FINAL_INSIGHT_REPORT.md) | Complete | Evidence-linked answers to all 9 research questions separating model observations from human benchmarks |
+
+### Supporting V6 Technical Audits & Policies
+
+- **Interactive Walkthrough Notebook:** [`notebooks/RCI_V6_Prototype_Walkthrough.ipynb`](notebooks/RCI_V6_Prototype_Walkthrough.ipynb)
+- **Core V6 Experiment Reports:** [Pre-Implementation Audit](docs/V6_PRE_IMPLEMENTATION_AUDIT.md) · [BERTopic vs. NMF Comparison](docs/BERTOPIC_IMPLEMENTATION_AND_COMPARISON.md) · [Multilingual Span LID Evaluation](docs/MULTILINGUAL_PROCESSING_EVALUATION.md) · [5-Task Slang & Emoji Ablation](docs/SLANG_EMOJI_ABLATION.md) · [Contextual Issue–Solution Mapping](docs/ISSUE_SOLUTION_MAPPING_REPORT.md) · [Unresolved-Issue Methodology](docs/UNRESOLVED_ISSUE_METHODOLOGY.md)
+- **Governance, Optimization & QA:** [Strict OOF Model Improvement Report](docs/V5_MODEL_IMPROVEMENT_REPORT.md) · [Cross-Model Insight Engine](docs/CROSS_MODEL_INSIGHT_ENGINE.md) · [Human IAA Governance Report](docs/V5_HUMAN_IAA_REPORT.md) · [V6 QA & Readiness Report](docs/V6_QA_AND_READINESS_REPORT.md)
+- **Project Policies:** [Security & Data Privacy Policy](SECURITY.md) · [Contributing Guide](CONTRIBUTING.md) · [Local Demo Runbook](docs/LOCAL_DEMO_RUNBOOK.md)
 
 ## License
 

@@ -106,7 +106,7 @@ The repository includes configuration for both **Docker** (full backend + classi
 
 ### 1. Docker & Docker Compose (Full Stack)
 
-Run the full FastAPI + scikit-learn + PostgreSQL stack using [Dockerfile](file:///D:/AI_Project/Dockerfile) and [docker-compose.yml](file:///D:/AI_Project/docker-compose.yml):
+Run the full FastAPI + scikit-learn + PostgreSQL stack using [Dockerfile](../Dockerfile) and [docker-compose.yml](../docker-compose.yml):
 
 ```powershell
 Set-Location D:\AI_Project
@@ -125,7 +125,7 @@ Then open <http://127.0.0.1:8000/app/>.
 
 ### 2. Vercel (Serverless Web & Demo API)
 
-The repository root includes [vercel.json](file:///D:/AI_Project/vercel.json), [api/index.py](file:///D:/AI_Project/api/index.py), and a slim root [requirements.txt](file:///D:/AI_Project/requirements.txt) (`fastapi` + `pydantic`) tailored for Vercel's Python serverless runtime and 250 MB bundle limit:
+The repository root includes [vercel.json](../vercel.json), [api/index.py](../api/index.py), and a slim root [requirements.txt](../requirements.txt) (`fastapi` + `pydantic`) tailored for Vercel's Python serverless runtime and 250 MB bundle limit:
 
 1. Import the GitHub repository (`Sohham01/AI_Project`) at <https://vercel.com/new>, or run `vercel --prod` from `D:\AI_Project`.
 2. Keep the Root Directory set to `./` (repository root). No build command or environment variables are required for the synthetic demo.

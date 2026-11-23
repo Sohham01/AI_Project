@@ -3,7 +3,7 @@
 **Project:** Reddit Community Intelligence (RCI) — `D:\AI_Project`  
 **Execution Date:** 2026-11-19  
 **Hardware:** NVIDIA GeForce RTX 4060 Laptop GPU (`torch 2.14.1+cu132`, `transformers 5.19.0`, offline `google/muril-base-cased` snapshot)  
-**Benchmark Script:** [backend/run_robustness_benchmark.py](file:///D:/AI_Project/backend/run_robustness_benchmark.py)  
+**Benchmark Script:** [backend/run_robustness_benchmark.py](../backend/run_robustness_benchmark.py)  
 **Isolated JSON Output:** `ml/artifacts/robustness_benchmark/robustness_report.json`
 
 > [!CAUTION]

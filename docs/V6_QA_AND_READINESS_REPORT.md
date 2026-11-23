@@ -24,7 +24,7 @@
 
 | Phase | Deliverable / Engine | Real-Data Benchmark | Verified Headline Metric |
 |---|---|---|---|
-| **Phase 0** | Pre-Implementation Audit | 17 assignment criteria | [`docs/V6_PRE_IMPLEMENTATION_AUDIT.md`](file:///D:/AI_Project/docs/V6_PRE_IMPLEMENTATION_AUDIT.md) |
+| **Phase 0** | Pre-Implementation Audit | 17 assignment criteria | [`docs/V6_PRE_IMPLEMENTATION_AUDIT.md`](./V6_PRE_IMPLEMENTATION_AUDIT.md) |
 | **Phase 1** | BERTopic v1 alongside NMF v1 | `3,459` identical corpus docs | `35` natural clusters, Diversity `0.9629`, Balance `0.9509`, `38.2%` explicit `-1` outliers, `80%` subsample NMI `0.6251`; E5-small `100%` on 14 synthetic cross-lingual probes (vs. MuRIL-DAPT mean-pool anisotropic 2-cluster collapse). |
 | **Phase 2** | Span-Level LID & Romanization | `n = 84` manually reviewed real comments | Accuracy **`88.10%`**, Macro F1 **`85.29%`**, Selective Acc (confident) **`95.83%`**, Script Acc **`100.0%`**, Code-Mix F1 **`95.52%`**, Multi-Span F1 **`90.91%`**. (`n = 24` synthetic Bengali/Odia/Devanagari probes `100%` reported strictly separately). |
 | **Phase 3** | 5-Task Slang & Emoji Ablation | `n = 367` 5-fold GroupKFold OOF (`100` MuRIL fine-tunes + `20` TF-IDF) | Context-aware disambiguation preserved `24` literal uses (`based on`, `mid sem`) on corpus. **TF-IDF:** `original` best (`50.08%`, normalization `−0.46 to −1.00 pp`). **Neural MuRIL-DAPT-WWM:** `slang_normalized` **`+1.01 pp`** (`Solution +6.08 pp`), `slang_emoji_semantic` **`+0.90 pp`** (`Sentiment +2.22 pp`, `Issue +1.35 pp`), while `Response` (`−1.33 pp`) prefers raw text. |
@@ -40,9 +40,9 @@
 
 - **Ready Now:**
   - Live interactive local studio at `http://localhost:8000/app` (`rci-web` + `rci-postgres` healthy).
-  - Complete academic submission package under [`docs/academic_submission/`](file:///D:/AI_Project/docs/academic_submission/).
+  - Complete academic submission package under [`docs/academic_submission/`](./academic_submission).
   - All `2,204` automated offline tests and Vercel zero-ML compatibility verified green.
 - **Explicit Pending Human Actions (Intentionally Not Automated):**
-  1. **Record the 3-minute scenario video** using the script and shot list in [`DELIVERABLE_1_VIDEO_PACKAGE.md`](file:///D:/AI_Project/docs/academic_submission/DELIVERABLE_1_VIDEO_PACKAGE.md).
-  2. **Review & optionally refine BERTopic machine-suggested labels** in [`ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv`](file:///D:/AI_Project/ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv).
+  1. **Record the 3-minute scenario video** using the script and shot list in [`DELIVERABLE_1_VIDEO_PACKAGE.md`](./academic_submission/DELIVERABLE_1_VIDEO_PACKAGE.md).
+  2. **Review & optionally refine BERTopic machine-suggested labels** in [`ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv`](../ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv).
   3. **Review local changes (`git diff` / `git status`) before deciding whether to commit, push, or deploy** (held back per Part 2 constraints).

@@ -6,7 +6,7 @@
 
 ## 1. Architecture & Runtime Compatibility
 
-Implemented in pure Python stdlib (zero heavy ML dependencies; runs identically in offline QA, Docker, and Vercel serverless) inside [`backend/app/services/nlp/cross_model_insights.py`](file:///D:/AI_Project/backend/app/services/nlp/cross_model_insights.py) (`engine_version: "2.0.0"`), served via `GET /api/demo/insights` and `GET /api/demo/summary`.
+Implemented in pure Python stdlib (zero heavy ML dependencies; runs identically in offline QA, Docker, and Vercel serverless) inside [`backend/app/services/nlp/cross_model_insights.py`](../backend/app/services/nlp/cross_model_insights.py) (`engine_version: "2.0.0"`), served via `GET /api/demo/insights` and `GET /api/demo/summary`.
 
 ### Inputs Connected
 1. **Dual Topic Discovery:** Preserved `NMF v1` (`10` factors) + Companion `BERTopic v1` (`35` semantic multilingual E5 clusters + `-1` outliers).

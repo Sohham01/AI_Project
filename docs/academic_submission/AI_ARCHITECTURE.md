@@ -1,7 +1,8 @@
-# Deliverable 4 — Reddit Community Intelligence (RCI V6) AI Architecture Document
+# Deliverable 4 — Reddit Community Intelligence (RCI V6.2) AI Architecture Document
 
-**Project Title:** AI-Powered Discovery of Student Issues and Solutions from Multilingual Reddit Discussions  
-**System Version:** RCI V6 (preserving NMF v1, V5 historical benchmarks, and strictly inductive V6 models)
+> **Document ID:** `RCI-V6.2-D4` · **Navigation:** [← Deliverable 3 (Prototype)](./DELIVERABLE_3_PROTOTYPE_GUIDE.md) · [Submission Index](./README.md) · [Deliverable 5a (Math) →](./MATHEMATICAL_FOUNDATIONS.md)  
+> **Project Title:** AI-Powered Discovery of Student Issues and Solutions from Multilingual Reddit Discussions  
+> **System Version:** RCI V6.2 (preserving NMF v1, V5 historical benchmarks, and strictly inductive V6 models)
 
 ---
 
@@ -51,7 +52,7 @@ Implemented in pure Python stdlib (`backend/app/services/nlp/indian_reddit_lid.p
   2. Deterministic UMAP (`n_neighbors=15, n_components=5, metric="cosine", random_state=42`).
   3. Density-based HDBSCAN (`min_cluster_size=25, min_samples=8, cluster_selection_method="eom"`), discovering **35 natural semantic clusters** without forcing `K=10` and explicitly preserving **1,320 outliers (`38.2%`) in topic `-1`**.
   4. Indic-script-safe `CountVectorizer(token_pattern=r"(?u)[A-Za-z0-9\u0900-\u0d7f]{2,}", min_df=1)` + BM25 `ClassTfidfTransformer(bm25_weighting=True, reduce_frequent_words=True)`.
-  5. Tracked in [`ml/artifacts/topic_models/registry.json`](file:///D:/AI_Project/ml/artifacts/topic_models/registry.json) with isolated namespaces (`nmf:v1:<id>` vs. `bertopic:bertopic_v1:<id>`).
+  5. Tracked in [`ml/artifacts/topic_models/registry.json`](../../ml/artifacts/topic_models/registry.json) with isolated namespaces (`nmf:v1:<id>` vs. `bertopic:bertopic_v1:<id>`).
 
 ---
 
@@ -87,7 +88,7 @@ Implemented in pure Python stdlib (`backend/app/services/nlp/indian_reddit_lid.p
 
 ## 10. Issue–Solution Mapping
 
-Implemented in [`ml/linking/contextual_mapper.py`](file:///D:/AI_Project/ml/linking/contextual_mapper.py) alongside preserved `TfidfCosineIssueSolutionLinker`:
+Implemented in [`ml/linking/contextual_mapper.py`](../../ml/linking/contextual_mapper.py) alongside preserved `TfidfCosineIssueSolutionLinker`:
 - Fuses 4 positive signals (`0.38 × E5 multilingual cosine + 0.14 × TF-IDF cosine + 0.18 × thread/parent structural context + 0.30 × upstream detector confidence`) minus an explicit **negation/contradiction/non-actionable penalty** (`p_neg ∈ [0, 0.55]`) rejecting `[Removed]`, bare URLs, DM redirects, sarcasm, and dismissals.
 - Groups `951` linked corpus solutions (`verification_status: "model_inferred"`) into `282` semantic solution clusters across all 8 domains via cosine `AgglomerativeClustering`.
 - Outperforms the V5 TF-IDF baseline on `n = 64` manually reviewed real pairs: Pairwise F1 **`86.57%`** vs. `80.00%` (`+6.57 pp`), FPR **`13.33%`** vs. `16.67%`, **`P@3 = 100.0%`**, `MRR = 1.00`.
@@ -96,7 +97,7 @@ Implemented in [`ml/linking/contextual_mapper.py`](file:///D:/AI_Project/ml/link
 
 ## 11. Unresolved Issue Detection
 
-Implemented in [`ml/linking/resolution_engine.py`](file:///D:/AI_Project/ml/linking/resolution_engine.py) alongside `EvidenceBasedResolver`:
+Implemented in [`ml/linking/resolution_engine.py`](../../ml/linking/resolution_engine.py) alongside `EvidenceBasedResolver`:
 - Formalizes all 4 distinct states (`reported_success`, `reported_pending`, `proposed_only`, `insufficient_evidence`) and 4 verdict tiers (`Resolved`, `Partially Resolved`, `Unresolved`, `Insufficient Evidence`).
 - Evaluates 8 explainable signals including **explicit procedural-failure vs. rhetorical contradiction detection** (`26` threads with contradictory follow-ups), elapsed discussion span, Phase 4 solution relevance, and confidence volume guard.
 - Enforces two hard guardrails: (1) `proposed_only` score is capped at `0.58` so proposals never claim `Resolved` without outcome confirmation; (2) discussion volume never boosts `resolution_score`.
