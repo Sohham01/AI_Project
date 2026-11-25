@@ -1,0 +1,82 @@
+{
+  "audit_version": "v6.3",
+  "taxonomy_version": "rci_taxonomy_v2.0",
+  "guideline_version": "ANNOTATION_GUIDELINES_v2.0",
+  "findings": {
+    "real_reddit_labeled_v1": {
+      "exists": true,
+      "path": "data/annotations/real_reddit_labeled_v1/master_labeled_v1.csv",
+      "n_rows": 459,
+      "distinct_annotator_ids": [],
+      "annotation_sources": [
+        "rubric_curated_real_reddit_v1"
+      ],
+      "review_status_counts": {
+        "<blank>": 459
+      },
+      "independent_human_annotators_recorded": 1,
+      "original_multi_annotator_decisions_preserved": false,
+      "can_compute_true_multi_human_iaa": false,
+      "note": "Single-curator rubric-curated dataset (459 rows); contains NO independent second annotator."
+    },
+    "iaa_50_human_vs_v2_pass1": {
+      "exists": true,
+      "path": "ml/artifacts/v5_experiments/active_learning/iaa_50_human_annotator_studio.csv",
+      "n_rows": 50,
+      "distinct_annotator_ids": [
+        "researcher_1"
+      ],
+      "annotation_sources": [],
+      "review_status_counts": {
+        "labeled": 50
+      },
+      "independent_human_annotators_recorded": 1,
+      "comparison_conducted": "1 blind human reviewer (researcher_1) vs Pass-1 V2 rubric (0/5 IAA gates passed; Track B V2 blocked)",
+      "can_compute_true_multi_human_iaa": false,
+      "note": "Track B V2 expansion failed all 5 IAA gates against 1 human reviewer and remains archived/blocked."
+    },
+    "iaa_50_annotator_b": {
+      "exists": true,
+      "path": "ml/artifacts/v5_experiments/active_learning/iaa_50_human_annotator_b_studio.csv",
+      "n_rows": 50,
+      "distinct_annotator_ids": [],
+      "annotation_sources": [],
+      "review_status_counts": {
+        "<blank>": 50
+      },
+      "independent_human_annotators_recorded": 0,
+      "can_compute_true_multi_human_iaa": false,
+      "note": "Blank template awaiting second human annotator."
+    },
+    "iaa_double_annotation_50": {
+      "exists": true,
+      "path": "ml/artifacts/v5_experiments/active_learning/iaa_double_annotation_50.csv",
+      "n_rows": 50,
+      "distinct_annotator_ids": [],
+      "annotation_sources": [],
+      "review_status_counts": {
+        "<blank>": 50
+      }
+    },
+    "real_reddit_labeled_v2": {
+      "exists": true,
+      "path": "data/annotations/real_reddit_labeled_v2/master_labeled_v2.csv",
+      "n_rows": 707,
+      "distinct_annotator_ids": [],
+      "annotation_sources": [
+        "rubric_curated_real_reddit_v1",
+        "rubric_curated_real_reddit_v2_pending_human_iaa"
+      ],
+      "review_status_counts": {
+        "<blank>": 707
+      }
+    }
+  },
+  "metrics_status": "PENDING_SECOND_INDEPENDENT_ANNOTATOR",
+  "metrics_pending": [
+    "two_human_cohen_kappa_single_label (sentiment, response, solution)",
+    "multi_rater_fleiss_kappa",
+    "multi_human_krippendorff_alpha (nominal + MASI + per-label binary)",
+    "two_human_adjudicated_gold_agreement_audit"
+  ]
+}

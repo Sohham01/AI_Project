@@ -89,3 +89,11 @@ Evaluated on [`data/annotations/issue_solution_eval_v1.csv`](../data/annotations
 1. **Substantial Pairwise F1 (+6.57 pp) & FPR Reduction (−3.34 pp):** Combining `multilingual-e5-small` embeddings with parent context and explicit negation/placeholder penalties eliminates false positives like `[ Removed by Reddit ]` (`cmt_01201`), bare image URLs (`cmt_03192`), 2-word replies (`"Clear it"`), and sarcastic dismissals, while recalling multilingual/paraphrased solutions that share few exact surface words with the thread title.
 2. **Honest NDCG@3 Tradeoff:** On 2 issues where both `gold=1` (partial advice) and `gold=2` (strong solution) were relevant, V6 ranked a longer `gold=1` advice comment slightly ahead of a concise `gold=2` comment, nudging graded NDCG@3 (`0.8368` vs `0.8743`) slightly below TF-IDF while achieving **`100.0%` binary Precision@3**!
 3. **Why Cross-Encoder Reranking Was Not Added:** With `MRR = 1.00`, `P@3 = 1.00`, and `86.57%` Pairwise F1 already achieved at `~2.4 ms/doc` using our shared `multilingual-e5-small` bi-encoder, adding a second heavy cross-encoder checkpoint would increase GPU/disk complexity without a justified top-3 ranking gain.
+
+
+---
+
+## 5. V6.3 Research Update — Independent `v2` Evaluation Freeze Notice
+
+- **Development (`v1`) vs. Independent Blind (`v2`) Clarification:** The `64`-pair benchmark in `data/annotations/issue_solution_eval_v1.csv` (`86.57%` Pairwise F1, `100.0%` `P@3`, `1.00` MRR across reconstructed full corpus links `n = 951`) is explicitly documented in [`docs/V6_3_LINKING_AND_RESOLUTION_EVAL_REPORT.md`](./V6_3_LINKING_AND_RESOLUTION_EVAL_REPORT.md) as a V6.0/V6.3 **development set**, not a blind test.
+- **Frozen `v2` Blind Package (`180` Pairs, All 8 Issues):** Confidence-independent lexical/structural stratification across the `816`-thread expanded corpus produced `issue_solution_eval_v2_blind.{csv,xlsx}` (`0` overlap with `v1`, `20–23` pairs per issue domain) in `data/annotations/v6_3_package/linking_and_resolution_v2/`, awaiting independent human labeling.

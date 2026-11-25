@@ -184,6 +184,8 @@ class RCIBERTopicPipeline:
                 self.config.embedding_key,
                 is_query=False,
                 use_cache=use_embedding_cache,
+                preprocessing_version=f"bertopic:{self.config.preprocessing_mode}",
+                corpus_version=self.config.corpus_version,
             )
         else:
             self.embedding_meta = {
@@ -217,6 +219,8 @@ class RCIBERTopicPipeline:
                 self.config.embedding_key,
                 is_query=False,
                 use_cache=use_embedding_cache,
+                preprocessing_version=f"bertopic:{self.config.preprocessing_mode}",
+                corpus_version=self.config.corpus_version,
             )
         topics, probs = self.model.transform(processed, embeddings=embeddings)
         return [int(t) for t in topics], (np.asarray(probs) if probs is not None else None)

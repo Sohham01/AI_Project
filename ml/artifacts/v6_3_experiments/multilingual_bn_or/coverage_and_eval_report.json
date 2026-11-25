@@ -1,0 +1,133 @@
+{
+  "eval_version": "multilingual_bn_or_v6.3",
+  "v1_real_eval_n": 84,
+  "v1_real_language_counts": {
+    "hi-en": 34,
+    "und": 5,
+    "hi": 5,
+    "or-en": 1,
+    "en": 39
+  },
+  "v1_real_script_counts": {
+    "latin": 80,
+    "unknown": 3,
+    "mixed": 1
+  },
+  "v1_real_baseline_metrics": {
+    "accuracy": 0.881,
+    "macro_f1": 0.8529,
+    "per_class": {
+      "en": {
+        "precision": 0.9697,
+        "recall": 0.8205,
+        "f1": 0.8889,
+        "support": 39
+      },
+      "hi": {
+        "precision": 0.7143,
+        "recall": 1.0,
+        "f1": 0.8333,
+        "support": 5
+      },
+      "hi-en": {
+        "precision": 1.0,
+        "recall": 0.9118,
+        "f1": 0.9538,
+        "support": 34
+      },
+      "or-en": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "und": {
+        "precision": 0.4167,
+        "recall": 1.0,
+        "f1": 0.5882,
+        "support": 5
+      }
+    },
+    "script_accuracy": 1.0
+  },
+  "v1_synthetic_probes_n": 24,
+  "v1_synthetic_note": "Strictly separated synthetic diagnostic probes — NOT authentic Reddit evaluation.",
+  "v1_synthetic_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_class": {
+      "bn": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "bn-en": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5
+      },
+      "en": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 1
+      },
+      "hi": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "hi-en": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5
+      },
+      "or": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "or-en": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5
+      },
+      "und": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      }
+    }
+  },
+  "expanded_corpus_candidate_scan": {
+    "comments_scanned_by_partition": {
+      "v6_1_baseline": 3162,
+      "v6_3_expansion": 3876
+    },
+    "raw_candidates_found_by_stratum": {
+      "bengali_native_script": 19,
+      "mixed_language_control": 597,
+      "romanized_bengali": 93,
+      "romanized_odia": 23
+    },
+    "selected_for_v2_review_by_stratum": {
+      "bengali_native_script": 14,
+      "romanized_bengali": 45,
+      "romanized_odia": 23,
+      "mixed_language_control": 35
+    },
+    "total_v2_candidates": 117,
+    "v2_annotation_status": "PENDING_HUMAN_REVIEW_DO_NOT_CLAIM_BN_OR_REPRESENTATIVE_PERFORMANCE_YET",
+    "files": [
+      "data/annotations/v6_3_package/multilingual_bn_or_v2/multilingual_eval_real_v2_candidates.csv",
+      "data/annotations/v6_3_package/multilingual_bn_or_v2/multilingual_eval_real_v2_candidates.jsonl"
+    ]
+  }
+}

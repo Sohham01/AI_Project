@@ -1,0 +1,42 @@
+{
+  "eval_version": "v2_independent_protocol",
+  "sampling_policy": "Confidence-independent lexical/structural stratification; 0% overlap with v1 dev sets; blind (zero model outputs in sheet).",
+  "issue_solution_v2": {
+    "n_pairs": 180,
+    "v1_dev_overlap": 0,
+    "by_partition": {
+      "v6_3_expansion": 179,
+      "v6_1_baseline": 1
+    },
+    "by_issue": {
+      "academic_workload": 23,
+      "administrative_communication": 23,
+      "campus_infrastructure": 23,
+      "curriculum_teaching": 23,
+      "extracurriculars": 20,
+      "financial_concerns": 23,
+      "hostel_facilities": 23,
+      "placements": 22
+    },
+    "csv_sha256": "7607459c9d35229a4e3a7a303d1fde640725620666014b21d37d174d9dbdf61e",
+    "status": "PENDING_INDEPENDENT_HUMAN_ANNOTATION"
+  },
+  "resolution_v2": {
+    "n_threads": 120,
+    "v1_dev_overlap": 0,
+    "by_partition": {
+      "v6_1_baseline": 60,
+      "v6_3_expansion": 60
+    },
+    "by_stratum": {
+      "v6_1_baseline|action_or_advice_cues": 20,
+      "v6_1_baseline|low_signal_or_open": 20,
+      "v6_1_baseline|outcome_or_pending_cues": 20,
+      "v6_3_expansion|action_or_advice_cues": 20,
+      "v6_3_expansion|low_signal_or_open": 20,
+      "v6_3_expansion|outcome_or_pending_cues": 20
+    },
+    "csv_sha256": "de37a61bf61f56bcdc7b69886237cc0d54d7a8f96dd908c20ea94ae2d68d4c01",
+    "status": "PENDING_INDEPENDENT_HUMAN_ANNOTATION"
+  }
+}

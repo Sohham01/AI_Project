@@ -1,0 +1,187 @@
+{
+  "evaluation_scope": "DEVELOPMENT_SET_ONLY_V1 (used during V6.0/V6.3 rule development — NOT independent blind evaluation!)",
+  "independent_v2_status": "PENDING_HUMAN_REVIEW (data/annotations/v6_3_package/linking_and_resolution_v2/)",
+  "timestamp_semantics": {
+    "reference_time": "2026-11-05T05:08:44+00:00",
+    "reference_time_source": "corpus_max_observation_timestamp",
+    "policy": "Derived deterministically from explicit reference_time, dataset observation_timestamp, or max corpus activity timestamp; never uses hard-coded dates or implicit wall clock."
+  },
+  "full_corpus_linked_solutions": 951,
+  "corpus_365_summary": {
+    "total_threads": 365,
+    "state_distribution": {
+      "reported_success": 12,
+      "reported_pending": 55,
+      "proposed_only": 147,
+      "insufficient_evidence": 151
+    },
+    "verdict_distribution": {
+      "Resolved": 8,
+      "Partially Resolved": 4,
+      "Unresolved": 202,
+      "Insufficient Evidence": 151
+    },
+    "threads_with_contradictory_followups": 32,
+    "threads_with_reported_success": 12,
+    "threads_proposed_only": 147
+  },
+  "resolution_v1_dev_metrics": {
+    "n_threads": 40,
+    "four_state_accuracy": 0.825,
+    "four_state_macro_f1": 0.8443,
+    "four_state_weighted_f1": 0.8219,
+    "per_class": {
+      "reported_success": {
+        "precision": 1.0,
+        "recall": 0.8571,
+        "f1": 0.9231,
+        "support": 7
+      },
+      "reported_pending": {
+        "precision": 0.6875,
+        "recall": 0.9167,
+        "f1": 0.7857,
+        "support": 12
+      },
+      "proposed_only": {
+        "precision": 0.8889,
+        "recall": 0.6154,
+        "f1": 0.7273,
+        "support": 13
+      },
+      "insufficient_evidence": {
+        "precision": 0.8889,
+        "recall": 1.0,
+        "f1": 0.9412,
+        "support": 8
+      }
+    },
+    "confusion_matrix": {
+      "reported_success": {
+        "reported_success": 6,
+        "reported_pending": 1,
+        "proposed_only": 0,
+        "insufficient_evidence": 0
+      },
+      "reported_pending": {
+        "reported_success": 0,
+        "reported_pending": 11,
+        "proposed_only": 1,
+        "insufficient_evidence": 0
+      },
+      "proposed_only": {
+        "reported_success": 0,
+        "reported_pending": 4,
+        "proposed_only": 8,
+        "insufficient_evidence": 1
+      },
+      "insufficient_evidence": {
+        "reported_success": 0,
+        "reported_pending": 0,
+        "proposed_only": 0,
+        "insufficient_evidence": 8
+      }
+    },
+    "unresolved_binary": {
+      "precision": 0.9706,
+      "recall": 1.0,
+      "f1": 0.9851
+    },
+    "false_claim_breakdown": {
+      "non_success_gold_count": 33,
+      "false_reported_success_count": 0,
+      "false_reported_success_rate": 0.0,
+      "unresolved_gold_count": 33,
+      "false_resolved_verdict_count": 0,
+      "false_resolved_verdict_rate": 0.0,
+      "false_partially_resolved_count": 0,
+      "false_partially_resolved_rate": 0.0,
+      "combined_false_resolution_overclaim_count": 0,
+      "combined_false_resolution_overclaim_rate": 0.0
+    },
+    "false_positives_sample": [],
+    "false_negatives_sample": [
+      {
+        "post_id": "post_0131",
+        "gold_state": "reported_success",
+        "pred_state": "reported_pending",
+        "pred_verdict": "Unresolved"
+      }
+    ],
+    "evidence_retrieval_accuracy": 0.9
+  },
+  "resolution_v1_by_community": {
+    "CATPrep": {
+      "n_threads": 4,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "low_support_warning": true
+    },
+    "CATStudyRoom": {
+      "n_threads": 4,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "low_support_warning": true
+    },
+    "CATpreparation": {
+      "n_threads": 1,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "low_support_warning": true
+    },
+    "IIMCATPreparation": {
+      "n_threads": 1,
+      "accuracy": 0.0,
+      "macro_f1": 0.0,
+      "low_support_warning": true
+    },
+    "IIMSambalpurUG": {
+      "n_threads": 15,
+      "accuracy": 0.9333,
+      "macro_f1": 0.8713,
+      "low_support_warning": false
+    },
+    "Indian_Academia": {
+      "n_threads": 3,
+      "accuracy": 0.3333,
+      "macro_f1": 0.3333,
+      "low_support_warning": true
+    },
+    "MBAIndia": {
+      "n_threads": 6,
+      "accuracy": 0.6667,
+      "macro_f1": 0.875,
+      "low_support_warning": false
+    },
+    "iim_CAT": {
+      "n_threads": 6,
+      "accuracy": 0.8333,
+      "macro_f1": 0.8889,
+      "low_support_warning": false
+    }
+  },
+  "issue_solution_v1_dev_metrics": {
+    "n_pairs": 64,
+    "n_issues_evaluated": 8,
+    "threshold": 0.56,
+    "pairwise_precision": 0.8788,
+    "pairwise_recall": 0.8529,
+    "pairwise_f1": 0.8657,
+    "false_positive_rate": 0.1333,
+    "confusion": {
+      "tp": 29,
+      "fp": 4,
+      "fn": 5,
+      "tn": 26
+    },
+    "mrr": 1.0,
+    "precision_at_1": 1.0,
+    "precision_at_3": 1.0,
+    "precision_at_5": 0.825,
+    "recall_at_1": 0.2375,
+    "recall_at_3": 0.7125,
+    "recall_at_5": 0.9688,
+    "ndcg_at_3": 0.8368,
+    "ndcg_at_5": 0.912
+  }
+}

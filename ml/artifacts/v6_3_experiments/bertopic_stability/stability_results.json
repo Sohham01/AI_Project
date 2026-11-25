@@ -1,0 +1,1333 @@
+{
+  "experiment": "bertopic_v6_3_multi_seed_stability",
+  "baseline_corpus_n_docs": 3459,
+  "baseline_results": [
+    {
+      "config_id": "C0_v1_baseline_eom",
+      "description": "V6.1 baseline: e5-small + UMAP(15,5,0.0) + HDBSCAN(mcs=25,ms=8,eom)",
+      "params": {
+        "model_id": "stab_c0_eom",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_cluster_selection_method": "eom",
+        "corpus_version": "6.1.0"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404,
+        505,
+        606
+      ],
+      "collapse_count": 1,
+      "collapse_rate": 0.1429,
+      "topic_count_summary": {
+        "values": [
+          35,
+          31,
+          2,
+          30,
+          33,
+          34,
+          32
+        ],
+        "mean": 28.14,
+        "std": 10.79,
+        "min": 2,
+        "max": 35
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          38.16,
+          35.44,
+          0.43,
+          33.33,
+          38.57,
+          31.92,
+          35.5
+        ],
+        "mean": 30.48,
+        "std": 12.46
+      },
+      "coherence_npmi_mean": -0.0718,
+      "coherence_npmi_std": 0.0396,
+      "topic_diversity_mean": 0.9628,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.4312,
+        "std_pairwise_ari_all_docs": 0.2741,
+        "mean_pairwise_nmi_all_docs": 0.5757,
+        "mean_pairwise_ari_non_outlier": 0.6109,
+        "mean_pairwise_nmi_non_outlier": 0.7022
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 35,
+          "collapsed": false,
+          "outlier_count": 1320,
+          "outlier_rate_pct": 38.16,
+          "coherence_npmi": -0.0845,
+          "coherence_umass": -1.5199,
+          "topic_diversity": 0.9629,
+          "centroid_cosine": 0.9523,
+          "entropy_balance": 0.9509,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 224
+        },
+        {
+          "seed": 101,
+          "n_topics": 31,
+          "collapsed": false,
+          "outlier_count": 1226,
+          "outlier_rate_pct": 35.44,
+          "coherence_npmi": -0.0676,
+          "coherence_umass": -1.5881,
+          "topic_diversity": 0.9548,
+          "centroid_cosine": 0.9532,
+          "entropy_balance": 0.9102,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 362
+        },
+        {
+          "seed": 202,
+          "n_topics": 2,
+          "collapsed": true,
+          "outlier_count": 15,
+          "outlier_rate_pct": 0.43,
+          "coherence_npmi": 0.0154,
+          "coherence_umass": -1.8476,
+          "topic_diversity": 1.0,
+          "centroid_cosine": 0.9572,
+          "entropy_balance": 0.1112,
+          "min_cluster_size_observed": 51,
+          "max_cluster_size_observed": 3393
+        },
+        {
+          "seed": 303,
+          "n_topics": 30,
+          "collapsed": false,
+          "outlier_count": 1153,
+          "outlier_rate_pct": 33.33,
+          "coherence_npmi": -0.0882,
+          "coherence_umass": -1.567,
+          "topic_diversity": 0.97,
+          "centroid_cosine": 0.9533,
+          "entropy_balance": 0.8769,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 524
+        },
+        {
+          "seed": 404,
+          "n_topics": 33,
+          "collapsed": false,
+          "outlier_count": 1334,
+          "outlier_rate_pct": 38.57,
+          "coherence_npmi": -0.1253,
+          "coherence_umass": -1.6576,
+          "topic_diversity": 0.9545,
+          "centroid_cosine": 0.9525,
+          "entropy_balance": 0.9472,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 233
+        },
+        {
+          "seed": 505,
+          "n_topics": 34,
+          "collapsed": false,
+          "outlier_count": 1104,
+          "outlier_rate_pct": 31.92,
+          "coherence_npmi": -0.0793,
+          "coherence_umass": -1.5377,
+          "topic_diversity": 0.9441,
+          "centroid_cosine": 0.9517,
+          "entropy_balance": 0.879,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 507
+        },
+        {
+          "seed": 606,
+          "n_topics": 32,
+          "collapsed": false,
+          "outlier_count": 1228,
+          "outlier_rate_pct": 35.5,
+          "coherence_npmi": -0.073,
+          "coherence_umass": -1.6704,
+          "topic_diversity": 0.9531,
+          "centroid_cosine": 0.9532,
+          "entropy_balance": 0.9448,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 222
+        }
+      ]
+    },
+    {
+      "config_id": "C1_eom_mcs35",
+      "description": "Coarser EOM: e5-small + UMAP(15,5,0.0) + HDBSCAN(mcs=35,ms=10,eom)",
+      "params": {
+        "model_id": "stab_c1_eom35",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 35,
+        "hdbscan_min_samples": 10,
+        "hdbscan_cluster_selection_method": "eom",
+        "corpus_version": "6.1.0"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404,
+        505,
+        606
+      ],
+      "collapse_count": 2,
+      "collapse_rate": 0.2857,
+      "topic_count_summary": {
+        "values": [
+          20,
+          2,
+          2,
+          20,
+          23,
+          20,
+          20
+        ],
+        "mean": 15.29,
+        "std": 8.46,
+        "min": 2,
+        "max": 23
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          25.53,
+          0.78,
+          0.49,
+          35.99,
+          37.24,
+          31.8,
+          29.78
+        ],
+        "mean": 23.09,
+        "std": 14.65
+      },
+      "coherence_npmi_mean": -0.1205,
+      "coherence_npmi_std": 0.0585,
+      "topic_diversity_mean": 0.9648,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.3265,
+        "std_pairwise_ari_all_docs": 0.322,
+        "mean_pairwise_nmi_all_docs": 0.4335,
+        "mean_pairwise_ari_non_outlier": 0.4583,
+        "mean_pairwise_nmi_non_outlier": 0.5247
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 20,
+          "collapsed": false,
+          "outlier_count": 883,
+          "outlier_rate_pct": 25.53,
+          "coherence_npmi": -0.1481,
+          "coherence_umass": -1.9004,
+          "topic_diversity": 0.945,
+          "centroid_cosine": 0.9512,
+          "entropy_balance": 0.8482,
+          "min_cluster_size_observed": 37,
+          "max_cluster_size_observed": 576
+        },
+        {
+          "seed": 101,
+          "n_topics": 2,
+          "collapsed": true,
+          "outlier_count": 27,
+          "outlier_rate_pct": 0.78,
+          "coherence_npmi": -0.0402,
+          "coherence_umass": -1.9022,
+          "topic_diversity": 1.0,
+          "centroid_cosine": 0.9593,
+          "entropy_balance": 0.0916,
+          "min_cluster_size_observed": 40,
+          "max_cluster_size_observed": 3392
+        },
+        {
+          "seed": 202,
+          "n_topics": 2,
+          "collapsed": true,
+          "outlier_count": 17,
+          "outlier_rate_pct": 0.49,
+          "coherence_npmi": -0.018,
+          "coherence_umass": -1.8476,
+          "topic_diversity": 1.0,
+          "centroid_cosine": 0.9575,
+          "entropy_balance": 0.1095,
+          "min_cluster_size_observed": 50,
+          "max_cluster_size_observed": 3392
+        },
+        {
+          "seed": 303,
+          "n_topics": 20,
+          "collapsed": false,
+          "outlier_count": 1245,
+          "outlier_rate_pct": 35.99,
+          "coherence_npmi": -0.1691,
+          "coherence_umass": -1.8053,
+          "topic_diversity": 0.965,
+          "centroid_cosine": 0.9524,
+          "entropy_balance": 0.8629,
+          "min_cluster_size_observed": 36,
+          "max_cluster_size_observed": 583
+        },
+        {
+          "seed": 404,
+          "n_topics": 23,
+          "collapsed": false,
+          "outlier_count": 1288,
+          "outlier_rate_pct": 37.24,
+          "coherence_npmi": -0.1476,
+          "coherence_umass": -1.9861,
+          "topic_diversity": 0.9435,
+          "centroid_cosine": 0.9511,
+          "entropy_balance": 0.9109,
+          "min_cluster_size_observed": 35,
+          "max_cluster_size_observed": 292
+        },
+        {
+          "seed": 505,
+          "n_topics": 20,
+          "collapsed": false,
+          "outlier_count": 1100,
+          "outlier_rate_pct": 31.8,
+          "coherence_npmi": -0.164,
+          "coherence_umass": -1.9316,
+          "topic_diversity": 0.95,
+          "centroid_cosine": 0.9502,
+          "entropy_balance": 0.8596,
+          "min_cluster_size_observed": 37,
+          "max_cluster_size_observed": 485
+        },
+        {
+          "seed": 606,
+          "n_topics": 20,
+          "collapsed": false,
+          "outlier_count": 1030,
+          "outlier_rate_pct": 29.78,
+          "coherence_npmi": -0.1563,
+          "coherence_umass": -1.9735,
+          "topic_diversity": 0.95,
+          "centroid_cosine": 0.9502,
+          "entropy_balance": 0.9096,
+          "min_cluster_size_observed": 41,
+          "max_cluster_size_observed": 352
+        }
+      ]
+    },
+    {
+      "config_id": "C2_leaf_mcs25",
+      "description": "Leaf selection: e5-small + UMAP(15,5,0.0) + HDBSCAN(mcs=25,ms=8,leaf)",
+      "params": {
+        "model_id": "stab_c2_leaf25",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_cluster_selection_method": "leaf",
+        "corpus_version": "6.1.0"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404,
+        505,
+        606
+      ],
+      "collapse_count": 0,
+      "collapse_rate": 0.0,
+      "topic_count_summary": {
+        "values": [
+          37,
+          35,
+          35,
+          34,
+          34,
+          39,
+          34
+        ],
+        "mean": 35.43,
+        "std": 1.76,
+        "min": 34,
+        "max": 39
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          41.28,
+          46.08,
+          39.75,
+          40.45,
+          42.01,
+          38.16,
+          40.99
+        ],
+        "mean": 41.25,
+        "std": 2.28
+      },
+      "coherence_npmi_mean": -0.0983,
+      "coherence_npmi_std": 0.03,
+      "topic_diversity_mean": 0.9554,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.5935,
+        "std_pairwise_ari_all_docs": 0.0456,
+        "mean_pairwise_nmi_all_docs": 0.7697,
+        "mean_pairwise_ari_non_outlier": 0.9332,
+        "mean_pairwise_nmi_non_outlier": 0.9734
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 37,
+          "collapsed": false,
+          "outlier_count": 1428,
+          "outlier_rate_pct": 41.28,
+          "coherence_npmi": -0.1052,
+          "coherence_umass": -1.5032,
+          "topic_diversity": 0.9568,
+          "centroid_cosine": 0.9532,
+          "entropy_balance": 0.9641,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 201
+        },
+        {
+          "seed": 101,
+          "n_topics": 35,
+          "collapsed": false,
+          "outlier_count": 1594,
+          "outlier_rate_pct": 46.08,
+          "coherence_npmi": -0.0755,
+          "coherence_umass": -1.5467,
+          "topic_diversity": 0.9514,
+          "centroid_cosine": 0.9536,
+          "entropy_balance": 0.9727,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 113
+        },
+        {
+          "seed": 202,
+          "n_topics": 35,
+          "collapsed": false,
+          "outlier_count": 1375,
+          "outlier_rate_pct": 39.75,
+          "coherence_npmi": -0.123,
+          "coherence_umass": -1.5979,
+          "topic_diversity": 0.9571,
+          "centroid_cosine": 0.9527,
+          "entropy_balance": 0.9609,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 205
+        },
+        {
+          "seed": 303,
+          "n_topics": 34,
+          "collapsed": false,
+          "outlier_count": 1399,
+          "outlier_rate_pct": 40.45,
+          "coherence_npmi": -0.0651,
+          "coherence_umass": -1.5804,
+          "topic_diversity": 0.9706,
+          "centroid_cosine": 0.9534,
+          "entropy_balance": 0.9473,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 214
+        },
+        {
+          "seed": 404,
+          "n_topics": 34,
+          "collapsed": false,
+          "outlier_count": 1453,
+          "outlier_rate_pct": 42.01,
+          "coherence_npmi": -0.156,
+          "coherence_umass": -1.667,
+          "topic_diversity": 0.95,
+          "centroid_cosine": 0.9527,
+          "entropy_balance": 0.9631,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 208
+        },
+        {
+          "seed": 505,
+          "n_topics": 39,
+          "collapsed": false,
+          "outlier_count": 1320,
+          "outlier_rate_pct": 38.16,
+          "coherence_npmi": -0.0729,
+          "coherence_umass": -1.5524,
+          "topic_diversity": 0.9462,
+          "centroid_cosine": 0.9518,
+          "entropy_balance": 0.9476,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 218
+        },
+        {
+          "seed": 606,
+          "n_topics": 34,
+          "collapsed": false,
+          "outlier_count": 1418,
+          "outlier_rate_pct": 40.99,
+          "coherence_npmi": -0.0905,
+          "coherence_umass": -1.6447,
+          "topic_diversity": 0.9559,
+          "centroid_cosine": 0.9532,
+          "entropy_balance": 0.9594,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 202
+        }
+      ]
+    },
+    {
+      "config_id": "C3_leaf_nn25_md005",
+      "description": "Balanced neighborhood + leaf: e5-small + UMAP(25,5,0.05) + HDBSCAN(mcs=25,ms=10,leaf)",
+      "params": {
+        "model_id": "stab_c3_leaf_nn25",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 25,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.05,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 10,
+        "hdbscan_cluster_selection_method": "leaf",
+        "corpus_version": "6.1.0"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404,
+        505,
+        606
+      ],
+      "collapse_count": 0,
+      "collapse_rate": 0.0,
+      "topic_count_summary": {
+        "values": [
+          29,
+          29,
+          27,
+          29,
+          28,
+          28,
+          25
+        ],
+        "mean": 27.86,
+        "std": 1.36,
+        "min": 25,
+        "max": 29
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          54.55,
+          53.08,
+          48.48,
+          53.05,
+          53.31,
+          53.28,
+          50.45
+        ],
+        "mean": 52.31,
+        "std": 1.94
+      },
+      "coherence_npmi_mean": -0.108,
+      "coherence_npmi_std": 0.0277,
+      "topic_diversity_mean": 0.9514,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.6475,
+        "std_pairwise_ari_all_docs": 0.0401,
+        "mean_pairwise_nmi_all_docs": 0.7456,
+        "mean_pairwise_ari_non_outlier": 0.914,
+        "mean_pairwise_nmi_non_outlier": 0.971
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 29,
+          "collapsed": false,
+          "outlier_count": 1887,
+          "outlier_rate_pct": 54.55,
+          "coherence_npmi": -0.1258,
+          "coherence_umass": -1.676,
+          "topic_diversity": 0.9552,
+          "centroid_cosine": 0.9552,
+          "entropy_balance": 0.9632,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 179
+        },
+        {
+          "seed": 101,
+          "n_topics": 29,
+          "collapsed": false,
+          "outlier_count": 1836,
+          "outlier_rate_pct": 53.08,
+          "coherence_npmi": -0.1441,
+          "coherence_umass": -1.6957,
+          "topic_diversity": 0.9552,
+          "centroid_cosine": 0.9541,
+          "entropy_balance": 0.9572,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 184
+        },
+        {
+          "seed": 202,
+          "n_topics": 27,
+          "collapsed": false,
+          "outlier_count": 1677,
+          "outlier_rate_pct": 48.48,
+          "coherence_npmi": -0.0757,
+          "coherence_umass": -1.7255,
+          "topic_diversity": 0.9593,
+          "centroid_cosine": 0.9549,
+          "entropy_balance": 0.9377,
+          "min_cluster_size_observed": 26,
+          "max_cluster_size_observed": 239
+        },
+        {
+          "seed": 303,
+          "n_topics": 29,
+          "collapsed": false,
+          "outlier_count": 1835,
+          "outlier_rate_pct": 53.05,
+          "coherence_npmi": -0.0894,
+          "coherence_umass": -1.6423,
+          "topic_diversity": 0.9448,
+          "centroid_cosine": 0.9548,
+          "entropy_balance": 0.9533,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 202
+        },
+        {
+          "seed": 404,
+          "n_topics": 28,
+          "collapsed": false,
+          "outlier_count": 1844,
+          "outlier_rate_pct": 53.31,
+          "coherence_npmi": -0.1388,
+          "coherence_umass": -1.7593,
+          "topic_diversity": 0.9464,
+          "centroid_cosine": 0.9539,
+          "entropy_balance": 0.9626,
+          "min_cluster_size_observed": 26,
+          "max_cluster_size_observed": 181
+        },
+        {
+          "seed": 505,
+          "n_topics": 28,
+          "collapsed": false,
+          "outlier_count": 1843,
+          "outlier_rate_pct": 53.28,
+          "coherence_npmi": -0.1116,
+          "coherence_umass": -1.7816,
+          "topic_diversity": 0.9429,
+          "centroid_cosine": 0.9556,
+          "entropy_balance": 0.9494,
+          "min_cluster_size_observed": 27,
+          "max_cluster_size_observed": 248
+        },
+        {
+          "seed": 606,
+          "n_topics": 25,
+          "collapsed": false,
+          "outlier_count": 1745,
+          "outlier_rate_pct": 50.45,
+          "coherence_npmi": -0.0707,
+          "coherence_umass": -1.7602,
+          "topic_diversity": 0.956,
+          "centroid_cosine": 0.9557,
+          "entropy_balance": 0.9356,
+          "min_cluster_size_observed": 26,
+          "max_cluster_size_observed": 235
+        }
+      ]
+    },
+    {
+      "config_id": "C4_eom_nn30_ms12",
+      "description": "Denser core EOM: e5-small + UMAP(30,5,0.0) + HDBSCAN(mcs=25,ms=12,eom)",
+      "params": {
+        "model_id": "stab_c4_eom_nn30",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 30,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 12,
+        "hdbscan_cluster_selection_method": "eom",
+        "corpus_version": "6.1.0"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404
+      ],
+      "collapse_count": 0,
+      "collapse_rate": 0.0,
+      "topic_count_summary": {
+        "values": [
+          27,
+          18,
+          24,
+          28,
+          26
+        ],
+        "mean": 24.6,
+        "std": 3.56,
+        "min": 18,
+        "max": 28
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          43.08,
+          36.37,
+          37.99,
+          49.93,
+          39.06
+        ],
+        "mean": 41.29,
+        "std": 4.86
+      },
+      "coherence_npmi_mean": -0.1079,
+      "coherence_npmi_std": 0.0289,
+      "topic_diversity_mean": 0.9596,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.6468,
+        "std_pairwise_ari_all_docs": 0.0783,
+        "mean_pairwise_nmi_all_docs": 0.772,
+        "mean_pairwise_ari_non_outlier": 0.8402,
+        "mean_pairwise_nmi_non_outlier": 0.9438
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 27,
+          "collapsed": false,
+          "outlier_count": 1490,
+          "outlier_rate_pct": 43.08,
+          "coherence_npmi": -0.12,
+          "coherence_umass": -1.6014,
+          "topic_diversity": 0.9593,
+          "centroid_cosine": 0.9549,
+          "entropy_balance": 0.8503,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 528
+        },
+        {
+          "seed": 101,
+          "n_topics": 18,
+          "collapsed": false,
+          "outlier_count": 1258,
+          "outlier_rate_pct": 36.37,
+          "coherence_npmi": -0.1097,
+          "coherence_umass": -1.7393,
+          "topic_diversity": 0.9611,
+          "centroid_cosine": 0.9562,
+          "entropy_balance": 0.8015,
+          "min_cluster_size_observed": 26,
+          "max_cluster_size_observed": 639
+        },
+        {
+          "seed": 202,
+          "n_topics": 24,
+          "collapsed": false,
+          "outlier_count": 1314,
+          "outlier_rate_pct": 37.99,
+          "coherence_npmi": -0.1398,
+          "coherence_umass": -1.6834,
+          "topic_diversity": 0.9667,
+          "centroid_cosine": 0.9535,
+          "entropy_balance": 0.846,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 591
+        },
+        {
+          "seed": 303,
+          "n_topics": 28,
+          "collapsed": false,
+          "outlier_count": 1727,
+          "outlier_rate_pct": 49.93,
+          "coherence_npmi": -0.0537,
+          "coherence_umass": -1.7179,
+          "topic_diversity": 0.9571,
+          "centroid_cosine": 0.9544,
+          "entropy_balance": 0.9446,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 223
+        },
+        {
+          "seed": 404,
+          "n_topics": 26,
+          "collapsed": false,
+          "outlier_count": 1351,
+          "outlier_rate_pct": 39.06,
+          "coherence_npmi": -0.1165,
+          "coherence_umass": -1.7186,
+          "topic_diversity": 0.9538,
+          "centroid_cosine": 0.954,
+          "entropy_balance": 0.8406,
+          "min_cluster_size_observed": 26,
+          "max_cluster_size_observed": 595
+        }
+      ]
+    },
+    {
+      "config_id": "C5_minilm_leaf_mcs25",
+      "description": "Multilingual MiniLM + UMAP(15,5,0.0) + HDBSCAN(mcs=25,ms=8,leaf)",
+      "params": {
+        "model_id": "stab_c5_minilm_leaf",
+        "embedding_key": "multilingual_minilm",
+        "embedding_model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_cluster_selection_method": "leaf",
+        "corpus_version": "6.1.0"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404
+      ],
+      "collapse_count": 0,
+      "collapse_rate": 0.0,
+      "topic_count_summary": {
+        "values": [
+          43,
+          45,
+          42,
+          42,
+          41
+        ],
+        "mean": 42.6,
+        "std": 1.36,
+        "min": 41,
+        "max": 45
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          37.53,
+          35.13,
+          31.66,
+          41.05,
+          31.02
+        ],
+        "mean": 35.28,
+        "std": 3.73
+      },
+      "coherence_npmi_mean": -0.1331,
+      "coherence_npmi_std": 0.014,
+      "topic_diversity_mean": 0.9793,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.5508,
+        "std_pairwise_ari_all_docs": 0.0626,
+        "mean_pairwise_nmi_all_docs": 0.809,
+        "mean_pairwise_ari_non_outlier": 0.9467,
+        "mean_pairwise_nmi_non_outlier": 0.9791
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 43,
+          "collapsed": false,
+          "outlier_count": 1298,
+          "outlier_rate_pct": 37.53,
+          "coherence_npmi": -0.1389,
+          "coherence_umass": -1.524,
+          "topic_diversity": 0.9767,
+          "centroid_cosine": 0.8233,
+          "entropy_balance": 0.9643,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 159
+        },
+        {
+          "seed": 101,
+          "n_topics": 45,
+          "collapsed": false,
+          "outlier_count": 1215,
+          "outlier_rate_pct": 35.13,
+          "coherence_npmi": -0.1519,
+          "coherence_umass": -1.525,
+          "topic_diversity": 0.9844,
+          "centroid_cosine": 0.8282,
+          "entropy_balance": 0.9448,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 237
+        },
+        {
+          "seed": 202,
+          "n_topics": 42,
+          "collapsed": false,
+          "outlier_count": 1095,
+          "outlier_rate_pct": 31.66,
+          "coherence_npmi": -0.1176,
+          "coherence_umass": -1.5006,
+          "topic_diversity": 0.981,
+          "centroid_cosine": 0.8287,
+          "entropy_balance": 0.942,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 241
+        },
+        {
+          "seed": 303,
+          "n_topics": 42,
+          "collapsed": false,
+          "outlier_count": 1420,
+          "outlier_rate_pct": 41.05,
+          "coherence_npmi": -0.141,
+          "coherence_umass": -1.5341,
+          "topic_diversity": 0.9762,
+          "centroid_cosine": 0.8285,
+          "entropy_balance": 0.9633,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 167
+        },
+        {
+          "seed": 404,
+          "n_topics": 41,
+          "collapsed": false,
+          "outlier_count": 1073,
+          "outlier_rate_pct": 31.02,
+          "coherence_npmi": -0.1159,
+          "coherence_umass": -1.5893,
+          "topic_diversity": 0.978,
+          "centroid_cosine": 0.8183,
+          "entropy_balance": 0.9435,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 253
+        }
+      ]
+    }
+  ],
+  "expanded_corpus_results": [
+    {
+      "config_id": "C0_v1_baseline_eom_expanded_v63",
+      "description": "[Expanded V6.3 n=7152] V6.1 baseline: e5-small + UMAP(15,5,0.0) + HDBSCAN(mcs=25,ms=8,eom)",
+      "params": {
+        "model_id": "stab_c0_eom_v63",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_cluster_selection_method": "eom",
+        "corpus_version": "6.3.0-combined"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404
+      ],
+      "collapse_count": 1,
+      "collapse_rate": 0.2,
+      "topic_count_summary": {
+        "values": [
+          2,
+          41,
+          36,
+          39,
+          38
+        ],
+        "mean": 31.2,
+        "std": 14.69,
+        "min": 2,
+        "max": 41
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          0.2,
+          41.99,
+          41.33,
+          43.48,
+          42.1
+        ],
+        "mean": 33.82,
+        "std": 16.82
+      },
+      "coherence_npmi_mean": -0.1021,
+      "coherence_npmi_std": 0.044,
+      "topic_diversity_mean": 0.9518,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.3526,
+        "std_pairwise_ari_all_docs": 0.2858,
+        "mean_pairwise_nmi_all_docs": 0.4479,
+        "mean_pairwise_ari_non_outlier": 0.5548,
+        "mean_pairwise_nmi_non_outlier": 0.583
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 2,
+          "collapsed": true,
+          "outlier_count": 14,
+          "outlier_rate_pct": 0.2,
+          "coherence_npmi": -0.0227,
+          "coherence_umass": -1.8672,
+          "topic_diversity": 1.0,
+          "centroid_cosine": 0.9589,
+          "entropy_balance": 0.0562,
+          "min_cluster_size_observed": 46,
+          "max_cluster_size_observed": 7092
+        },
+        {
+          "seed": 101,
+          "n_topics": 41,
+          "collapsed": false,
+          "outlier_count": 3003,
+          "outlier_rate_pct": 41.99,
+          "coherence_npmi": -0.0932,
+          "coherence_umass": -1.7414,
+          "topic_diversity": 0.9341,
+          "centroid_cosine": 0.9532,
+          "entropy_balance": 0.8012,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 1041
+        },
+        {
+          "seed": 202,
+          "n_topics": 36,
+          "collapsed": false,
+          "outlier_count": 2956,
+          "outlier_rate_pct": 41.33,
+          "coherence_npmi": -0.149,
+          "coherence_umass": -1.7569,
+          "topic_diversity": 0.9417,
+          "centroid_cosine": 0.9502,
+          "entropy_balance": 0.8398,
+          "min_cluster_size_observed": 27,
+          "max_cluster_size_observed": 609
+        },
+        {
+          "seed": 303,
+          "n_topics": 39,
+          "collapsed": false,
+          "outlier_count": 3110,
+          "outlier_rate_pct": 43.48,
+          "coherence_npmi": -0.1117,
+          "coherence_umass": -1.7928,
+          "topic_diversity": 0.9385,
+          "centroid_cosine": 0.9526,
+          "entropy_balance": 0.8438,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 689
+        },
+        {
+          "seed": 404,
+          "n_topics": 38,
+          "collapsed": false,
+          "outlier_count": 3011,
+          "outlier_rate_pct": 42.1,
+          "coherence_npmi": -0.1341,
+          "coherence_umass": -1.819,
+          "topic_diversity": 0.9447,
+          "centroid_cosine": 0.9516,
+          "entropy_balance": 0.8276,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 682
+        }
+      ]
+    },
+    {
+      "config_id": "C1_eom_mcs35_expanded_v63",
+      "description": "[Expanded V6.3 n=7152] Coarser EOM: e5-small + UMAP(15,5,0.0) + HDBSCAN(mcs=35,ms=10,eom)",
+      "params": {
+        "model_id": "stab_c1_eom35_v63",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 35,
+        "hdbscan_min_samples": 10,
+        "hdbscan_cluster_selection_method": "eom",
+        "corpus_version": "6.3.0-combined"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404
+      ],
+      "collapse_count": 2,
+      "collapse_rate": 0.4,
+      "topic_count_summary": {
+        "values": [
+          2,
+          23,
+          24,
+          2,
+          24
+        ],
+        "mean": 15.0,
+        "std": 10.62,
+        "min": 2,
+        "max": 24
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          0.2,
+          37.65,
+          38.3,
+          0.43,
+          43.89
+        ],
+        "mean": 24.09,
+        "std": 19.54
+      },
+      "coherence_npmi_mean": -0.114,
+      "coherence_npmi_std": 0.0744,
+      "topic_diversity_mean": 0.9611,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.279,
+        "std_pairwise_ari_all_docs": 0.3418,
+        "mean_pairwise_nmi_all_docs": 0.3203,
+        "mean_pairwise_ari_non_outlier": 0.3746,
+        "mean_pairwise_nmi_non_outlier": 0.3935
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 2,
+          "collapsed": true,
+          "outlier_count": 14,
+          "outlier_rate_pct": 0.2,
+          "coherence_npmi": -0.0227,
+          "coherence_umass": -1.8672,
+          "topic_diversity": 1.0,
+          "centroid_cosine": 0.9589,
+          "entropy_balance": 0.0562,
+          "min_cluster_size_observed": 46,
+          "max_cluster_size_observed": 7092
+        },
+        {
+          "seed": 101,
+          "n_topics": 23,
+          "collapsed": false,
+          "outlier_count": 2693,
+          "outlier_rate_pct": 37.65,
+          "coherence_npmi": -0.1947,
+          "coherence_umass": -2.1349,
+          "topic_diversity": 0.9304,
+          "centroid_cosine": 0.9518,
+          "entropy_balance": 0.8383,
+          "min_cluster_size_observed": 36,
+          "max_cluster_size_observed": 1090
+        },
+        {
+          "seed": 202,
+          "n_topics": 24,
+          "collapsed": false,
+          "outlier_count": 2739,
+          "outlier_rate_pct": 38.3,
+          "coherence_npmi": -0.1544,
+          "coherence_umass": -2.1142,
+          "topic_diversity": 0.9333,
+          "centroid_cosine": 0.9516,
+          "entropy_balance": 0.854,
+          "min_cluster_size_observed": 36,
+          "max_cluster_size_observed": 869
+        },
+        {
+          "seed": 303,
+          "n_topics": 2,
+          "collapsed": true,
+          "outlier_count": 31,
+          "outlier_rate_pct": 0.43,
+          "coherence_npmi": -0.0258,
+          "coherence_umass": -1.8817,
+          "topic_diversity": 1.0,
+          "centroid_cosine": 0.958,
+          "entropy_balance": 0.0613,
+          "min_cluster_size_observed": 51,
+          "max_cluster_size_observed": 7070
+        },
+        {
+          "seed": 404,
+          "n_topics": 24,
+          "collapsed": false,
+          "outlier_count": 3139,
+          "outlier_rate_pct": 43.89,
+          "coherence_npmi": -0.1724,
+          "coherence_umass": -2.135,
+          "topic_diversity": 0.9417,
+          "centroid_cosine": 0.9514,
+          "entropy_balance": 0.8562,
+          "min_cluster_size_observed": 37,
+          "max_cluster_size_observed": 622
+        }
+      ]
+    },
+    {
+      "config_id": "C2_leaf_mcs25_expanded_v63",
+      "description": "[Expanded V6.3 n=7152] Leaf selection: e5-small + UMAP(15,5,0.0) + HDBSCAN(mcs=25,ms=8,leaf)",
+      "params": {
+        "model_id": "stab_c2_leaf25_v63",
+        "embedding_key": "multilingual_e5_small",
+        "embedding_model_name": "intfloat/multilingual-e5-small",
+        "preprocessing_mode": "raw_clean",
+        "umap_n_neighbors": 15,
+        "umap_n_components": 5,
+        "umap_min_dist": 0.0,
+        "hdbscan_min_cluster_size": 25,
+        "hdbscan_min_samples": 8,
+        "hdbscan_cluster_selection_method": "leaf",
+        "corpus_version": "6.3.0-combined"
+      },
+      "seeds": [
+        42,
+        101,
+        202,
+        303,
+        404
+      ],
+      "collapse_count": 0,
+      "collapse_rate": 0.0,
+      "topic_count_summary": {
+        "values": [
+          57,
+          51,
+          52,
+          50,
+          49
+        ],
+        "mean": 51.8,
+        "std": 2.79,
+        "min": 49,
+        "max": 57
+      },
+      "outlier_rate_pct_summary": {
+        "values": [
+          57.73,
+          60.71,
+          59.65,
+          58.08,
+          59.41
+        ],
+        "mean": 59.12,
+        "std": 1.09
+      },
+      "coherence_npmi_mean": -0.1364,
+      "coherence_npmi_std": 0.0122,
+      "topic_diversity_mean": 0.9471,
+      "stability_agreement": {
+        "mean_pairwise_ari_all_docs": 0.6189,
+        "std_pairwise_ari_all_docs": 0.0228,
+        "mean_pairwise_nmi_all_docs": 0.6959,
+        "mean_pairwise_ari_non_outlier": 0.9072,
+        "mean_pairwise_nmi_non_outlier": 0.9657
+      },
+      "per_seed": [
+        {
+          "seed": 42,
+          "n_topics": 57,
+          "collapsed": false,
+          "outlier_count": 4129,
+          "outlier_rate_pct": 57.73,
+          "coherence_npmi": -0.1291,
+          "coherence_umass": -1.5176,
+          "topic_diversity": 0.9474,
+          "centroid_cosine": 0.9521,
+          "entropy_balance": 0.9564,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 212
+        },
+        {
+          "seed": 101,
+          "n_topics": 51,
+          "collapsed": false,
+          "outlier_count": 4342,
+          "outlier_rate_pct": 60.71,
+          "coherence_npmi": -0.1302,
+          "coherence_umass": -1.6631,
+          "topic_diversity": 0.9471,
+          "centroid_cosine": 0.9535,
+          "entropy_balance": 0.967,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 162
+        },
+        {
+          "seed": 202,
+          "n_topics": 52,
+          "collapsed": false,
+          "outlier_count": 4266,
+          "outlier_rate_pct": 59.65,
+          "coherence_npmi": -0.1364,
+          "coherence_umass": -1.6261,
+          "topic_diversity": 0.9538,
+          "centroid_cosine": 0.9528,
+          "entropy_balance": 0.9606,
+          "min_cluster_size_observed": 26,
+          "max_cluster_size_observed": 185
+        },
+        {
+          "seed": 303,
+          "n_topics": 50,
+          "collapsed": false,
+          "outlier_count": 4154,
+          "outlier_rate_pct": 58.08,
+          "coherence_npmi": -0.1263,
+          "coherence_umass": -1.6562,
+          "topic_diversity": 0.938,
+          "centroid_cosine": 0.9528,
+          "entropy_balance": 0.955,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 210
+        },
+        {
+          "seed": 404,
+          "n_topics": 49,
+          "collapsed": false,
+          "outlier_count": 4249,
+          "outlier_rate_pct": 59.41,
+          "coherence_npmi": -0.1599,
+          "coherence_umass": -1.7169,
+          "topic_diversity": 0.949,
+          "centroid_cosine": 0.9523,
+          "entropy_balance": 0.9521,
+          "min_cluster_size_observed": 25,
+          "max_cluster_size_observed": 206
+        }
+      ]
+    }
+  ],
+  "nmf_preserved_default": "ml/artifacts/live_corpus/topic_discovery.json (10 factors, deterministic)"
+}

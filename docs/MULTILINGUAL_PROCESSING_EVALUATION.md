@@ -114,3 +114,11 @@ Dataset: [`data/annotations/multilingual_eval_synthetic_probes_v1.csv`](../data/
 1. **Corpus-level Bengali & Odia sparsity:** Real-world performance on Bengali, Banglish, and native Odia script cannot be empirically proven from the current IIM Reddit snapshot because English (`81.1%`) and Romanized Hinglish/Hindi (`10.1%`) dominate public Indian MBA subreddits. Expanding future collection to regional student forums is required for real-world `bn`/`or` generalization benchmarks.
 2. **Lexicon-bound open-vocabulary English recall on 1-word comments:** Single-word English replies outside the core anchor list abstain as `und`; this is intentionally conservative to prevent short Romanized Indic comments from being forced into `en`.
 3. **Rule-based transliteration scope:** `normalize_romanized_indic` standardizes high-frequency phonetic contractions and spelling variants non-destructively rather than performing full neural Devanagari/Bengali/Odia back-transliteration, avoiding hallucinated script conversions on proper nouns and slang.
+
+
+---
+
+## 6. V6.3 Research Update — Expanded Corpus Bengali & Odia Candidate Package (`v2`)
+
+- Real corpus expansion ([`docs/V6_3_DATASET_EXPANSION_REPORT.md`](./V6_3_DATASET_EXPANSION_REPORT.md)) added `+4,013` comments across `r/kolkata`, `r/westbengal`, `r/Bhubaneswar`, and pan-Indian MBA forums, surfacing authentic **`13` native Bengali-script**, **`8` mixed-script**, **`95` `bn-en`**, and **`14` `or-en`** provisional candidate comments (native Odia Unicode `0B00–0B7F` remains `0` even in Bhubaneswar/Odisha threads).
+- [`ml/experiments/v6_3/sample_bengali_odia_candidates.py`](../ml/experiments/v6_3/sample_bengali_odia_candidates.py) preserved `multilingual_eval_real_v1.csv` (`84`) and synthetic probes (`24`) untouched while assembling **`117` authentic review candidates** (`14` native Bengali script, `45` Romanized Bengali, `23` Romanized Odia, `35` mixed control) in `data/annotations/v6_3_package/multilingual_bn_or_v2/`. Because human `v2` gold labels are still pending, V6.3 does **not** claim representative real-world `bn`/`or` generalization yet.

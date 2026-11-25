@@ -141,3 +141,11 @@ All **35 BERTopic v1 clusters** (`105` top-3 centroid representative comments) i
 | Conversational / phatic clusters | **7 clusters** (honestly tagged as non-issue discourse: `BT-2` Gratitude, `BT-14` DM Requests, `BT-17` Confirmations, `BT-19` Emoji-Only Reactions, `BT-27` Congratulations) |
 | Multilingual Hinglish/Hindi clusters | **2 clusters** (`BT-0` Hinglish Admissions & Campus Banter, `BT-29` Short Romanized Hindi Questions) |
 | Media / bare-URL artifact cluster | **1 cluster** (`BT-24` Portal Sign-In URLs & Embedded Reddit Image Links — preserved honestly rather than mislabelled) |
+
+
+---
+
+## 10. V6.3 Research Update — Cache Identity & Multi-Seed BERTopic Stability
+
+- **P0-A Full-Corpus Embedding Cache Identity ([`ml/topics/bertopic/embeddings.py`](../ml/topics/bertopic/embeddings.py)):** Replaced legacy slice-based hashing (`[:200]+[-100:]`) with `EMBEDDING_CACHE_SCHEMA_VERSION = "v2.0"` streaming length-prefixed UTF-8 SHA-256 across **every** input document, ordered or explicit `order_independent`, plus `resolve_model_fingerprint` (weights/config/HF `refs/main`), `preprocessing_version`, and `corpus_version`. Verified by [`backend/tests/test_embedding_cache_identity.py`](../backend/tests/test_embedding_cache_identity.py).
+- **P1-D Multi-Seed & Expanded-Corpus Sensitivity Study:** Evaluated across `5–7` seeds on `n = 3,459` baseline docs and the V6.3 expanded corpus in [`docs/V6_3_BERTOPIC_STABILITY_REPORT.md`](./V6_3_BERTOPIC_STABILITY_REPORT.md), confirming `nmf_v1` stays the deterministic default while `bertopic_v1` serves as an exploratory companion.

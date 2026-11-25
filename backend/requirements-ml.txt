@@ -17,3 +17,5 @@ sentence-transformers==6.3.0
 bertopic==0.17.4
 umap-learn==0.6.0
 hdbscan==0.8.44
+# Optional experimental gradient-boosted baseline (Sprint P1-C)
+xgboost==3.4.1

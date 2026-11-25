@@ -46,3 +46,10 @@
   1. **Record the 3-minute scenario video** using the script and shot list in [`DELIVERABLE_1_VIDEO_PACKAGE.md`](./academic_submission/DELIVERABLE_1_VIDEO_PACKAGE.md).
   2. **Review & optionally refine BERTopic machine-suggested labels** in [`ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv`](../ml/artifacts/topic_models/bertopic_v1/human_review_sample.csv).
   3. **Review local changes (`git diff` / `git status`) before deciding whether to commit, push, or deploy** (held back per Part 2 constraints).
+
+
+---
+
+## 4. V6.3 Continuation Update (2026-11-25)
+
+All V6.3 engineering reliability fixes, expanded real corpus collection (`365 → 816` threads), multi-human Round-2 blind annotation packages, experimental XGBoost 5-fold CV benchmarking, multi-seed BERTopic stability evaluation, and CI optional-ML workflows are documented in [`docs/V6_3_IMPLEMENTATION_REPORT.md`](./V6_3_IMPLEMENTATION_REPORT.md). Historical `v1` evaluation sets are explicitly distinguished from the frozen blind `v2` packages awaiting human labeling.

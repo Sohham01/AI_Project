@@ -93,10 +93,16 @@ jobs:
           for arch_key in ("logistic_regression", "ann_mlp", "cnn_textcnn", "transformer_muril_dapt_v3"):
               assert arch_key in arch_agg, f"Missing architecture {arch_key}"
 
-          raw = Path("data/live_corpus/corpus.json").read_text(encoding="utf-8")
-          assert not re.search(r"(?<![A-Za-z0-9_])/?u/[A-Za-z0-9_-]{3,24}\b", raw)
-          assert not re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", raw)
-          assert not re.search(r"https?://(?:www\.|old\.)?reddit\.com/r/", raw, re.I)
+          for corpus_candidate in (
+              Path("data/live_corpus/corpus.json"),
+              Path("data/corpus_v6_3/new_unannotated_corpus_v6_3.json"),
+          ):
+              if not corpus_candidate.is_file():
+                  continue
+              raw = corpus_candidate.read_text(encoding="utf-8")
+              assert not re.search(r"(?<![A-Za-z0-9_])/?u/[A-Za-z0-9_-]{3,24}\b", raw), f"u/ handle in {corpus_candidate}"
+              assert not re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", raw), f"email in {corpus_candidate}"
+              assert not re.search(r"https?://(?:www\.|old\.)?reddit\.com/r/", raw, re.I), f"reddit URL in {corpus_candidate}"
           assert not Path("data/demo_synthetic").exists()
           assert Path("data/annotations/real_reddit_labeled_v1/master_labeled_v1.csv").is_file()
 
@@ -115,7 +121,7 @@ jobs:
           tracked = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
           for rel in tracked:
               p = Path(rel)
-              if not p.is_file() or p.suffix.lower() in {".png", ".jpg", ".webp", ".joblib", ".pdf"}:
+              if not p.is_file() or p.suffix.lower() in {".png", ".jpg", ".webp", ".joblib", ".pdf", ".xlsx"}:
                   continue
               if p.name == ".env" or p.name.endswith(".pem") or p.name.endswith(".key"):
                   raise AssertionError(f"Sensitive file tracked in Git: {rel}")
@@ -127,4 +133,54 @@ jobs:
               f"Verified all 15 Vercel routes + 4-arch benchmark verifier + security headers + zero-PII/secret/gitlink guards OK: "
               f"v{data['dataset_version']} ({data['posts']} threads, {data['comments']} comments)."
           )
+          PY
+
+  test-ml-optional:
+    name: Optional ML & V6.3 Reliability Suite (XGBoost, BERTopic, Cache, Resolution, IAA)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: "pip"
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-ml.txt
+
+      - name: Install base + optional ML dependencies (CPU PyTorch + XGBoost + BERTopic)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers==5.19.0 tokenizers==0.23.3 sentence-transformers==6.3.0 bertopic==0.17.4 umap-learn==0.6.0 hdbscan==0.8.44 xgboost==3.4.1
+
+      - name: Run V6 & V6.3 optional ML, cache, resolution, IAA & leakage tests (assert 0 skipped)
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
+        run: |
+          pytest \
+            backend/tests/test_embedding_cache_identity.py \
+            backend/tests/test_bertopic_pipeline.py \
+            backend/tests/test_resolution_engine_v63.py \
+            backend/tests/test_phase4_phase5_linking_resolution.py \
+            backend/tests/test_annotation_reliability.py \
+            backend/tests/test_dataset_expansion_and_leakage_v63.py \
+            backend/tests/test_xgboost_baseline.py \
+            -v --junitxml=/tmp/ml-junit.xml
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse("/tmp/ml-junit.xml").getroot()
+          suites = [root] if root.tag == "testsuite" else list(root.findall("testsuite"))
+          tests = sum(int(s.attrib.get("tests", 0)) for s in suites)
+          skipped = sum(int(s.attrib.get("skipped", 0)) for s in suites)
+          failures = sum(int(s.attrib.get("failures", 0)) for s in suites)
+          errors = sum(int(s.attrib.get("errors", 0)) for s in suites)
+          print(f"Optional ML JUnit summary: tests={tests}, skipped={skipped}, failures={failures}, errors={errors}")
+          assert tests >= 20, f"Unexpectedly low test count: {tests}"
+          assert skipped == 0, f"Optional ML suite skipped {skipped} test(s) instead of running them!"
+          assert failures == 0 and errors == 0
           PY

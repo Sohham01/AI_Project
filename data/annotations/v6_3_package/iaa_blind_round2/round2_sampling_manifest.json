@@ -1,0 +1,33 @@
+{
+  "round_id": "round_2_blind_stratified",
+  "taxonomy_version": "rci_taxonomy_v2.0",
+  "guideline_version": "ANNOTATION_GUIDELINES_v2.0",
+  "n_items": 80,
+  "frozen_test_overlap_count": 0,
+  "blind_verified": true,
+  "iaa_metrics_status": "PENDING_INDEPENDENT_HUMAN_SUBMISSIONS",
+  "sampling_summary": {
+    "by_subreddit": {
+      "MBAIndia": 29,
+      "IIMSambalpurUG": 19,
+      "CATStudyRoom": 8,
+      "iim_CAT": 7,
+      "IIMCATPreparation": 6,
+      "Indian_Academia": 4,
+      "CATpreparation": 4,
+      "CATPrep": 3
+    },
+    "by_language": {
+      "en": 57,
+      "hi-en": 23
+    },
+    "with_parent_context": 40
+  },
+  "files": [
+    "round2_blind_80_annotator_1.csv",
+    "round2_blind_80_annotator_1.xlsx",
+    "round2_blind_80_annotator_2.csv",
+    "round2_blind_80_annotator_2.xlsx",
+    "round2_adjudication_template.csv"
+  ]
+}

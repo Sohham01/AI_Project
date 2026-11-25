@@ -89,3 +89,11 @@ Raw results artifact: [`ml/artifacts/v6_programme/phase5_resolution_eval.json`](
 ## 5. Known Limitations
 1. **Reddit observation-window censoring:** Many students receive an answer on Reddit and resolve their issue offline without returning to post an update — hence a high `proposed_only` share (`44.4%`) reflects *absence of documented confirmation*, not guaranteed failure. RCI reports this distinction explicitly.
 2. **Small thread sample for `campus_infrastructure` (4) and `curriculum_teaching` (3):** Issue-level verdicts on sparse domains carry wider uncertainty and are flagged accordingly (`Insufficient Evidence` when `< 3` evaluable threads or `>= 70%` insufficient).
+
+
+---
+
+## 6. V6.3 Research Update — Deterministic Reference Timestamps, Chronological Precedence & Blind `v2` Protocol
+
+- **P0-B Resolution Engine Fixes ([`ml/linking/resolution_engine.py`](../ml/linking/resolution_engine.py)):** Removed the fixed `2026-04-15` reference fallback (`resolve_reference_time` uses explicit reference time, dataset observation time, or max corpus activity timestamp deterministically — never wall-clock `datetime.now()`); enforced five-tier discourse separation where `agreement` is recorded in `endorsement_evidence` and **never** promotes `proposed_only` to `reported_success`; and added chronological conflict precedence handling initial-success-then-regression, initial-failure-then-recovery, and multi-user disputes (`10/10` tests passing).
+- **Development (`v1`) vs. Independent Blind (`v2`) Separation:** Updated full-corpus `v1` evaluation ([`docs/V6_3_LINKING_AND_RESOLUTION_EVAL_REPORT.md`](./V6_3_LINKING_AND_RESOLUTION_EVAL_REPORT.md)) reaches `82.50%` 4-state accuracy, `84.43%` Macro F1, `90.00%` evidence retrieval, and `0.00%` (`0/33`) false `reported_success` / `Resolved` / `Partially Resolved` overclaims on `v1`, strictly tagged **`DEVELOPMENT_SET_ONLY_V1`**. A blind `120`-thread independent `v2` sheet (`0` `v1` overlap, chronological `thread_timeline_digest`) is frozen in `data/annotations/v6_3_package/linking_and_resolution_v2/`.

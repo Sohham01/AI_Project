@@ -1,0 +1,433 @@
+{
+  "corpus_version": "6.3.0",
+  "before_vs_after": {
+    "baseline_v6_1": {
+      "threads": 365,
+      "comments": 3557
+    },
+    "newly_collected_unannotated_v6_3": {
+      "threads": 451,
+      "comments": 4013
+    },
+    "combined_v6_3_total": {
+      "threads": 816,
+      "comments": 7570
+    },
+    "net_new_thread_growth_pct": 123.56
+  },
+  "community_distribution": {
+    "IIMSambalpurUG": {
+      "baseline_threads": 211,
+      "new_threads": 0,
+      "combined_threads": 211,
+      "combined_comments": 1989,
+      "combined_thread_share_pct": 25.86
+    },
+    "MBAIndia": {
+      "baseline_threads": 46,
+      "new_threads": 149,
+      "combined_threads": 195,
+      "combined_comments": 1936,
+      "combined_thread_share_pct": 23.9
+    },
+    "IIMCATPreparation": {
+      "baseline_threads": 41,
+      "new_threads": 78,
+      "combined_threads": 119,
+      "combined_comments": 870,
+      "combined_thread_share_pct": 14.58
+    },
+    "CATPrep": {
+      "baseline_threads": 18,
+      "new_threads": 45,
+      "combined_threads": 63,
+      "combined_comments": 431,
+      "combined_thread_share_pct": 7.72
+    },
+    "Indian_Academia": {
+      "baseline_threads": 4,
+      "new_threads": 48,
+      "combined_threads": 52,
+      "combined_comments": 490,
+      "combined_thread_share_pct": 6.37
+    },
+    "CATpreparation": {
+      "baseline_threads": 12,
+      "new_threads": 38,
+      "combined_threads": 50,
+      "combined_comments": 562,
+      "combined_thread_share_pct": 6.13
+    },
+    "CATStudyRoom": {
+      "baseline_threads": 15,
+      "new_threads": 32,
+      "combined_threads": 47,
+      "combined_comments": 255,
+      "combined_thread_share_pct": 5.76
+    },
+    "kolkata": {
+      "baseline_threads": 0,
+      "new_threads": 24,
+      "combined_threads": 24,
+      "combined_comments": 358,
+      "combined_thread_share_pct": 2.94
+    },
+    "Bhubaneswar": {
+      "baseline_threads": 0,
+      "new_threads": 23,
+      "combined_threads": 23,
+      "combined_comments": 282,
+      "combined_thread_share_pct": 2.82
+    },
+    "iim_CAT": {
+      "baseline_threads": 18,
+      "new_threads": 0,
+      "combined_threads": 18,
+      "combined_comments": 143,
+      "combined_thread_share_pct": 2.21
+    },
+    "westbengal": {
+      "baseline_threads": 0,
+      "new_threads": 14,
+      "combined_threads": 14,
+      "combined_comments": 254,
+      "combined_thread_share_pct": 1.72
+    }
+  },
+  "language_distribution_new_comments": {
+    "en": 3280,
+    "hi-en": 312,
+    "und": 273,
+    "bn-en": 95,
+    "hi": 21,
+    "bn": 18,
+    "or-en": 14
+  },
+  "language_distribution_combined": {
+    "en": 6163,
+    "hi-en": 629,
+    "und": 587,
+    "bn-en": 95,
+    "hi": 63,
+    "bn": 18,
+    "or-en": 15
+  },
+  "script_distribution_new_comments": {
+    "latin": 3960,
+    "unknown": 32,
+    "bengali": 13,
+    "mixed": 8
+  },
+  "date_range_utc": {
+    "baseline_min": "2023-04-05T03:43:36",
+    "baseline_max": "2026-11-04T17:25:41",
+    "new_min": "2025-03-06T05:39:45Z",
+    "new_max": "2026-11-25T06:53:48Z"
+  },
+  "deduplication_and_filtering": {
+    "comment_rejected:bot_or_automod": 236,
+    "comment_rejected:deleted_or_removed": 6,
+    "comment_rejected:duplicate_text": 182,
+    "comment_rejected:gif_or_bare_media_url": 17,
+    "comment_rejected:spam_promo": 1,
+    "thread_rejected:off_topic_scope": 9,
+    "thread_rejected:zero_valid_comments": 52
+  },
+  "pii_redactions": {},
+  "leakage_audit": {
+    "frozen_test_threads_checked": 37,
+    "frozen_test_comments_checked": 526,
+    "threads_quarantined_from_dapt_train": 0,
+    "quarantined_details": [],
+    "frozen_test_leakage_into_train_pool": 0
+  },
+  "search_log": [
+    {
+      "plan_idx": 1,
+      "subreddit": "MBAIndia",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 100,
+      "new_queued": 30,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 2,
+      "subreddit": "MBAIndia",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 100,
+      "new_queued": 55,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 3,
+      "subreddit": "MBAIndia",
+      "mode": "context",
+      "query": "hostel",
+      "returned": 47,
+      "new_queued": 23,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 4,
+      "subreddit": "MBAIndia",
+      "mode": "context",
+      "query": "refund",
+      "returned": 60,
+      "new_queued": 23,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 5,
+      "subreddit": "MBAIndia",
+      "mode": "context",
+      "query": "loan",
+      "returned": 60,
+      "new_queued": 37,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 6,
+      "subreddit": "IIMCATPreparation",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 100,
+      "new_queued": 96,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 7,
+      "subreddit": "CATPrep",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 100,
+      "new_queued": 50,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 8,
+      "subreddit": "CATStudyRoom",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 100,
+      "new_queued": 37,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 9,
+      "subreddit": "CATpreparation",
+      "mode": "context",
+      "query": "waitlist",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 10,
+      "subreddit": "CATpreparation",
+      "mode": "context",
+      "query": "hostel",
+      "returned": 50,
+      "new_queued": 47,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 11,
+      "subreddit": "CATpreparation",
+      "mode": "context",
+      "query": "loan",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 12,
+      "subreddit": "CATpreparation",
+      "mode": "context",
+      "query": "refund",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 13,
+      "subreddit": "iim_CAT",
+      "mode": "direct",
+      "query": "<direct>",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 14,
+      "subreddit": "ipmat",
+      "mode": "context",
+      "query": "IIM",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 15,
+      "subreddit": "Indian_Academia",
+      "mode": "context",
+      "query": "IIM",
+      "returned": 80,
+      "new_queued": 79,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 16,
+      "subreddit": "Indian_Academia",
+      "mode": "context",
+      "query": "MBA",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 17,
+      "subreddit": "Indian_Academia",
+      "mode": "context",
+      "query": "hostel",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 18,
+      "subreddit": "IIMSambalpur",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 1,
+      "new_queued": 0,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 19,
+      "subreddit": "IIMSambalpurUG",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 80,
+      "new_queued": 43,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 20,
+      "subreddit": "Odisha",
+      "mode": "context",
+      "query": "IIM",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 21,
+      "subreddit": "Odisha",
+      "mode": "context",
+      "query": "MBA",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 22,
+      "subreddit": "Odisha",
+      "mode": "context",
+      "query": "college",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 23,
+      "subreddit": "kolkata",
+      "mode": "context",
+      "query": "IIM",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 24,
+      "subreddit": "kolkata",
+      "mode": "context",
+      "query": "MBA",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 25,
+      "subreddit": "kolkata",
+      "mode": "context",
+      "query": "college",
+      "returned": 50,
+      "new_queued": 28,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 26,
+      "subreddit": "westbengal",
+      "mode": "context",
+      "query": "college",
+      "returned": 40,
+      "new_queued": 25,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 27,
+      "subreddit": "Bhubaneswar",
+      "mode": "context",
+      "query": "MBA",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 28,
+      "subreddit": "Bhubaneswar",
+      "mode": "context",
+      "query": "college",
+      "returned": 40,
+      "new_queued": 30,
+      "status": "ok"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "03ce822ea90400fa54320179",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "0fd57c5fc864cdaec1fbc115",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "119b4ff40d092c22c66ba589",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "21ab55f617b463681a6ca150",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "24fb53ce80f5b8bc0b867ece",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "293cb5f16918de61b77867c5",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "303b1e1e8ff99c2dc6ad3815",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "stage": "comments",
+      "source_id_sha": "327ffe398279af82b9f87ff6",
+      "status": "failed",
+      "error": "http_status:429"
+    }
+  ]
+}
