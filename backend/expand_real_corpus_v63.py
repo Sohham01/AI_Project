@@ -198,11 +198,56 @@ def _call_with_retry(
     raise last_exc  # pragma: no cover
 
 
+def _resolve_frozen_test_post_ids(baseline: Dict[str, Any]) -> Set[str]:
+    """Load frozen test post IDs from manifest if present, else derive identically from tracked V1 CSVs."""
+    if FROZEN_MANIFEST_PATH.is_file():
+        frozen = json.loads(FROZEN_MANIFEST_PATH.read_text(encoding="utf-8"))
+        pids = set(frozen.get("test_corpus_post_ids") or [])
+        if pids:
+            return pids
+
+    import csv
+    from collections import defaultdict as _dd
+    from ml.configs import TaskType
+    from ml.data.dataset import load_annotation_dataset
+    from ml.data.splitting import SplitSpec, apply_split, extract_groups, split_records
+
+    v1_dir = ROOT / "data" / "annotations" / "real_reddit_labeled_v1"
+    split_spec = SplitSpec(
+        train_size=0.65, validation_size=0.15, test_size=0.20, random_state=20261116, stratify=True
+    )
+    recs = load_annotation_dataset(TaskType.ISSUE, str(v1_dir / "issue.csv"))
+    sp = split_records(recs, labels=[r.label for r in recs], spec=split_spec, groups=extract_groups(recs, "post_id"))
+    _, _, te = apply_split(recs, sp)
+    test_dids = {r.document_id for r in te}
+
+    posts_by_title: Dict[str, List[Dict[str, Any]]] = _dd(list)
+    for p in baseline.get("posts", []):
+        posts_by_title[_norm_text(p.get("title"))[:120]].append(p)
+
+    resolved: Set[str] = set()
+    with (v1_dir / "master_labeled_v1.csv").open("r", encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            if row["document_id"] not in test_dids:
+                continue
+            nt = _norm_text(row.get("text"))
+            hit_pid: Optional[str] = None
+            for cand in posts_by_title.get(_norm_text(row.get("post_title"))[:120], []):
+                for c in cand.get("comments") or []:
+                    nb = _norm_text(c.get("body"))
+                    if nb == nt or (len(nt) >= 30 and (nb.startswith(nt[:60]) or nt.startswith(nb[:60]))):
+                        hit_pid = str(cand["reddit_id"])
+                        break
+                if hit_pid is not None:
+                    break
+            resolved.add(hit_pid or str(row["post_id"]))
+    return resolved
+
+
 def load_baseline_and_frozen_guards() -> Dict[str, Any]:
     """Load baseline corpus fingerprints and frozen test-thread exclusions (read-only)."""
     baseline = json.loads(BASELINE_CORPUS_PATH.read_text(encoding="utf-8"))
-    frozen = json.loads(FROZEN_MANIFEST_PATH.read_text(encoding="utf-8")) if FROZEN_MANIFEST_PATH.is_file() else {}
-    test_pids = set(frozen.get("test_corpus_post_ids") or [])
+    test_pids = _resolve_frozen_test_post_ids(baseline)
 
     existing_title_hashes: Set[str] = set()
     existing_title120: Set[str] = set()

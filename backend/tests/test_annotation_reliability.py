@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import importlib.util
 import sys
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -22,14 +24,26 @@ from ml.evaluation.annotation_reliability import (
     merge_independent_annotations_and_adjudicate,
     verify_blind_sheet,
 )
-from ml.experiments.v5_optimization.score_human_iaa import krippendorff_alpha_nominal as alpha_2coder
+
+
+def _reference_2coder_nominal_alpha(a: list[str], b: list[str]) -> float:
+    n = len(a)
+    do = sum(1.0 for x, y in zip(a, b) if x != y) / float(n)
+    counts = Counter(a + b)
+    same = sum(c * (c - 1.0) for c in counts.values()) / float(2 * n * (2 * n - 1))
+    de = 1.0 - same
+    return 1.0 if de <= 1e-12 else 1.0 - do / de
 
 
 def test_krippendorff_alpha_matches_2coder_and_handles_k_coders() -> None:
     a = ["negative", "neutral", "positive", "negative", "neutral", "positive"]
     b = ["negative", "neutral", "neutral", "negative", "positive", "positive"]
     units = [[x, y] for x, y in zip(a, b)]
-    assert abs(krippendorff_alpha_nominal(units) - alpha_2coder(a, b)) < 1e-9
+    assert abs(krippendorff_alpha_nominal(units) - _reference_2coder_nominal_alpha(a, b)) < 1e-9
+    if importlib.util.find_spec("torch") is not None:
+        from ml.experiments.v5_optimization.score_human_iaa import krippendorff_alpha_nominal as alpha_2coder
+
+        assert abs(krippendorff_alpha_nominal(units) - alpha_2coder(a, b)) < 1e-9
 
     # K = 3 raters with unanimous agreement -> Fleiss kappa == 1.0 and alpha == 1.0
     unanimous = [["advice", "advice", "advice"], ["solution", "solution", "solution"], ["opinion", "opinion", "opinion"]]
