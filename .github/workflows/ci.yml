@@ -96,6 +96,7 @@ jobs:
           for corpus_candidate in (
               Path("data/live_corpus/corpus.json"),
               Path("data/corpus_v6_3/new_unannotated_corpus_v6_3.json"),
+              Path("data/corpus_v6_4/new_iim_corpus_v6_4.json"),
           ):
               if not corpus_candidate.is_file():
                   continue
@@ -151,16 +152,17 @@ jobs:
             backend/requirements.txt
             backend/requirements-ml.txt
 
-      - name: Install base + optional ML dependencies (CPU PyTorch + XGBoost + BERTopic)
+      - name: Install base + optional ML dependencies (CPU PyTorch + Keras 3 + XGBoost + BERTopic)
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
           pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
-          pip install transformers==5.19.0 tokenizers==0.23.3 sentence-transformers==6.3.0 bertopic==0.17.4 umap-learn==0.6.0 hdbscan==0.8.44 xgboost==3.4.1
+          pip install transformers==5.19.0 tokenizers==0.23.3 sentence-transformers==6.3.0 bertopic==0.17.4 umap-learn==0.6.0 hdbscan==0.8.44 xgboost==3.4.1 keras==3.15.1
 
-      - name: Run V6 & V6.3 optional ML, cache, resolution, IAA & leakage tests (assert 0 skipped)
+      - name: Run V6, V6.3 & V6.4 optional ML, cache, resolution, IAA & leakage tests (assert 0 skipped)
         env:
           PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/backend
+          KERAS_BACKEND: torch
         run: |
           pytest \
             backend/tests/test_embedding_cache_identity.py \
@@ -170,6 +172,8 @@ jobs:
             backend/tests/test_annotation_reliability.py \
             backend/tests/test_dataset_expansion_and_leakage_v63.py \
             backend/tests/test_xgboost_baseline.py \
+            backend/tests/test_pytorch_keras_models.py \
+            backend/tests/test_iim_expansion_v64.py \
             -v --junitxml=/tmp/ml-junit.xml
           python - <<'PY'
           import xml.etree.ElementTree as ET

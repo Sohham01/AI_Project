@@ -19,3 +19,5 @@ umap-learn==0.6.0
 hdbscan==0.8.44
 # Optional experimental gradient-boosted baseline (Sprint P1-C)
 xgboost==3.4.1
+# Optional Keras 3 multi-backend deep-learning extras (runs on KERAS_BACKEND=torch)
+keras==3.15.1
