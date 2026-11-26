@@ -1,0 +1,354 @@
+{
+  "corpus_version": "6.5.0",
+  "before_vs_after": {
+    "baseline_v6_1": {
+      "threads": 365,
+      "comments": 3557
+    },
+    "v6_3_expansion": {
+      "threads": 451,
+      "comments": 4013
+    },
+    "v6_4_iim_expansion": {
+      "threads": 526,
+      "comments": 9108
+    },
+    "v6_5_expansion": {
+      "threads": 482,
+      "comments": 8482
+    },
+    "combined_v6_5_total": {
+      "threads": 1824,
+      "comments": 25160
+    },
+    "net_growth_over_v6_4_pct": 35.92
+  },
+  "new_v6_5_subreddits": {
+    "CATpreparation": {
+      "new_threads": 329,
+      "new_comments": 6806,
+      "combined_threads": 619,
+      "combined_share_pct": 33.94
+    },
+    "IPMATtards": {
+      "new_threads": 67,
+      "new_comments": 644,
+      "combined_threads": 282,
+      "combined_share_pct": 15.46
+    },
+    "MBAIndia": {
+      "new_threads": 58,
+      "new_comments": 848,
+      "combined_threads": 283,
+      "combined_share_pct": 15.52
+    },
+    "IIMBangalore": {
+      "new_threads": 15,
+      "new_comments": 106,
+      "combined_threads": 15,
+      "combined_share_pct": 0.82
+    },
+    "CATPrep": {
+      "new_threads": 12,
+      "new_comments": 70,
+      "combined_threads": 75,
+      "combined_share_pct": 4.11
+    },
+    "iimindore": {
+      "new_threads": 1,
+      "new_comments": 8,
+      "combined_threads": 1,
+      "combined_share_pct": 0.05
+    }
+  },
+  "combined_top_subreddits": {
+    "CATpreparation": {
+      "threads": 619,
+      "share_pct": 33.94
+    },
+    "MBAIndia": {
+      "threads": 283,
+      "share_pct": 15.52
+    },
+    "IPMATtards": {
+      "threads": 282,
+      "share_pct": 15.46
+    },
+    "IIMSambalpurUG": {
+      "threads": 211,
+      "share_pct": 11.57
+    },
+    "IIMCATPreparation": {
+      "threads": 119,
+      "share_pct": 6.52
+    },
+    "CATPrep": {
+      "threads": 75,
+      "share_pct": 4.11
+    },
+    "Indian_Academia": {
+      "threads": 52,
+      "share_pct": 2.85
+    },
+    "CATStudyRoom": {
+      "threads": 47,
+      "share_pct": 2.58
+    },
+    "IIMCalcutta": {
+      "threads": 38,
+      "share_pct": 2.08
+    },
+    "kolkata": {
+      "threads": 24,
+      "share_pct": 1.32
+    },
+    "Bhubaneswar": {
+      "threads": 23,
+      "share_pct": 1.26
+    },
+    "iim_CAT": {
+      "threads": 18,
+      "share_pct": 0.99
+    },
+    "IIMBangalore": {
+      "threads": 15,
+      "share_pct": 0.82
+    },
+    "westbengal": {
+      "threads": 14,
+      "share_pct": 0.77
+    },
+    "IIMLucknow": {
+      "threads": 2,
+      "share_pct": 0.11
+    },
+    "iimmumbai": {
+      "threads": 1,
+      "share_pct": 0.05
+    },
+    "iimindore": {
+      "threads": 1,
+      "share_pct": 0.05
+    }
+  },
+  "language_distribution_new_comments": {
+    "en": 7239,
+    "hi-en": 720,
+    "und": 437,
+    "hi": 77,
+    "bn-en": 9
+  },
+  "script_distribution_new_comments": {
+    "latin": 8448,
+    "unknown": 34
+  },
+  "date_range_utc": {
+    "min": "2020-10-25T07:21:28Z",
+    "max": "2026-11-26T01:17:18Z"
+  },
+  "deduplication_and_filtering": {
+    "comment_rejected:bot_or_automod": 309,
+    "comment_rejected:deleted_or_removed": 5,
+    "comment_rejected:duplicate_text": 537,
+    "comment_rejected:gif_or_bare_media_url": 27,
+    "thread_rejected:off_topic_scope": 22,
+    "thread_rejected:zero_valid_comments": 11
+  },
+  "pii_redactions": {},
+  "leakage_audit": {
+    "frozen_test_threads_checked": 37,
+    "frozen_test_comments_checked": 526,
+    "threads_quarantined_from_dapt_train": 0,
+    "quarantined_details": [],
+    "frozen_test_leakage_into_train_pool": 0
+  },
+  "search_log": [
+    {
+      "plan_idx": 1,
+      "subreddit": "MBAIndia",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 0,
+      "new_queued": 0,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 2,
+      "subreddit": "IIMCATPreparation",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 0,
+      "new_queued": 0,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 3,
+      "subreddit": "CATPrep",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 100,
+      "new_queued": 23,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 4,
+      "subreddit": "CATStudyRoom",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 0,
+      "new_queued": 0,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 5,
+      "subreddit": "IIMRanchi",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 1,
+      "new_queued": 0,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 6,
+      "subreddit": "IIMIndore",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 9,
+      "new_queued": 1,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 7,
+      "subreddit": "IIMKozhikode",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 1,
+      "new_queued": 0,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 8,
+      "subreddit": "IIMBangalore",
+      "mode": "direct",
+      "query": "<direct>",
+      "returned": 60,
+      "new_queued": 18,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 9,
+      "subreddit": "MBAIndia",
+      "mode": "title",
+      "query": "IIM",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 10,
+      "subreddit": "MBAIndia",
+      "mode": "title",
+      "query": "waitlist",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 11,
+      "subreddit": "MBAIndia",
+      "mode": "title",
+      "query": "BLACKI",
+      "returned": 70,
+      "new_queued": 22,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 12,
+      "subreddit": "IPMATtards",
+      "mode": "title",
+      "query": "Ranchi",
+      "returned": 60,
+      "new_queued": 36,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 13,
+      "subreddit": "IPMATtards",
+      "mode": "title",
+      "query": "Bodh Gaya",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 14,
+      "subreddit": "IPMATtards",
+      "mode": "title",
+      "query": "Jammu",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 15,
+      "subreddit": "Indian_Academia",
+      "mode": "title",
+      "query": "IIM",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 16,
+      "subreddit": "Btechtards",
+      "mode": "title",
+      "query": "IIM",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 17,
+      "subreddit": "CATpreparation",
+      "mode": "title",
+      "query": "IIM Bangalore",
+      "returned": 70,
+      "new_queued": 49,
+      "status": "ok"
+    },
+    {
+      "plan_idx": 18,
+      "subreddit": "CATpreparation",
+      "mode": "title",
+      "query": "IIM Ranchi",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 19,
+      "subreddit": "CATpreparation",
+      "mode": "title",
+      "query": "IIM Raipur",
+      "status": "failed",
+      "error": "http_status:429"
+    },
+    {
+      "plan_idx": 20,
+      "subreddit": "CATpreparation",
+      "mode": "title",
+      "query": "IIM Rohtak",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 21,
+      "subreddit": "CATpreparation",
+      "mode": "title",
+      "query": "CAP round",
+      "status": "failed",
+      "error": "timeout:422"
+    },
+    {
+      "plan_idx": 22,
+      "subreddit": "CATpreparation",
+      "mode": "title",
+      "query": "IIM Bodh Gaya",
+      "status": "failed",
+      "error": "timeout:422"
+    }
+  ]
+}

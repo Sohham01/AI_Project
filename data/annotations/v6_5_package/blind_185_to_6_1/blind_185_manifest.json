@@ -1,0 +1,55 @@
+{
+  "package_id": "v6_5_blind_185_to_6_1",
+  "annotation_status": "pending_human_annotation",
+  "synthetic_labels_generated": false,
+  "taxonomy_version": "rci_taxonomy_v2.0",
+  "guideline_version": "ANNOTATION_GUIDELINES_v2.0",
+  "n_new_items": 185,
+  "unique_threads": 129,
+  "existing_v1_trainval": 367,
+  "existing_v1_frozen_test": 92,
+  "resulting_labeled_train_target": 552,
+  "resulting_train_to_frozen_test_ratio": 6.0,
+  "frozen_test_overlap_count": 0,
+  "test_pool_overlap_count": 0,
+  "blind_verified": true,
+  "sampling_summary": {
+    "by_cohort": {
+      "v6_3": 99,
+      "v6_4": 43,
+      "v6_5": 43
+    },
+    "by_subreddit": {
+      "CATpreparation": 32,
+      "MBAIndia": 30,
+      "IPMATtards": 20,
+      "CATPrep": 18,
+      "Bhubaneswar": 12,
+      "CATStudyRoom": 12,
+      "IIMCATPreparation": 11,
+      "Indian_Academia": 10,
+      "kolkata": 10,
+      "westbengal": 10,
+      "IIMCalcutta": 10,
+      "IIMBangalore": 5,
+      "IIMLucknow": 2,
+      "iimindore": 2,
+      "iimmumbai": 1
+    },
+    "by_language": {
+      "en": 100,
+      "hi-en": 69,
+      "bn-en": 9,
+      "hi": 3,
+      "or-en": 3,
+      "bn": 1
+    }
+  },
+  "files": [
+    "blind_185_v6_5_annotator_1.csv",
+    "blind_185_v6_5_annotator_1.xlsx",
+    "blind_185_v6_5_annotator_2.csv",
+    "blind_185_v6_5_annotator_2.xlsx",
+    "blind_185_adjudication_template.csv"
+  ]
+}

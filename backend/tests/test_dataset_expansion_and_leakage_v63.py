@@ -38,9 +38,13 @@ def test_leakage_and_deduplication_guards_protect_frozen_test() -> None:
     assert rej_dup == "duplicate_of_baseline_corpus"
 
     # Unseen title containing a frozen test comment body -> accepted ONLY with dapt_and_train_excluded=True
-    test_pid = next(iter(guards["test_pids"]))
-    test_post = next(p for p in baseline["posts"] if p["reddit_id"] == test_pid)
-    long_test_cmt = next(c["body"] for c in test_post["comments"] if len(c["body"].split()) >= 8)
+    posts_by_id = {p["reddit_id"]: p for p in baseline["posts"]}
+    long_test_cmt = next(
+        c["body"]
+        for pid in sorted(guards["test_pids"])
+        for c in posts_by_id[pid]["comments"]
+        if len(c["body"].split()) >= 8
+    )
 
     rej_leak, excluded = check_thread_leakage_and_duplication(
         title="Brand new distinct thread title for leakage unit test",

@@ -1,0 +1,2244 @@
+{
+  "experiment": "v6_5_7fold_6_to_1_cv_benchmark",
+  "keras_backend": "torch",
+  "n_splits": 7,
+  "evaluation_protocol": "7-fold post_id-grouped CV (6:1 train:val fold ratio = 85.71% / 14.29%) on V1 trainval (n=367, 163 threads) across 3 seeds; frozen n=92 test NOT touched",
+  "experimental_status": "isolated_6_to_1_cv_benchmark",
+  "aggregate_cv_7fold_6_to_1": {
+    "logistic_regression": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.005,
+      "mean_5task_cv_oof_macro_f1": 0.5046,
+      "mean_fold_std": 0.0603,
+      "mean_ece": 0.0869,
+      "total_train_seconds_all_5_tasks": 8.45,
+      "mean_inference_ms_per_comment": 0.2247,
+      "mean_model_size_kb": 322.3,
+      "param_count": 0
+    },
+    "xgb_sparse_tfidf": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.005,
+      "mean_5task_cv_oof_macro_f1": 0.4847,
+      "mean_fold_std": 0.0639,
+      "mean_ece": 0.0286,
+      "total_train_seconds_all_5_tasks": 216.57,
+      "mean_inference_ms_per_comment": 0.3368,
+      "mean_model_size_kb": 711.4,
+      "param_count": 0
+    },
+    "xgb_svd_linguistic": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.005,
+      "mean_5task_cv_oof_macro_f1": 0.4939,
+      "mean_fold_std": 0.0669,
+      "mean_ece": 0.0225,
+      "total_train_seconds_all_5_tasks": 64.43,
+      "mean_inference_ms_per_comment": 0.4799,
+      "mean_model_size_kb": 4077.6,
+      "param_count": 0
+    },
+    "ann_mlp": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.005,
+      "mean_5task_cv_oof_macro_f1": 0.5201,
+      "mean_fold_std": 0.0639,
+      "mean_ece": 0.0706,
+      "total_train_seconds_all_5_tasks": 22.66,
+      "mean_inference_ms_per_comment": 0.2419,
+      "mean_model_size_kb": 3192.6,
+      "param_count": 821384
+    },
+    "cnn_textcnn": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.005,
+      "mean_5task_cv_oof_macro_f1": 0.4409,
+      "mean_fold_std": 0.0626,
+      "mean_ece": 0.0645,
+      "total_train_seconds_all_5_tasks": 31.96,
+      "mean_inference_ms_per_comment": 0.0651,
+      "mean_model_size_kb": 1138.5,
+      "param_count": 306696
+    },
+    "pytorch_bigru_attention": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.005,
+      "mean_5task_cv_oof_macro_f1": 0.5061,
+      "mean_fold_std": 0.0532,
+      "mean_ece": 0.0693,
+      "total_train_seconds_all_5_tasks": 81.4,
+      "mean_inference_ms_per_comment": 0.0718,
+      "mean_model_size_kb": 1037.4,
+      "param_count": 278153
+    },
+    "keras_multitask_torch": {
+      "n_splits": 7,
+      "mean_fold_train_to_val_ratio": 6.001,
+      "mean_5task_cv_oof_macro_f1": 0.4596,
+      "mean_fold_std": 0.0673,
+      "mean_ece": 0.04,
+      "total_train_seconds_all_5_tasks": 52.91,
+      "mean_inference_ms_per_comment": 0.6306,
+      "mean_model_size_kb": 11115.1,
+      "param_count": 933720
+    }
+  },
+  "by_task_7fold": {
+    "logistic_regression": {
+      "issue": {
+        "model": "logistic_regression",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.4951,
+        "cv_oof_macro_f1_seed_std": 0.0047,
+        "fold_macro_f1_mean": 0.6123,
+        "fold_macro_f1_std": 0.0395,
+        "cv_oof_ece_mean": 0.0924,
+        "mean_fold_train_seconds": 0.443,
+        "total_7fold_train_seconds": 3.102,
+        "inference_ms_per_comment": 0.2838,
+        "model_size_kb": 520.5,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.2222,
+            "recall": 0.125,
+            "f1": 0.16,
+            "support": 16,
+            "predicted_positive": 9,
+            "threshold": 0.232
+          },
+          "administrative_communication": {
+            "precision": 0.787,
+            "recall": 0.8581,
+            "f1": 0.821,
+            "support": 155,
+            "predicted_positive": 169,
+            "threshold": 0.446
+          },
+          "campus_infrastructure": {
+            "precision": 0.52,
+            "recall": 0.4333,
+            "f1": 0.4727,
+            "support": 30,
+            "predicted_positive": 25,
+            "threshold": 0.314
+          },
+          "curriculum_teaching": {
+            "precision": 0.1846,
+            "recall": 0.3871,
+            "f1": 0.25,
+            "support": 31,
+            "predicted_positive": 65,
+            "threshold": 0.3
+          },
+          "extracurriculars": {
+            "precision": 0.2,
+            "recall": 0.1852,
+            "f1": 0.1923,
+            "support": 27,
+            "predicted_positive": 25,
+            "threshold": 0.189
+          },
+          "financial_concerns": {
+            "precision": 0.7308,
+            "recall": 0.6786,
+            "f1": 0.7037,
+            "support": 84,
+            "predicted_positive": 78,
+            "threshold": 0.425
+          },
+          "hostel_facilities": {
+            "precision": 0.7895,
+            "recall": 0.5556,
+            "f1": 0.6522,
+            "support": 27,
+            "predicted_positive": 19,
+            "threshold": 0.357
+          },
+          "placements": {
+            "precision": 0.6975,
+            "recall": 0.8384,
+            "f1": 0.7615,
+            "support": 99,
+            "predicted_positive": 119,
+            "threshold": 0.475
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.23214285714285715,
+          "administrative_communication": 0.44642857142857145,
+          "campus_infrastructure": 0.3142857142857142,
+          "curriculum_teaching": 0.3,
+          "extracurriculars": 0.18928571428571428,
+          "financial_concerns": 0.42499999999999993,
+          "hostel_facilities": 0.35714285714285715,
+          "placements": 0.47500000000000003
+        }
+      },
+      "sentiment": {
+        "model": "logistic_regression",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.5184,
+        "cv_oof_macro_f1_seed_std": 0.0074,
+        "fold_macro_f1_mean": 0.5152,
+        "fold_macro_f1_std": 0.0767,
+        "cv_oof_ece_mean": 0.0366,
+        "mean_fold_train_seconds": 0.201,
+        "total_7fold_train_seconds": 1.405,
+        "inference_ms_per_comment": 0.2153,
+        "model_size_kb": 220.8,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.5066,
+            "recall": 0.5833,
+            "f1": 0.5423,
+            "support": 132,
+            "predicted_count": 152
+          },
+          "neutral": {
+            "precision": 0.6078,
+            "recall": 0.5776,
+            "f1": 0.5924,
+            "support": 161,
+            "predicted_count": 153
+          },
+          "positive": {
+            "precision": 0.4839,
+            "recall": 0.4054,
+            "f1": 0.4412,
+            "support": 74,
+            "predicted_count": 62
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "logistic_regression",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4817,
+        "cv_oof_macro_f1_seed_std": 0.0,
+        "fold_macro_f1_mean": 0.6093,
+        "fold_macro_f1_std": 0.0396,
+        "cv_oof_ece_mean": 0.1044,
+        "mean_fold_train_seconds": 0.182,
+        "total_7fold_train_seconds": 1.273,
+        "inference_ms_per_comment": 0.1983,
+        "model_size_kb": 373.4,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.44,
+            "recall": 0.3438,
+            "f1": 0.386,
+            "support": 32,
+            "predicted_positive": 25,
+            "threshold": 0.457
+          },
+          "curiosity": {
+            "precision": 0.6842,
+            "recall": 0.5417,
+            "f1": 0.6047,
+            "support": 96,
+            "predicted_positive": 76,
+            "threshold": 0.457
+          },
+          "frustration": {
+            "precision": 0.4253,
+            "recall": 0.5211,
+            "f1": 0.4684,
+            "support": 71,
+            "predicted_positive": 87,
+            "threshold": 0.421
+          },
+          "gratitude": {
+            "precision": 0.9444,
+            "recall": 0.7727,
+            "f1": 0.85,
+            "support": 22,
+            "predicted_positive": 18,
+            "threshold": 0.404
+          },
+          "hope": {
+            "precision": 0.3421,
+            "recall": 0.3714,
+            "f1": 0.3562,
+            "support": 35,
+            "predicted_positive": 38,
+            "threshold": 0.357
+          },
+          "stress": {
+            "precision": 0.1778,
+            "recall": 0.3077,
+            "f1": 0.2254,
+            "support": 26,
+            "predicted_positive": 45,
+            "threshold": 0.318
+          }
+        },
+        "thresholds": {
+          "confidence": 0.4571428571428572,
+          "curiosity": 0.4571428571428572,
+          "frustration": 0.42142857142857143,
+          "gratitude": 0.4035714285714286,
+          "hope": 0.3571428571428571,
+          "stress": 0.3178571428571428
+        }
+      },
+      "response": {
+        "model": "logistic_regression",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4371,
+        "cv_oof_macro_f1_seed_std": 0.0049,
+        "fold_macro_f1_mean": 0.4312,
+        "fold_macro_f1_std": 0.0792,
+        "cv_oof_ece_mean": 0.1241,
+        "mean_fold_train_seconds": 0.294,
+        "total_7fold_train_seconds": 2.058,
+        "inference_ms_per_comment": 0.2236,
+        "model_size_kb": 376.8,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.4,
+            "recall": 0.3158,
+            "f1": 0.3529,
+            "support": 38,
+            "predicted_count": 30
+          },
+          "personal_experience": {
+            "precision": 0.5312,
+            "recall": 0.5152,
+            "f1": 0.5231,
+            "support": 66,
+            "predicted_count": 64
+          },
+          "opinion": {
+            "precision": 0.5128,
+            "recall": 0.5926,
+            "f1": 0.5498,
+            "support": 135,
+            "predicted_count": 156
+          },
+          "advice": {
+            "precision": 0.5294,
+            "recall": 0.587,
+            "f1": 0.5567,
+            "support": 46,
+            "predicted_count": 51
+          },
+          "solution": {
+            "precision": 0.48,
+            "recall": 0.3158,
+            "f1": 0.381,
+            "support": 38,
+            "predicted_count": 25
+          },
+          "counterargument": {
+            "precision": 0.2439,
+            "recall": 0.2273,
+            "f1": 0.2353,
+            "support": 44,
+            "predicted_count": 41
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "logistic_regression",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.5908,
+        "cv_oof_macro_f1_seed_std": 0.0079,
+        "fold_macro_f1_mean": 0.5879,
+        "fold_macro_f1_std": 0.0663,
+        "cv_oof_ece_mean": 0.0771,
+        "mean_fold_train_seconds": 0.087,
+        "total_7fold_train_seconds": 0.612,
+        "inference_ms_per_comment": 0.2024,
+        "model_size_kb": 120.0,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.8405,
+            "recall": 0.9164,
+            "f1": 0.8768,
+            "support": 299,
+            "predicted_count": 326
+          },
+          "solution": {
+            "precision": 0.3902,
+            "recall": 0.2353,
+            "f1": 0.2936,
+            "support": 68,
+            "predicted_count": 41
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      }
+    },
+    "xgb_sparse_tfidf": {
+      "issue": {
+        "model": "xgb_sparse_tfidf",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.463,
+        "cv_oof_macro_f1_seed_std": 0.0053,
+        "fold_macro_f1_mean": 0.5519,
+        "fold_macro_f1_std": 0.0811,
+        "cv_oof_ece_mean": 0.0184,
+        "mean_fold_train_seconds": 13.846,
+        "total_7fold_train_seconds": 96.919,
+        "inference_ms_per_comment": 0.4728,
+        "model_size_kb": 907.2,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 16,
+            "predicted_positive": 1,
+            "threshold": 0.457
+          },
+          "administrative_communication": {
+            "precision": 0.759,
+            "recall": 0.8129,
+            "f1": 0.785,
+            "support": 155,
+            "predicted_positive": 166,
+            "threshold": 0.446
+          },
+          "campus_infrastructure": {
+            "precision": 0.619,
+            "recall": 0.4333,
+            "f1": 0.5098,
+            "support": 30,
+            "predicted_positive": 21,
+            "threshold": 0.45
+          },
+          "curriculum_teaching": {
+            "precision": 0.3043,
+            "recall": 0.2258,
+            "f1": 0.2593,
+            "support": 31,
+            "predicted_positive": 23,
+            "threshold": 0.289
+          },
+          "extracurriculars": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 27,
+            "predicted_positive": 2,
+            "threshold": 0.382
+          },
+          "financial_concerns": {
+            "precision": 0.7037,
+            "recall": 0.6786,
+            "f1": 0.6909,
+            "support": 84,
+            "predicted_positive": 81,
+            "threshold": 0.411
+          },
+          "hostel_facilities": {
+            "precision": 0.8125,
+            "recall": 0.4815,
+            "f1": 0.6047,
+            "support": 27,
+            "predicted_positive": 16,
+            "threshold": 0.4
+          },
+          "placements": {
+            "precision": 0.8298,
+            "recall": 0.7879,
+            "f1": 0.8083,
+            "support": 99,
+            "predicted_positive": 94,
+            "threshold": 0.425
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.4571428571428572,
+          "administrative_communication": 0.44642857142857145,
+          "campus_infrastructure": 0.45000000000000007,
+          "curriculum_teaching": 0.28928571428571426,
+          "extracurriculars": 0.3821428571428571,
+          "financial_concerns": 0.41071428571428575,
+          "hostel_facilities": 0.39999999999999997,
+          "placements": 0.42499999999999993
+        }
+      },
+      "sentiment": {
+        "model": "xgb_sparse_tfidf",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.4697,
+        "cv_oof_macro_f1_seed_std": 0.01,
+        "fold_macro_f1_mean": 0.4624,
+        "fold_macro_f1_std": 0.0561,
+        "cv_oof_ece_mean": 0.0237,
+        "mean_fold_train_seconds": 2.147,
+        "total_7fold_train_seconds": 15.032,
+        "inference_ms_per_comment": 0.2851,
+        "model_size_kb": 374.9,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.4683,
+            "recall": 0.447,
+            "f1": 0.4574,
+            "support": 132,
+            "predicted_count": 126
+          },
+          "neutral": {
+            "precision": 0.5363,
+            "recall": 0.5963,
+            "f1": 0.5647,
+            "support": 161,
+            "predicted_count": 179
+          },
+          "positive": {
+            "precision": 0.4355,
+            "recall": 0.3649,
+            "f1": 0.3971,
+            "support": 74,
+            "predicted_count": 62
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "xgb_sparse_tfidf",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4551,
+        "cv_oof_macro_f1_seed_std": 0.0128,
+        "fold_macro_f1_mean": 0.5353,
+        "fold_macro_f1_std": 0.0524,
+        "cv_oof_ece_mean": 0.0433,
+        "mean_fold_train_seconds": 7.851,
+        "total_7fold_train_seconds": 54.959,
+        "inference_ms_per_comment": 0.3458,
+        "model_size_kb": 816.8,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.52,
+            "recall": 0.4062,
+            "f1": 0.4561,
+            "support": 32,
+            "predicted_positive": 25,
+            "threshold": 0.446
+          },
+          "curiosity": {
+            "precision": 0.5976,
+            "recall": 0.5104,
+            "f1": 0.5506,
+            "support": 96,
+            "predicted_positive": 82,
+            "threshold": 0.482
+          },
+          "frustration": {
+            "precision": 0.3232,
+            "recall": 0.4507,
+            "f1": 0.3765,
+            "support": 71,
+            "predicted_positive": 99,
+            "threshold": 0.357
+          },
+          "gratitude": {
+            "precision": 1.0,
+            "recall": 0.8636,
+            "f1": 0.9268,
+            "support": 22,
+            "predicted_positive": 19,
+            "threshold": 0.5
+          },
+          "hope": {
+            "precision": 0.4545,
+            "recall": 0.2857,
+            "f1": 0.3509,
+            "support": 35,
+            "predicted_positive": 22,
+            "threshold": 0.396
+          },
+          "stress": {
+            "precision": 0.2105,
+            "recall": 0.1538,
+            "f1": 0.1778,
+            "support": 26,
+            "predicted_positive": 19,
+            "threshold": 0.311
+          }
+        },
+        "thresholds": {
+          "confidence": 0.44642857142857145,
+          "curiosity": 0.48214285714285715,
+          "frustration": 0.35714285714285715,
+          "gratitude": 0.5,
+          "hope": 0.39642857142857146,
+          "stress": 0.31071428571428567
+        }
+      },
+      "response": {
+        "model": "xgb_sparse_tfidf",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.3998,
+        "cv_oof_macro_f1_seed_std": 0.0057,
+        "fold_macro_f1_mean": 0.3937,
+        "fold_macro_f1_std": 0.0568,
+        "cv_oof_ece_mean": 0.0231,
+        "mean_fold_train_seconds": 5.529,
+        "total_7fold_train_seconds": 38.703,
+        "inference_ms_per_comment": 0.3036,
+        "model_size_kb": 1237.6,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.3871,
+            "recall": 0.3158,
+            "f1": 0.3478,
+            "support": 38,
+            "predicted_count": 31
+          },
+          "personal_experience": {
+            "precision": 0.4648,
+            "recall": 0.5,
+            "f1": 0.4818,
+            "support": 66,
+            "predicted_count": 71
+          },
+          "opinion": {
+            "precision": 0.5177,
+            "recall": 0.5407,
+            "f1": 0.529,
+            "support": 135,
+            "predicted_count": 141
+          },
+          "advice": {
+            "precision": 0.4615,
+            "recall": 0.5217,
+            "f1": 0.4898,
+            "support": 46,
+            "predicted_count": 52
+          },
+          "solution": {
+            "precision": 0.3056,
+            "recall": 0.2895,
+            "f1": 0.2973,
+            "support": 38,
+            "predicted_count": 36
+          },
+          "counterargument": {
+            "precision": 0.3333,
+            "recall": 0.2727,
+            "f1": 0.3,
+            "support": 44,
+            "predicted_count": 36
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "xgb_sparse_tfidf",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.6357,
+        "cv_oof_macro_f1_seed_std": 0.0031,
+        "fold_macro_f1_mean": 0.6763,
+        "fold_macro_f1_std": 0.0732,
+        "cv_oof_ece_mean": 0.0344,
+        "mean_fold_train_seconds": 1.565,
+        "total_7fold_train_seconds": 10.955,
+        "inference_ms_per_comment": 0.2766,
+        "model_size_kb": 220.4,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.8638,
+            "recall": 0.8696,
+            "f1": 0.8667,
+            "support": 299,
+            "predicted_count": 301
+          },
+          "solution": {
+            "precision": 0.4091,
+            "recall": 0.3971,
+            "f1": 0.403,
+            "support": 68,
+            "predicted_count": 66
+          }
+        },
+        "thresholds": {
+          "binary": 0.443
+        }
+      }
+    },
+    "xgb_svd_linguistic": {
+      "issue": {
+        "model": "xgb_svd_linguistic",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.3834,
+        "cv_oof_macro_f1_seed_std": 0.0073,
+        "fold_macro_f1_mean": 0.4499,
+        "fold_macro_f1_std": 0.0513,
+        "cv_oof_ece_mean": 0.0066,
+        "mean_fold_train_seconds": 2.73,
+        "total_7fold_train_seconds": 19.108,
+        "inference_ms_per_comment": 0.6012,
+        "model_size_kb": 4518.3,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 16,
+            "predicted_positive": 0,
+            "threshold": 0.5
+          },
+          "administrative_communication": {
+            "precision": 0.7597,
+            "recall": 0.7548,
+            "f1": 0.7573,
+            "support": 155,
+            "predicted_positive": 154,
+            "threshold": 0.407
+          },
+          "campus_infrastructure": {
+            "precision": 0.5882,
+            "recall": 0.3333,
+            "f1": 0.4255,
+            "support": 30,
+            "predicted_positive": 17,
+            "threshold": 0.332
+          },
+          "curriculum_teaching": {
+            "precision": 0.1667,
+            "recall": 0.0645,
+            "f1": 0.093,
+            "support": 31,
+            "predicted_positive": 12,
+            "threshold": 0.343
+          },
+          "extracurriculars": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 27,
+            "predicted_positive": 1,
+            "threshold": 0.457
+          },
+          "financial_concerns": {
+            "precision": 0.6885,
+            "recall": 0.5,
+            "f1": 0.5793,
+            "support": 84,
+            "predicted_positive": 61,
+            "threshold": 0.293
+          },
+          "hostel_facilities": {
+            "precision": 0.8889,
+            "recall": 0.2963,
+            "f1": 0.4444,
+            "support": 27,
+            "predicted_positive": 9,
+            "threshold": 0.35
+          },
+          "placements": {
+            "precision": 0.7041,
+            "recall": 0.697,
+            "f1": 0.7005,
+            "support": 99,
+            "predicted_positive": 98,
+            "threshold": 0.539
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.5,
+          "administrative_communication": 0.4071428571428571,
+          "campus_infrastructure": 0.3321428571428572,
+          "curriculum_teaching": 0.3428571428571429,
+          "extracurriculars": 0.4571428571428572,
+          "financial_concerns": 0.29285714285714287,
+          "hostel_facilities": 0.35000000000000003,
+          "placements": 0.5392857142857144
+        }
+      },
+      "sentiment": {
+        "model": "xgb_svd_linguistic",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.5295,
+        "cv_oof_macro_f1_seed_std": 0.012,
+        "fold_macro_f1_mean": 0.5256,
+        "fold_macro_f1_std": 0.0842,
+        "cv_oof_ece_mean": 0.0298,
+        "mean_fold_train_seconds": 1.251,
+        "total_7fold_train_seconds": 8.757,
+        "inference_ms_per_comment": 0.4503,
+        "model_size_kb": 3977.1,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.5,
+            "recall": 0.6667,
+            "f1": 0.5714,
+            "support": 132,
+            "predicted_count": 176
+          },
+          "neutral": {
+            "precision": 0.6131,
+            "recall": 0.5217,
+            "f1": 0.5638,
+            "support": 161,
+            "predicted_count": 137
+          },
+          "positive": {
+            "precision": 0.5926,
+            "recall": 0.4324,
+            "f1": 0.5,
+            "support": 74,
+            "predicted_count": 54
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "xgb_svd_linguistic",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4389,
+        "cv_oof_macro_f1_seed_std": 0.0133,
+        "fold_macro_f1_mean": 0.5322,
+        "fold_macro_f1_std": 0.0595,
+        "cv_oof_ece_mean": 0.0121,
+        "mean_fold_train_seconds": 2.201,
+        "total_7fold_train_seconds": 15.409,
+        "inference_ms_per_comment": 0.4736,
+        "model_size_kb": 4134.1,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.5652,
+            "recall": 0.4062,
+            "f1": 0.4727,
+            "support": 32,
+            "predicted_positive": 23,
+            "threshold": 0.45
+          },
+          "curiosity": {
+            "precision": 0.7907,
+            "recall": 0.7083,
+            "f1": 0.7473,
+            "support": 96,
+            "predicted_positive": 86,
+            "threshold": 0.336
+          },
+          "frustration": {
+            "precision": 0.3976,
+            "recall": 0.4648,
+            "f1": 0.4286,
+            "support": 71,
+            "predicted_positive": 83,
+            "threshold": 0.379
+          },
+          "gratitude": {
+            "precision": 1.0,
+            "recall": 0.4091,
+            "f1": 0.5806,
+            "support": 22,
+            "predicted_positive": 9,
+            "threshold": 0.45
+          },
+          "hope": {
+            "precision": 0.4375,
+            "recall": 0.2,
+            "f1": 0.2745,
+            "support": 35,
+            "predicted_positive": 16,
+            "threshold": 0.407
+          },
+          "stress": {
+            "precision": 0.5714,
+            "recall": 0.1538,
+            "f1": 0.2424,
+            "support": 26,
+            "predicted_positive": 7,
+            "threshold": 0.311
+          }
+        },
+        "thresholds": {
+          "confidence": 0.45000000000000007,
+          "curiosity": 0.33571428571428574,
+          "frustration": 0.3785714285714286,
+          "gratitude": 0.45000000000000007,
+          "hope": 0.40714285714285714,
+          "stress": 0.31071428571428567
+        }
+      },
+      "response": {
+        "model": "xgb_svd_linguistic",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4242,
+        "cv_oof_macro_f1_seed_std": 0.0103,
+        "fold_macro_f1_mean": 0.4149,
+        "fold_macro_f1_std": 0.077,
+        "cv_oof_ece_mean": 0.0418,
+        "mean_fold_train_seconds": 2.178,
+        "total_7fold_train_seconds": 15.248,
+        "inference_ms_per_comment": 0.4566,
+        "model_size_kb": 4354.4,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.6154,
+            "recall": 0.2105,
+            "f1": 0.3137,
+            "support": 38,
+            "predicted_count": 13
+          },
+          "personal_experience": {
+            "precision": 0.4487,
+            "recall": 0.5303,
+            "f1": 0.4861,
+            "support": 66,
+            "predicted_count": 78
+          },
+          "opinion": {
+            "precision": 0.5272,
+            "recall": 0.7185,
+            "f1": 0.6082,
+            "support": 135,
+            "predicted_count": 184
+          },
+          "advice": {
+            "precision": 0.5,
+            "recall": 0.3478,
+            "f1": 0.4103,
+            "support": 46,
+            "predicted_count": 32
+          },
+          "solution": {
+            "precision": 0.5556,
+            "recall": 0.3947,
+            "f1": 0.4615,
+            "support": 38,
+            "predicted_count": 27
+          },
+          "counterargument": {
+            "precision": 0.2727,
+            "recall": 0.2045,
+            "f1": 0.2338,
+            "support": 44,
+            "predicted_count": 33
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "xgb_svd_linguistic",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.6933,
+        "cv_oof_macro_f1_seed_std": 0.0035,
+        "fold_macro_f1_mean": 0.7448,
+        "fold_macro_f1_std": 0.0626,
+        "cv_oof_ece_mean": 0.0221,
+        "mean_fold_train_seconds": 0.844,
+        "total_7fold_train_seconds": 5.908,
+        "inference_ms_per_comment": 0.4178,
+        "model_size_kb": 3403.9,
+        "param_count": 0,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.8837,
+            "recall": 0.8896,
+            "f1": 0.8867,
+            "support": 299,
+            "predicted_count": 301
+          },
+          "solution": {
+            "precision": 0.5,
+            "recall": 0.4853,
+            "f1": 0.4925,
+            "support": 68,
+            "predicted_count": 66
+          }
+        },
+        "thresholds": {
+          "binary": 0.396
+        }
+      }
+    },
+    "ann_mlp": {
+      "issue": {
+        "model": "ann_mlp",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.4752,
+        "cv_oof_macro_f1_seed_std": 0.0173,
+        "fold_macro_f1_mean": 0.5411,
+        "fold_macro_f1_std": 0.0565,
+        "cv_oof_ece_mean": 0.072,
+        "mean_fold_train_seconds": 0.718,
+        "total_7fold_train_seconds": 5.026,
+        "inference_ms_per_comment": 0.2932,
+        "model_size_kb": 3208.5,
+        "param_count": 821384,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.1429,
+            "recall": 0.0625,
+            "f1": 0.087,
+            "support": 16,
+            "predicted_positive": 7,
+            "threshold": 0.307
+          },
+          "administrative_communication": {
+            "precision": 0.8456,
+            "recall": 0.8129,
+            "f1": 0.8289,
+            "support": 155,
+            "predicted_positive": 149,
+            "threshold": 0.704
+          },
+          "campus_infrastructure": {
+            "precision": 0.6667,
+            "recall": 0.4667,
+            "f1": 0.549,
+            "support": 30,
+            "predicted_positive": 21,
+            "threshold": 0.507
+          },
+          "curriculum_teaching": {
+            "precision": 0.1758,
+            "recall": 0.5161,
+            "f1": 0.2623,
+            "support": 31,
+            "predicted_positive": 91,
+            "threshold": 0.329
+          },
+          "extracurriculars": {
+            "precision": 0.2222,
+            "recall": 0.0741,
+            "f1": 0.1111,
+            "support": 27,
+            "predicted_positive": 9,
+            "threshold": 0.354
+          },
+          "financial_concerns": {
+            "precision": 0.6585,
+            "recall": 0.6429,
+            "f1": 0.6506,
+            "support": 84,
+            "predicted_positive": 82,
+            "threshold": 0.511
+          },
+          "hostel_facilities": {
+            "precision": 0.7143,
+            "recall": 0.5556,
+            "f1": 0.625,
+            "support": 27,
+            "predicted_positive": 21,
+            "threshold": 0.504
+          },
+          "placements": {
+            "precision": 0.6724,
+            "recall": 0.7879,
+            "f1": 0.7256,
+            "support": 99,
+            "predicted_positive": 116,
+            "threshold": 0.575
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.3071428571428572,
+          "administrative_communication": 0.7035714285714285,
+          "campus_infrastructure": 0.5071428571428571,
+          "curriculum_teaching": 0.32857142857142857,
+          "extracurriculars": 0.35357142857142854,
+          "financial_concerns": 0.5107142857142857,
+          "hostel_facilities": 0.5035714285714286,
+          "placements": 0.5750000000000001
+        }
+      },
+      "sentiment": {
+        "model": "ann_mlp",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.5532,
+        "cv_oof_macro_f1_seed_std": 0.0063,
+        "fold_macro_f1_mean": 0.5497,
+        "fold_macro_f1_std": 0.0584,
+        "cv_oof_ece_mean": 0.0925,
+        "mean_fold_train_seconds": 0.64,
+        "total_7fold_train_seconds": 4.483,
+        "inference_ms_per_comment": 0.228,
+        "model_size_kb": 3177.0,
+        "param_count": 813315,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.5425,
+            "recall": 0.6288,
+            "f1": 0.5825,
+            "support": 132,
+            "predicted_count": 153
+          },
+          "neutral": {
+            "precision": 0.6418,
+            "recall": 0.5342,
+            "f1": 0.5831,
+            "support": 161,
+            "predicted_count": 134
+          },
+          "positive": {
+            "precision": 0.5,
+            "recall": 0.5405,
+            "f1": 0.5195,
+            "support": 74,
+            "predicted_count": 80
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "ann_mlp",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4668,
+        "cv_oof_macro_f1_seed_std": 0.0085,
+        "fold_macro_f1_mean": 0.566,
+        "fold_macro_f1_std": 0.0501,
+        "cv_oof_ece_mean": 0.1098,
+        "mean_fold_train_seconds": 0.654,
+        "total_7fold_train_seconds": 4.575,
+        "inference_ms_per_comment": 0.2292,
+        "model_size_kb": 3207.5,
+        "param_count": 821126,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.3333,
+            "recall": 0.4688,
+            "f1": 0.3896,
+            "support": 32,
+            "predicted_positive": 45,
+            "threshold": 0.504
+          },
+          "curiosity": {
+            "precision": 0.6354,
+            "recall": 0.6354,
+            "f1": 0.6354,
+            "support": 96,
+            "predicted_positive": 96,
+            "threshold": 0.507
+          },
+          "frustration": {
+            "precision": 0.3652,
+            "recall": 0.5915,
+            "f1": 0.4516,
+            "support": 71,
+            "predicted_positive": 115,
+            "threshold": 0.414
+          },
+          "gratitude": {
+            "precision": 0.7143,
+            "recall": 0.6818,
+            "f1": 0.6977,
+            "support": 22,
+            "predicted_positive": 21,
+            "threshold": 0.486
+          },
+          "hope": {
+            "precision": 0.3,
+            "recall": 0.3429,
+            "f1": 0.32,
+            "support": 35,
+            "predicted_positive": 40,
+            "threshold": 0.525
+          },
+          "stress": {
+            "precision": 0.25,
+            "recall": 0.3077,
+            "f1": 0.2759,
+            "support": 26,
+            "predicted_positive": 32,
+            "threshold": 0.475
+          }
+        },
+        "thresholds": {
+          "confidence": 0.5035714285714287,
+          "curiosity": 0.5071428571428572,
+          "frustration": 0.41428571428571426,
+          "gratitude": 0.4857142857142857,
+          "hope": 0.5250000000000001,
+          "stress": 0.475
+        }
+      },
+      "response": {
+        "model": "ann_mlp",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4688,
+        "cv_oof_macro_f1_seed_std": 0.0035,
+        "fold_macro_f1_mean": 0.4651,
+        "fold_macro_f1_std": 0.0726,
+        "cv_oof_ece_mean": 0.0346,
+        "mean_fold_train_seconds": 0.628,
+        "total_7fold_train_seconds": 4.396,
+        "inference_ms_per_comment": 0.2329,
+        "model_size_kb": 3206.5,
+        "param_count": 820870,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.325,
+            "recall": 0.3421,
+            "f1": 0.3333,
+            "support": 38,
+            "predicted_count": 40
+          },
+          "personal_experience": {
+            "precision": 0.5672,
+            "recall": 0.5758,
+            "f1": 0.5714,
+            "support": 66,
+            "predicted_count": 67
+          },
+          "opinion": {
+            "precision": 0.575,
+            "recall": 0.5111,
+            "f1": 0.5412,
+            "support": 135,
+            "predicted_count": 120
+          },
+          "advice": {
+            "precision": 0.5345,
+            "recall": 0.6739,
+            "f1": 0.5962,
+            "support": 46,
+            "predicted_count": 58
+          },
+          "solution": {
+            "precision": 0.4412,
+            "recall": 0.3947,
+            "f1": 0.4167,
+            "support": 38,
+            "predicted_count": 34
+          },
+          "counterargument": {
+            "precision": 0.3125,
+            "recall": 0.3409,
+            "f1": 0.3261,
+            "support": 44,
+            "predicted_count": 48
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "ann_mlp",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.6365,
+        "cv_oof_macro_f1_seed_std": 0.0023,
+        "fold_macro_f1_mean": 0.6295,
+        "fold_macro_f1_std": 0.0817,
+        "cv_oof_ece_mean": 0.0441,
+        "mean_fold_train_seconds": 0.597,
+        "total_7fold_train_seconds": 4.18,
+        "inference_ms_per_comment": 0.2261,
+        "model_size_kb": 3163.5,
+        "param_count": 809858,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.8662,
+            "recall": 0.8662,
+            "f1": 0.8662,
+            "support": 299,
+            "predicted_count": 299
+          },
+          "solution": {
+            "precision": 0.4118,
+            "recall": 0.4118,
+            "f1": 0.4118,
+            "support": 68,
+            "predicted_count": 68
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      }
+    },
+    "cnn_textcnn": {
+      "issue": {
+        "model": "cnn_textcnn",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.3172,
+        "cv_oof_macro_f1_seed_std": 0.0157,
+        "fold_macro_f1_mean": 0.4123,
+        "fold_macro_f1_std": 0.0574,
+        "cv_oof_ece_mean": 0.0336,
+        "mean_fold_train_seconds": 0.929,
+        "total_7fold_train_seconds": 6.502,
+        "inference_ms_per_comment": 0.0662,
+        "model_size_kb": 1198.0,
+        "param_count": 306696,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 16,
+            "predicted_positive": 0,
+            "threshold": 0.5
+          },
+          "administrative_communication": {
+            "precision": 0.6456,
+            "recall": 0.8581,
+            "f1": 0.7368,
+            "support": 155,
+            "predicted_positive": 206,
+            "threshold": 0.379
+          },
+          "campus_infrastructure": {
+            "precision": 0.1579,
+            "recall": 0.1,
+            "f1": 0.1224,
+            "support": 30,
+            "predicted_positive": 19,
+            "threshold": 0.3
+          },
+          "curriculum_teaching": {
+            "precision": 0.1667,
+            "recall": 0.0968,
+            "f1": 0.1224,
+            "support": 31,
+            "predicted_positive": 18,
+            "threshold": 0.336
+          },
+          "extracurriculars": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 27,
+            "predicted_positive": 2,
+            "threshold": 0.357
+          },
+          "financial_concerns": {
+            "precision": 0.4103,
+            "recall": 0.5714,
+            "f1": 0.4776,
+            "support": 84,
+            "predicted_positive": 117,
+            "threshold": 0.393
+          },
+          "hostel_facilities": {
+            "precision": 0.5789,
+            "recall": 0.4074,
+            "f1": 0.4783,
+            "support": 27,
+            "predicted_positive": 19,
+            "threshold": 0.479
+          },
+          "placements": {
+            "precision": 0.4852,
+            "recall": 0.8283,
+            "f1": 0.6119,
+            "support": 99,
+            "predicted_positive": 169,
+            "threshold": 0.332
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.5,
+          "administrative_communication": 0.3785714285714286,
+          "campus_infrastructure": 0.29999999999999993,
+          "curriculum_teaching": 0.33571428571428574,
+          "extracurriculars": 0.35714285714285715,
+          "financial_concerns": 0.39285714285714285,
+          "hostel_facilities": 0.4785714285714286,
+          "placements": 0.33214285714285713
+        }
+      },
+      "sentiment": {
+        "model": "cnn_textcnn",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.5086,
+        "cv_oof_macro_f1_seed_std": 0.0251,
+        "fold_macro_f1_mean": 0.5021,
+        "fold_macro_f1_std": 0.0604,
+        "cv_oof_ece_mean": 0.0641,
+        "mean_fold_train_seconds": 0.849,
+        "total_7fold_train_seconds": 5.946,
+        "inference_ms_per_comment": 0.0608,
+        "model_size_kb": 1113.5,
+        "param_count": 285059,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.5371,
+            "recall": 0.7121,
+            "f1": 0.6124,
+            "support": 132,
+            "predicted_count": 175
+          },
+          "neutral": {
+            "precision": 0.6159,
+            "recall": 0.5776,
+            "f1": 0.5962,
+            "support": 161,
+            "predicted_count": 151
+          },
+          "positive": {
+            "precision": 0.561,
+            "recall": 0.3108,
+            "f1": 0.4,
+            "support": 74,
+            "predicted_count": 41
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "cnn_textcnn",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.3208,
+        "cv_oof_macro_f1_seed_std": 0.0115,
+        "fold_macro_f1_mean": 0.4437,
+        "fold_macro_f1_std": 0.0769,
+        "cv_oof_ece_mean": 0.1115,
+        "mean_fold_train_seconds": 0.923,
+        "total_7fold_train_seconds": 6.462,
+        "inference_ms_per_comment": 0.0654,
+        "model_size_kb": 1144.5,
+        "param_count": 292998,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.1474,
+            "recall": 0.4375,
+            "f1": 0.2205,
+            "support": 32,
+            "predicted_positive": 95,
+            "threshold": 0.343
+          },
+          "curiosity": {
+            "precision": 0.3902,
+            "recall": 0.6667,
+            "f1": 0.4923,
+            "support": 96,
+            "predicted_positive": 164,
+            "threshold": 0.407
+          },
+          "frustration": {
+            "precision": 0.2697,
+            "recall": 0.6761,
+            "f1": 0.3855,
+            "support": 71,
+            "predicted_positive": 178,
+            "threshold": 0.421
+          },
+          "gratitude": {
+            "precision": 0.2759,
+            "recall": 0.3636,
+            "f1": 0.3137,
+            "support": 22,
+            "predicted_positive": 29,
+            "threshold": 0.468
+          },
+          "hope": {
+            "precision": 0.2708,
+            "recall": 0.3714,
+            "f1": 0.3133,
+            "support": 35,
+            "predicted_positive": 48,
+            "threshold": 0.475
+          },
+          "stress": {
+            "precision": 0.1373,
+            "recall": 0.2692,
+            "f1": 0.1818,
+            "support": 26,
+            "predicted_positive": 51,
+            "threshold": 0.389
+          }
+        },
+        "thresholds": {
+          "confidence": 0.34285714285714286,
+          "curiosity": 0.4071428571428572,
+          "frustration": 0.42142857142857143,
+          "gratitude": 0.46785714285714286,
+          "hope": 0.47500000000000003,
+          "stress": 0.38928571428571423
+        }
+      },
+      "response": {
+        "model": "cnn_textcnn",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4181,
+        "cv_oof_macro_f1_seed_std": 0.0037,
+        "fold_macro_f1_mean": 0.4115,
+        "fold_macro_f1_std": 0.0518,
+        "cv_oof_ece_mean": 0.059,
+        "mean_fold_train_seconds": 0.928,
+        "total_7fold_train_seconds": 6.497,
+        "inference_ms_per_comment": 0.0701,
+        "model_size_kb": 1123.5,
+        "param_count": 287622,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.4,
+            "recall": 0.2105,
+            "f1": 0.2759,
+            "support": 38,
+            "predicted_count": 20
+          },
+          "personal_experience": {
+            "precision": 0.6538,
+            "recall": 0.5152,
+            "f1": 0.5763,
+            "support": 66,
+            "predicted_count": 52
+          },
+          "opinion": {
+            "precision": 0.5054,
+            "recall": 0.6963,
+            "f1": 0.5857,
+            "support": 135,
+            "predicted_count": 186
+          },
+          "advice": {
+            "precision": 0.5208,
+            "recall": 0.5435,
+            "f1": 0.5319,
+            "support": 46,
+            "predicted_count": 48
+          },
+          "solution": {
+            "precision": 0.3929,
+            "recall": 0.2895,
+            "f1": 0.3333,
+            "support": 38,
+            "predicted_count": 28
+          },
+          "counterargument": {
+            "precision": 0.2424,
+            "recall": 0.1818,
+            "f1": 0.2078,
+            "support": 44,
+            "predicted_count": 33
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "cnn_textcnn",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.6398,
+        "cv_oof_macro_f1_seed_std": 0.0159,
+        "fold_macro_f1_mean": 0.6339,
+        "fold_macro_f1_std": 0.0663,
+        "cv_oof_ece_mean": 0.0542,
+        "mean_fold_train_seconds": 0.937,
+        "total_7fold_train_seconds": 6.557,
+        "inference_ms_per_comment": 0.0632,
+        "model_size_kb": 1113.0,
+        "param_count": 284930,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.8701,
+            "recall": 0.8963,
+            "f1": 0.883,
+            "support": 299,
+            "predicted_count": 308
+          },
+          "solution": {
+            "precision": 0.4746,
+            "recall": 0.4118,
+            "f1": 0.4409,
+            "support": 68,
+            "predicted_count": 59
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      }
+    },
+    "pytorch_bigru_attention": {
+      "issue": {
+        "model": "pytorch_bigru_attention",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.408,
+        "cv_oof_macro_f1_seed_std": 0.0129,
+        "fold_macro_f1_mean": 0.4945,
+        "fold_macro_f1_std": 0.0568,
+        "cv_oof_ece_mean": 0.0521,
+        "mean_fold_train_seconds": 2.485,
+        "total_7fold_train_seconds": 17.398,
+        "inference_ms_per_comment": 0.0774,
+        "model_size_kb": 1098.4,
+        "param_count": 278153,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 16,
+            "predicted_positive": 6,
+            "threshold": 0.382
+          },
+          "administrative_communication": {
+            "precision": 0.7342,
+            "recall": 0.7484,
+            "f1": 0.7412,
+            "support": 155,
+            "predicted_positive": 158,
+            "threshold": 0.557
+          },
+          "campus_infrastructure": {
+            "precision": 0.3333,
+            "recall": 0.5,
+            "f1": 0.4,
+            "support": 30,
+            "predicted_positive": 45,
+            "threshold": 0.439
+          },
+          "curriculum_teaching": {
+            "precision": 0.2632,
+            "recall": 0.3226,
+            "f1": 0.2899,
+            "support": 31,
+            "predicted_positive": 38,
+            "threshold": 0.379
+          },
+          "extracurriculars": {
+            "precision": 0.2,
+            "recall": 0.037,
+            "f1": 0.0625,
+            "support": 27,
+            "predicted_positive": 5,
+            "threshold": 0.414
+          },
+          "financial_concerns": {
+            "precision": 0.5368,
+            "recall": 0.6071,
+            "f1": 0.5698,
+            "support": 84,
+            "predicted_positive": 95,
+            "threshold": 0.418
+          },
+          "hostel_facilities": {
+            "precision": 0.5417,
+            "recall": 0.4815,
+            "f1": 0.5098,
+            "support": 27,
+            "predicted_positive": 24,
+            "threshold": 0.564
+          },
+          "placements": {
+            "precision": 0.6792,
+            "recall": 0.7273,
+            "f1": 0.7024,
+            "support": 99,
+            "predicted_positive": 106,
+            "threshold": 0.461
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.3821428571428571,
+          "administrative_communication": 0.5571428571428572,
+          "campus_infrastructure": 0.4392857142857142,
+          "curriculum_teaching": 0.3785714285714286,
+          "extracurriculars": 0.41428571428571426,
+          "financial_concerns": 0.4178571428571428,
+          "hostel_facilities": 0.5642857142857143,
+          "placements": 0.46071428571428574
+        }
+      },
+      "sentiment": {
+        "model": "pytorch_bigru_attention",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.546,
+        "cv_oof_macro_f1_seed_std": 0.0046,
+        "fold_macro_f1_mean": 0.5417,
+        "fold_macro_f1_std": 0.0574,
+        "cv_oof_ece_mean": 0.0894,
+        "mean_fold_train_seconds": 2.259,
+        "total_7fold_train_seconds": 15.812,
+        "inference_ms_per_comment": 0.0708,
+        "model_size_kb": 1012.1,
+        "param_count": 256388,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.526,
+            "recall": 0.6894,
+            "f1": 0.5967,
+            "support": 132,
+            "predicted_count": 173
+          },
+          "neutral": {
+            "precision": 0.6769,
+            "recall": 0.5466,
+            "f1": 0.6048,
+            "support": 161,
+            "predicted_count": 130
+          },
+          "positive": {
+            "precision": 0.4844,
+            "recall": 0.4189,
+            "f1": 0.4493,
+            "support": 74,
+            "predicted_count": 64
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "pytorch_bigru_attention",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4683,
+        "cv_oof_macro_f1_seed_std": 0.0111,
+        "fold_macro_f1_mean": 0.5584,
+        "fold_macro_f1_std": 0.0494,
+        "cv_oof_ece_mean": 0.075,
+        "mean_fold_train_seconds": 2.295,
+        "total_7fold_train_seconds": 16.065,
+        "inference_ms_per_comment": 0.0744,
+        "model_size_kb": 1043.1,
+        "param_count": 264199,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.45,
+            "recall": 0.2812,
+            "f1": 0.3462,
+            "support": 32,
+            "predicted_positive": 20,
+            "threshold": 0.429
+          },
+          "curiosity": {
+            "precision": 0.4615,
+            "recall": 0.625,
+            "f1": 0.531,
+            "support": 96,
+            "predicted_positive": 130,
+            "threshold": 0.379
+          },
+          "frustration": {
+            "precision": 0.3659,
+            "recall": 0.6338,
+            "f1": 0.4639,
+            "support": 71,
+            "predicted_positive": 123,
+            "threshold": 0.446
+          },
+          "gratitude": {
+            "precision": 0.875,
+            "recall": 0.6364,
+            "f1": 0.7368,
+            "support": 22,
+            "predicted_positive": 16,
+            "threshold": 0.521
+          },
+          "hope": {
+            "precision": 0.4,
+            "recall": 0.3429,
+            "f1": 0.3692,
+            "support": 35,
+            "predicted_positive": 30,
+            "threshold": 0.432
+          },
+          "stress": {
+            "precision": 0.2424,
+            "recall": 0.3077,
+            "f1": 0.2712,
+            "support": 26,
+            "predicted_positive": 33,
+            "threshold": 0.439
+          }
+        },
+        "thresholds": {
+          "confidence": 0.42857142857142855,
+          "curiosity": 0.37857142857142856,
+          "frustration": 0.44642857142857145,
+          "gratitude": 0.5214285714285715,
+          "hope": 0.4321428571428571,
+          "stress": 0.4392857142857142
+        }
+      },
+      "response": {
+        "model": "pytorch_bigru_attention",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4375,
+        "cv_oof_macro_f1_seed_std": 0.0123,
+        "fold_macro_f1_mean": 0.4312,
+        "fold_macro_f1_std": 0.0558,
+        "cv_oof_ece_mean": 0.0645,
+        "mean_fold_train_seconds": 2.267,
+        "total_7fold_train_seconds": 15.867,
+        "inference_ms_per_comment": 0.07,
+        "model_size_kb": 1022.2,
+        "param_count": 258951,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.5714,
+            "recall": 0.3158,
+            "f1": 0.4068,
+            "support": 38,
+            "predicted_count": 21
+          },
+          "personal_experience": {
+            "precision": 0.5294,
+            "recall": 0.5455,
+            "f1": 0.5373,
+            "support": 66,
+            "predicted_count": 68
+          },
+          "opinion": {
+            "precision": 0.5714,
+            "recall": 0.5926,
+            "f1": 0.5818,
+            "support": 135,
+            "predicted_count": 140
+          },
+          "advice": {
+            "precision": 0.4595,
+            "recall": 0.3696,
+            "f1": 0.4096,
+            "support": 46,
+            "predicted_count": 37
+          },
+          "solution": {
+            "precision": 0.3,
+            "recall": 0.3947,
+            "f1": 0.3409,
+            "support": 38,
+            "predicted_count": 50
+          },
+          "counterargument": {
+            "precision": 0.2353,
+            "recall": 0.2727,
+            "f1": 0.2526,
+            "support": 44,
+            "predicted_count": 51
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "pytorch_bigru_attention",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.005,
+        "cv_oof_macro_f1_mean": 0.6709,
+        "cv_oof_macro_f1_seed_std": 0.0322,
+        "fold_macro_f1_mean": 0.7021,
+        "fold_macro_f1_std": 0.0466,
+        "cv_oof_ece_mean": 0.0654,
+        "mean_fold_train_seconds": 2.322,
+        "total_7fold_train_seconds": 16.257,
+        "inference_ms_per_comment": 0.0663,
+        "model_size_kb": 1011.1,
+        "param_count": 256131,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.875,
+            "recall": 0.796,
+            "f1": 0.8336,
+            "support": 299,
+            "predicted_count": 272
+          },
+          "solution": {
+            "precision": 0.3579,
+            "recall": 0.5,
+            "f1": 0.4172,
+            "support": 68,
+            "predicted_count": 95
+          }
+        },
+        "thresholds": {
+          "binary": 0.382
+        }
+      }
+    },
+    "keras_multitask_torch": {
+      "issue": {
+        "model": "keras_multitask_torch",
+        "task": "issue",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.2972,
+        "cv_oof_macro_f1_seed_std": 0.0128,
+        "fold_macro_f1_mean": 0.4301,
+        "fold_macro_f1_std": 0.0571,
+        "cv_oof_ece_mean": 0.0111,
+        "mean_fold_train_seconds": 7.559,
+        "total_7fold_train_seconds": 52.915,
+        "inference_ms_per_comment": 0.6306,
+        "model_size_kb": 11115.1,
+        "param_count": 933720,
+        "last_seed_per_class": {
+          "academic_workload": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 16,
+            "predicted_positive": 0,
+            "threshold": 0.4
+          },
+          "administrative_communication": {
+            "precision": 0.6686,
+            "recall": 0.7419,
+            "f1": 0.7034,
+            "support": 155,
+            "predicted_positive": 172,
+            "threshold": 0.429
+          },
+          "campus_infrastructure": {
+            "precision": 0.0476,
+            "recall": 0.0333,
+            "f1": 0.0392,
+            "support": 30,
+            "predicted_positive": 21,
+            "threshold": 0.261
+          },
+          "curriculum_teaching": {
+            "precision": 0.1875,
+            "recall": 0.1935,
+            "f1": 0.1905,
+            "support": 31,
+            "predicted_positive": 32,
+            "threshold": 0.236
+          },
+          "extracurriculars": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 27,
+            "predicted_positive": 0,
+            "threshold": 0.45
+          },
+          "financial_concerns": {
+            "precision": 0.6111,
+            "recall": 0.3929,
+            "f1": 0.4783,
+            "support": 84,
+            "predicted_positive": 54,
+            "threshold": 0.393
+          },
+          "hostel_facilities": {
+            "precision": 0.25,
+            "recall": 0.1111,
+            "f1": 0.1538,
+            "support": 27,
+            "predicted_positive": 12,
+            "threshold": 0.268
+          },
+          "placements": {
+            "precision": 0.6281,
+            "recall": 0.7677,
+            "f1": 0.6909,
+            "support": 99,
+            "predicted_positive": 121,
+            "threshold": 0.321
+          }
+        },
+        "thresholds": {
+          "academic_workload": 0.39999999999999997,
+          "administrative_communication": 0.4285714285714285,
+          "campus_infrastructure": 0.26071428571428573,
+          "curriculum_teaching": 0.23571428571428574,
+          "extracurriculars": 0.45,
+          "financial_concerns": 0.39285714285714285,
+          "hostel_facilities": 0.26785714285714285,
+          "placements": 0.32142857142857145
+        }
+      },
+      "sentiment": {
+        "model": "keras_multitask_torch",
+        "task": "sentiment",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.484,
+        "cv_oof_macro_f1_seed_std": 0.0149,
+        "fold_macro_f1_mean": 0.4751,
+        "fold_macro_f1_std": 0.0669,
+        "cv_oof_ece_mean": 0.1024,
+        "mean_fold_train_seconds": 7.559,
+        "total_7fold_train_seconds": 52.915,
+        "inference_ms_per_comment": 0.6306,
+        "model_size_kb": 11115.1,
+        "param_count": 933720,
+        "last_seed_per_class": {
+          "negative": {
+            "precision": 0.541,
+            "recall": 0.5,
+            "f1": 0.5197,
+            "support": 132,
+            "predicted_count": 122
+          },
+          "neutral": {
+            "precision": 0.5509,
+            "recall": 0.5714,
+            "f1": 0.561,
+            "support": 161,
+            "predicted_count": 167
+          },
+          "positive": {
+            "precision": 0.3462,
+            "recall": 0.3649,
+            "f1": 0.3553,
+            "support": 74,
+            "predicted_count": 78
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "emotion": {
+        "model": "keras_multitask_torch",
+        "task": "emotion",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.3752,
+        "cv_oof_macro_f1_seed_std": 0.0197,
+        "fold_macro_f1_mean": 0.4738,
+        "fold_macro_f1_std": 0.0627,
+        "cv_oof_ece_mean": 0.0182,
+        "mean_fold_train_seconds": 7.559,
+        "total_7fold_train_seconds": 52.915,
+        "inference_ms_per_comment": 0.6306,
+        "model_size_kb": 11115.1,
+        "param_count": 933720,
+        "last_seed_per_class": {
+          "confidence": {
+            "precision": 0.3824,
+            "recall": 0.4062,
+            "f1": 0.3939,
+            "support": 32,
+            "predicted_positive": 34,
+            "threshold": 0.35
+          },
+          "curiosity": {
+            "precision": 0.5429,
+            "recall": 0.5938,
+            "f1": 0.5672,
+            "support": 96,
+            "predicted_positive": 105,
+            "threshold": 0.371
+          },
+          "frustration": {
+            "precision": 0.3412,
+            "recall": 0.4085,
+            "f1": 0.3718,
+            "support": 71,
+            "predicted_positive": 85,
+            "threshold": 0.232
+          },
+          "gratitude": {
+            "precision": 0.5625,
+            "recall": 0.4091,
+            "f1": 0.4737,
+            "support": 22,
+            "predicted_positive": 16,
+            "threshold": 0.357
+          },
+          "hope": {
+            "precision": 0.0909,
+            "recall": 0.0286,
+            "f1": 0.0435,
+            "support": 35,
+            "predicted_positive": 11,
+            "threshold": 0.364
+          },
+          "stress": {
+            "precision": 0.2121,
+            "recall": 0.2692,
+            "f1": 0.2373,
+            "support": 26,
+            "predicted_positive": 33,
+            "threshold": 0.336
+          }
+        },
+        "thresholds": {
+          "confidence": 0.35,
+          "curiosity": 0.3714285714285715,
+          "frustration": 0.23214285714285712,
+          "gratitude": 0.35714285714285715,
+          "hope": 0.3642857142857143,
+          "stress": 0.33571428571428574
+        }
+      },
+      "response": {
+        "model": "keras_multitask_torch",
+        "task": "response",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.4209,
+        "cv_oof_macro_f1_seed_std": 0.0182,
+        "fold_macro_f1_mean": 0.4159,
+        "fold_macro_f1_std": 0.0683,
+        "cv_oof_ece_mean": 0.0468,
+        "mean_fold_train_seconds": 7.559,
+        "total_7fold_train_seconds": 52.915,
+        "inference_ms_per_comment": 0.6306,
+        "model_size_kb": 11115.1,
+        "param_count": 933720,
+        "last_seed_per_class": {
+          "agreement": {
+            "precision": 0.2326,
+            "recall": 0.2632,
+            "f1": 0.2469,
+            "support": 38,
+            "predicted_count": 43
+          },
+          "personal_experience": {
+            "precision": 0.4805,
+            "recall": 0.5606,
+            "f1": 0.5175,
+            "support": 66,
+            "predicted_count": 77
+          },
+          "opinion": {
+            "precision": 0.5379,
+            "recall": 0.5259,
+            "f1": 0.5318,
+            "support": 135,
+            "predicted_count": 132
+          },
+          "advice": {
+            "precision": 0.5217,
+            "recall": 0.5217,
+            "f1": 0.5217,
+            "support": 46,
+            "predicted_count": 46
+          },
+          "solution": {
+            "precision": 0.5366,
+            "recall": 0.5789,
+            "f1": 0.557,
+            "support": 38,
+            "predicted_count": 41
+          },
+          "counterargument": {
+            "precision": 0.3929,
+            "recall": 0.25,
+            "f1": 0.3056,
+            "support": 44,
+            "predicted_count": 28
+          }
+        },
+        "thresholds": {
+          "binary": 0.5
+        }
+      },
+      "solution": {
+        "model": "keras_multitask_torch",
+        "task": "solution",
+        "n_splits": 7,
+        "mean_train_to_val_ratio": 6.001,
+        "cv_oof_macro_f1_mean": 0.7206,
+        "cv_oof_macro_f1_seed_std": 0.0149,
+        "fold_macro_f1_mean": 0.7624,
+        "fold_macro_f1_std": 0.0813,
+        "cv_oof_ece_mean": 0.0213,
+        "mean_fold_train_seconds": 7.559,
+        "total_7fold_train_seconds": 52.915,
+        "inference_ms_per_comment": 0.6306,
+        "model_size_kb": 11115.1,
+        "param_count": 933720,
+        "last_seed_per_class": {
+          "not_solution": {
+            "precision": 0.9027,
+            "recall": 0.8997,
+            "f1": 0.9012,
+            "support": 299,
+            "predicted_count": 298
+          },
+          "solution": {
+            "precision": 0.5652,
+            "recall": 0.5735,
+            "f1": 0.5693,
+            "support": 68,
+            "predicted_count": 69
+          }
+        },
+        "thresholds": {
+          "binary": 0.482
+        }
+      }
+    }
+  }
+}

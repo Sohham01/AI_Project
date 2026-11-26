@@ -197,6 +197,8 @@ ml/artifacts/*/
 !ml/artifacts/v6_3_experiments/**
 !ml/artifacts/v6_4_experiments/
 !ml/artifacts/v6_4_experiments/**
+!ml/artifacts/v6_5_experiments/
+!ml/artifacts/v6_5_experiments/**
 ml/artifacts/registry.json
 ml/artifacts/**/trainer_metadata.json
 

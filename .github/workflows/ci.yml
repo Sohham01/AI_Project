@@ -97,6 +97,7 @@ jobs:
               Path("data/live_corpus/corpus.json"),
               Path("data/corpus_v6_3/new_unannotated_corpus_v6_3.json"),
               Path("data/corpus_v6_4/new_iim_corpus_v6_4.json"),
+              Path("data/corpus_v6_5/new_corpus_v6_5.json"),
           ):
               if not corpus_candidate.is_file():
                   continue
@@ -174,6 +175,7 @@ jobs:
             backend/tests/test_xgboost_baseline.py \
             backend/tests/test_pytorch_keras_models.py \
             backend/tests/test_iim_expansion_v64.py \
+            backend/tests/test_corpus_v65_and_6_1_split.py \
             -v --junitxml=/tmp/ml-junit.xml
           python - <<'PY'
           import xml.etree.ElementTree as ET
