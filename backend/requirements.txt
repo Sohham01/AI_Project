@@ -8,16 +8,16 @@
 # (backend/.venv, Python 3.14).  See docs/IMPLEMENTATION_STATUS_REPORT.md.
 
 # --- Web framework / ASGI server ------------------------------------------
-fastapi==0.141.1
-uvicorn==0.53.0
+fastapi==0.165.0
+uvicorn==0.54.0
 
 # --- ORM + migrations ------------------------------------------------------
-sqlalchemy==2.0.54
-alembic==1.20.0
+sqlalchemy==2.1.9
+alembic==1.20.1
 
 # --- Validation / configuration -------------------------------------------
-pydantic==2.13.5
-python-dotenv==1.2.3
+pydantic==2.14.4
+python-dotenv==1.2.4
 
 # --- HTTP (synchronous, used by ingestion providers) ----------------------
 requests==2.34.2
@@ -27,7 +27,7 @@ langdetect==1.0.9
 
 # --- Classical ML / NLP stack ---------------------------------------------
 # joblib is required directly by ml/training/trainer.py and the model adapters.
-numpy==2.5.3
+numpy==2.5.5
 scipy==1.18.1
 scikit-learn==1.9.1
 joblib==1.6.0
@@ -35,11 +35,11 @@ joblib==1.6.0
 # --- Database driver — PostgreSQL (psycopg 3) -----------------------------
 # The application uses psycopg v3 (SQLAlchemy dialect "postgresql+psycopg").
 # The binary extra avoids a local libpq development toolchain.
-psycopg[binary]==3.3.5
+psycopg[binary]==3.3.9
 
 # --- Test runner & ASGI test client ---------------------------------------
-pytest==9.1.1
-httpx2==2.13.1
+pytest==9.2.0
+httpx2==2.16.2
 
 # --------------------------------------------------------------------------
 # Optional / not part of the default verification run
