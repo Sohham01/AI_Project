@@ -199,6 +199,10 @@ ml/artifacts/*/
 !ml/artifacts/v6_4_experiments/**
 !ml/artifacts/v6_5_experiments/
 !ml/artifacts/v6_5_experiments/**
+!ml/artifacts/v6_6_experiments/
+!ml/artifacts/v6_6_experiments/**
+!ml/artifacts/v6_7_tfidf_vs_embedding/
+!ml/artifacts/v6_7_tfidf_vs_embedding/**
 ml/artifacts/registry.json
 ml/artifacts/**/trainer_metadata.json
 

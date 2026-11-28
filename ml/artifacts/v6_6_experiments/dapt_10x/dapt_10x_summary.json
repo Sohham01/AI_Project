@@ -1,0 +1,386 @@
+{
+  "dapt_protocol": "v6.6_10x_strictly_inductive_wwm_llrd",
+  "pool_manifest": {
+    "manifest_version": "v6.6_strict_dapt_10x",
+    "seed": 20261182,
+    "total_combined_threads": 1824,
+    "blocked_test_pool_threads": 261,
+    "frozen_v1_test_threads": 37,
+    "title_excluded_extra_threads": 10,
+    "eligible_dapt_threads": 1553,
+    "dapt_train_threads": 1398,
+    "dapt_val_threads": 155,
+    "dapt_train_docs": 18822,
+    "dapt_val_docs": 1746,
+    "cross_split_exact_dups_removed": 0,
+    "intersection_train_and_blocked": 0,
+    "intersection_val_and_blocked": 0,
+    "intersection_train_and_val": 0,
+    "dapt_train_threads_sha256": "ea71f3f958a50341d359bc56df886313f0afea6cd3129536bf21968cd4f7ee6d",
+    "dapt_val_threads_sha256": "83e681812c118966f869613a31063782dd2e1d170c2f7768c812f2df9b87ffd3",
+    "dapt_train_docs_sha256": "c0b494b1b492d3a5eda29a49db6062144fe283bf2a5e4c7119da30aa2519682f",
+    "dapt_val_docs_sha256": "549dc93db9ea7f93e518d516f19c87e53637a28afc465c27cd87b41e00688b4c"
+  },
+  "backbones": {
+    "muril_dapt_v66_wwm": {
+      "variant_name": "muril_dapt_v66_wwm",
+      "base_model_id": "google/muril-base-cased",
+      "checkpoint_dir": "D:\\AI_Project_Transformer_Temp\\v6_6_experiments\\muril_dapt_v66_wwm",
+      "masking_mode": "wwm_universal",
+      "epochs_requested": 4,
+      "best_epoch": 4,
+      "max_length": 160,
+      "effective_batch_size": 40,
+      "learning_rate": 4.5e-05,
+      "elapsed_seconds": 759.19,
+      "peak_vram_mb": 5345.0,
+      "initial_val_std_ppl": 95.833,
+      "initial_val_wwm_ppl": 69.395,
+      "best_val_wwm_ppl": 23.888,
+      "final_val_std_ppl": 25.951,
+      "final_val_wwm_ppl": 23.888,
+      "subword_audit": {
+        "tokenizer_class": "BertTokenizer",
+        "is_fast": true,
+        "vocab_size": 197258,
+        "continuation_prefix": "##",
+        "total_word_units_sampled": 54,
+        "multi_subword_units": 18,
+        "multi_subword_fraction": 0.3333,
+        "samples": [
+          {
+            "text": "bhaiya percentile waitlist IIMSambalpur placement hostel acads prof convert",
+            "n_tokens": 16,
+            "n_word_units": 9,
+            "split_examples": [
+              [
+                "percent",
+                "##ile"
+              ],
+              [
+                "wait",
+                "##list"
+              ],
+              [
+                "IIM",
+                "##S",
+                "##am",
+                "##balpur"
+              ],
+              [
+                "ac",
+                "##ads"
+              ],
+              [
+                "pro",
+                "##f"
+              ]
+            ]
+          },
+          {
+            "text": "yaar mocktest cutoff LPA GEM GNEM CAP SAP SIP PPO mess food attendance",
+            "n_tokens": 21,
+            "n_word_units": 13,
+            "split_examples": [
+              [
+                "mock",
+                "##test"
+              ],
+              [
+                "cut",
+                "##off"
+              ],
+              [
+                "LP",
+                "##A"
+              ],
+              [
+                "GE",
+                "##M"
+              ],
+              [
+                "GN",
+                "##EM"
+              ],
+              [
+                "CA",
+                "##P"
+              ],
+              [
+                "SI",
+                "##P"
+              ],
+              [
+                "PP",
+                "##O"
+              ]
+            ]
+          },
+          {
+            "text": "bhot stress ho raha hai bhai exams aur assignments dono saath mein hain",
+            "n_tokens": 13,
+            "n_word_units": 13,
+            "split_examples": []
+          },
+          {
+            "text": "kuch nahi hota bro waitlist move hogi chill karo campus life sahi hai",
+            "n_tokens": 16,
+            "n_word_units": 13,
+            "split_examples": [
+              [
+                "br",
+                "##o"
+              ],
+              [
+                "wait",
+                "##list"
+              ],
+              [
+                "chil",
+                "##l"
+              ]
+            ]
+          },
+          {
+            "text": "academic workload curriculum teaching infrastructure extracurriculars",
+            "n_tokens": 11,
+            "n_word_units": 6,
+            "split_examples": [
+              [
+                "work",
+                "##load"
+              ],
+              [
+                "extra",
+                "##cu",
+                "##rri",
+                "##cular",
+                "##s"
+              ]
+            ]
+          }
+        ]
+      },
+      "history": [
+        {
+          "epoch": 0,
+          "train_loss": null,
+          "val_std_loss": 4.56261,
+          "val_std_ppl": 95.833,
+          "val_wwm_loss": 4.23982,
+          "val_wwm_ppl": 69.395
+        },
+        {
+          "epoch": 1,
+          "epoch_seconds": 190.1,
+          "train_loss": 3.85114,
+          "val_std_loss": 3.55142,
+          "val_std_ppl": 34.863,
+          "val_wwm_loss": 3.47486,
+          "val_wwm_ppl": 32.293
+        },
+        {
+          "epoch": 2,
+          "epoch_seconds": 189.2,
+          "train_loss": 3.44633,
+          "val_std_loss": 3.40535,
+          "val_std_ppl": 30.125,
+          "val_wwm_loss": 3.32383,
+          "val_wwm_ppl": 27.766
+        },
+        {
+          "epoch": 3,
+          "epoch_seconds": 185.1,
+          "train_loss": 3.23066,
+          "val_std_loss": 3.26804,
+          "val_std_ppl": 26.26,
+          "val_wwm_loss": 3.21069,
+          "val_wwm_ppl": 24.796
+        },
+        {
+          "epoch": 4,
+          "epoch_seconds": 183.3,
+          "train_loss": 3.11426,
+          "val_std_loss": 3.25621,
+          "val_std_ppl": 25.951,
+          "val_wwm_loss": 3.17338,
+          "val_wwm_ppl": 23.888
+        }
+      ]
+    },
+    "xlmr_dapt_v66_wwm": {
+      "variant_name": "xlmr_dapt_v66_wwm",
+      "base_model_id": "xlm-roberta-base",
+      "checkpoint_dir": "D:\\AI_Project_Transformer_Temp\\v6_6_experiments\\xlmr_dapt_v66_wwm",
+      "masking_mode": "wwm_universal",
+      "epochs_requested": 4,
+      "best_epoch": 4,
+      "max_length": 160,
+      "effective_batch_size": 40,
+      "learning_rate": 2e-05,
+      "elapsed_seconds": 1225.56,
+      "peak_vram_mb": 5731.3,
+      "initial_val_std_ppl": 38.214,
+      "initial_val_wwm_ppl": 74.139,
+      "best_val_wwm_ppl": 23.122,
+      "final_val_std_ppl": 17.681,
+      "final_val_wwm_ppl": 23.122,
+      "subword_audit": {
+        "tokenizer_class": "XLMRobertaTokenizer",
+        "vocab_size": 250002,
+        "continuation_mode": "sentencepiece_\\u2581",
+        "multi_subword_fraction": 0.5278,
+        "samples": [
+          {
+            "text": "bhaiya percentile waitlist IIMSambalpur placement hostel acads prof convert",
+            "n_tokens": 19,
+            "n_word_units": 9,
+            "split_examples": [
+              [
+                "▁bha",
+                "iya"
+              ],
+              [
+                "▁percent",
+                "ile"
+              ],
+              [
+                "▁wait",
+                "list"
+              ],
+              [
+                "▁II",
+                "MS",
+                "a",
+                "mbal",
+                "pur"
+              ],
+              [
+                "▁place",
+                "ment"
+              ],
+              [
+                "▁a",
+                "cad",
+                "s"
+              ]
+            ]
+          },
+          {
+            "text": "yaar mocktest cutoff LPA GEM GNEM CAP SAP SIP PPO mess food attendance",
+            "n_tokens": 24,
+            "n_word_units": 14,
+            "split_examples": [
+              [
+                "▁ya",
+                "ar"
+              ],
+              [
+                "▁moc",
+                "k",
+                "test"
+              ],
+              [
+                "▁cut",
+                "off"
+              ],
+              [
+                "▁L",
+                "PA"
+              ],
+              [
+                "▁G",
+                "NEM"
+              ],
+              [
+                "▁S",
+                "IP"
+              ],
+              [
+                "▁P",
+                "PO"
+              ],
+              [
+                "▁mes",
+                "s"
+              ],
+              [
+                "▁attend",
+                "ance"
+              ]
+            ]
+          },
+          {
+            "text": "bhot stress ho raha hai bhai exams aur assignments dono saath mein hain",
+            "n_tokens": 17,
+            "n_word_units": 13,
+            "split_examples": [
+              [
+                "▁bho",
+                "t"
+              ],
+              [
+                "▁exam",
+                "s"
+              ],
+              [
+                "▁assign",
+                "ments"
+              ],
+              [
+                "▁saat",
+                "h"
+              ]
+            ]
+          }
+        ]
+      },
+      "history": [
+        {
+          "epoch": 0,
+          "train_loss": null,
+          "val_std_loss": 3.64319,
+          "val_std_ppl": 38.214,
+          "val_wwm_loss": 4.30594,
+          "val_wwm_ppl": 74.139
+        },
+        {
+          "epoch": 1,
+          "epoch_seconds": 292.6,
+          "train_loss": 3.80336,
+          "val_std_loss": 3.0757,
+          "val_std_ppl": 21.665,
+          "val_wwm_loss": 3.38258,
+          "val_wwm_ppl": 29.447
+        },
+        {
+          "epoch": 2,
+          "epoch_seconds": 295.5,
+          "train_loss": 3.42888,
+          "val_std_loss": 2.92062,
+          "val_std_ppl": 18.553,
+          "val_wwm_loss": 3.22422,
+          "val_wwm_ppl": 25.134
+        },
+        {
+          "epoch": 3,
+          "epoch_seconds": 308.9,
+          "train_loss": 3.31022,
+          "val_std_loss": 2.8778,
+          "val_std_ppl": 17.775,
+          "val_wwm_loss": 3.15605,
+          "val_wwm_ppl": 23.478
+        },
+        {
+          "epoch": 4,
+          "epoch_seconds": 316.0,
+          "train_loss": 3.1966,
+          "val_std_loss": 2.87248,
+          "val_std_ppl": 17.681,
+          "val_wwm_loss": 3.14081,
+          "val_wwm_ppl": 23.122
+        }
+      ]
+    }
+  }
+}

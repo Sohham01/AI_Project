@@ -1,0 +1,21 @@
+{
+  "manifest_version": "v6.6_strict_dapt_10x",
+  "seed": 20261182,
+  "total_combined_threads": 1824,
+  "blocked_test_pool_threads": 261,
+  "frozen_v1_test_threads": 37,
+  "title_excluded_extra_threads": 10,
+  "eligible_dapt_threads": 1553,
+  "dapt_train_threads": 1398,
+  "dapt_val_threads": 155,
+  "dapt_train_docs": 18822,
+  "dapt_val_docs": 1746,
+  "cross_split_exact_dups_removed": 0,
+  "intersection_train_and_blocked": 0,
+  "intersection_val_and_blocked": 0,
+  "intersection_train_and_val": 0,
+  "dapt_train_threads_sha256": "ea71f3f958a50341d359bc56df886313f0afea6cd3129536bf21968cd4f7ee6d",
+  "dapt_val_threads_sha256": "83e681812c118966f869613a31063782dd2e1d170c2f7768c812f2df9b87ffd3",
+  "dapt_train_docs_sha256": "c0b494b1b492d3a5eda29a49db6062144fe283bf2a5e4c7119da30aa2519682f",
+  "dapt_val_docs_sha256": "549dc93db9ea7f93e518d516f19c87e53637a28afc465c27cd87b41e00688b4c"
+}

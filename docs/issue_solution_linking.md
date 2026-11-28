@@ -3,7 +3,7 @@
 > **Status:** implemented and tested. **Not evaluated against human annotations** —
 > no link-annotation dataset exists in this project, so no link precision, recall or
 > F1 figure is quoted anywhere in this document or in the code. See
-> [Evaluation](#evaluation-why-there-are-no-accuracy-numbers).
+> [Evaluation](#8-evaluation-why-there-are-no-accuracy-numbers).
 
 ---
 

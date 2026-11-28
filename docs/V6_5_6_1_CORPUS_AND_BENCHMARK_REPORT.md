@@ -25,7 +25,7 @@
 ### 2.2 Supervised `+185` Blind Human Annotation Target (`552 : 92 = 6.00 : 1`)
 
 - **Why `+185`:** Existing V1 labeled data stands at `367` trainval : `92` frozen test (`3.99 : 1`). Adding **`185` real comments** (`129` diverse `train_pool` threads; `0` frozen-test/test-pool overlap) raises supervised training data to `367 + 185 = 552` against the untouched `92` frozen test comments (**`6.00 : 1`**).
-- **Blind Files (`pending_human_annotation`):** [`blind_185_v6_5_annotator_1.xlsx`](../data/annotations/v6_5_package/blind_185_to_6_1/blind_185_v6_5_annotator_1.xlsx), [`blind_185_v6_5_annotator_2.xlsx`](../data/annotations/v6_5_package/blind_185_to_6_1/blind_185_v6_5_annotator_2.xlsx), and [`blind_185_adjudication_template.csv`](../data/annotations/v6_5_package/blind_185_to_6_1/blind_185_adjudication_template.csv).
+- **Blind Files (`pending_human_annotation`):** [`blind_185_v6_5_annotator_1.csv`](../data/annotations/v6_5_package/blind_185_to_6_1/blind_185_v6_5_annotator_1.csv), [`blind_185_v6_5_annotator_2.csv`](../data/annotations/v6_5_package/blind_185_to_6_1/blind_185_v6_5_annotator_2.csv), and [`blind_185_adjudication_template.csv`](../data/annotations/v6_5_package/blind_185_to_6_1/blind_185_adjudication_template.csv).
 
 ## 3. 7-Fold (`6:1` Per-Fold) vs. 5-Fold (`4:1`) OOF Benchmark (`trainval`, `n = 367`)
 

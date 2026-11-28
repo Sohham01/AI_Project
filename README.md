@@ -3,13 +3,14 @@
 [![CI — Backend Tests & Vercel Entrypoint Audit](https://github.com/Sohham01/AI_Project/actions/workflows/ci.yml/badge.svg)](https://github.com/Sohham01/AI_Project/actions/workflows/ci.yml)
 ![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab?style=flat&labelColor=1e2235)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688?style=flat&labelColor=1e2235)
-![Corpus v6.1.0](https://img.shields.io/badge/corpus-v6.1.0%20%C2%B7%20365%20threads%20%C2%B7%203%2C557%20comments-4338ca?style=flat&labelColor=1e2235)
+![Corpus v6.1.0](https://img.shields.io/badge/studio%20corpus-v6.1.0%20%C2%B7%20365%20threads%20%C2%B7%203%2C557%20comments-4338ca?style=flat&labelColor=1e2235)
+![Research Corpus v6.5.0](https://img.shields.io/badge/research%20corpus-v6.5.0%20%C2%B7%201%2C824%20threads%20%C2%B7%2025%2C160%20comments-0f766e?style=flat&labelColor=1e2235)
 ![Pipeline Integrity 7/7](https://img.shields.io/badge/pipeline%20integrity-7%2F7%20checks-15803d?style=flat&labelColor=1e2235)
 ![License MIT](https://img.shields.io/badge/license-MIT-4a526e?style=flat&labelColor=1e2235)
 
-**Multilingual research studio for anonymized & pseudonymized public Reddit discussions** around **IIM Sambalpur** and Indian MBA/CAT communities. **V6.2 (`v6.1.0` corpus)** delivers **100% strictly inductive, zero-leakage Track A 5-fold ensembles** (`MuRIL-DAPT-WWM-8ep` + `XLM-RoBERTa-base`; `64.62%` strict 3-seed / `65.01%` V6.0 OOF-selected Macro F1; `0/44` test-thread DAPT overlap; `0` synthetic rows), **dual topic discovery** preserving **10-factor NMF v1** alongside **35 human-reviewed BERTopic v1 clusters** (`intfloat/multilingual-e5-small`, `4.51/5.0` mean coherence, `1,320` explicit `-1` outliers), **Span-Level Multilingual LID** (`88.1%` real acc / `95.8%` selective / `100%` script), **Context-Aware Gen-Z Slang & Affect-Emoji Normalization**, a **Multilingual-E5 Contextual Issue–Solution Mapper** (`951` links across `282` clusters, `86.57%` F1), an **8-Signal Explainable Unresolved-Issue Engine** (`0.00%` false resolution claims, `26` contradictory threads), and a **dual-theme Dusk Dark / Daylight Bone SaaS Studio** with GZip + CDN caching (`11.8×` payload cut), client-side CSV/Markdown export, and zero-ML serving on both **Vercel** and **Docker Compose**.
+**Multilingual research studio for anonymized & pseudonymized public Reddit discussions** around **IIM Sambalpur** and Indian MBA/CAT communities. **V6.2 (`v6.1.0` Studio corpus)** delivers **100% strictly inductive, zero-leakage Track A 5-fold ensembles** (`MuRIL-DAPT-WWM-8ep` + `XLM-RoBERTa-base`; `64.62%` strict 3-seed / `65.01%` V6.0 OOF-selected Macro F1; `0/44` test-thread DAPT overlap; `0` synthetic rows), **dual topic discovery** preserving **10-factor NMF v1** alongside **35 human-reviewed BERTopic v1 clusters** (`intfloat/multilingual-e5-small`, `4.51/5.0` mean coherence, `1,320` explicit `-1` outliers), **Span-Level Multilingual LID** (`88.1%` real acc / `95.8%` selective / `100%` script), **Context-Aware Gen-Z Slang & Affect-Emoji Normalization**, a **Multilingual-E5 Contextual Issue–Solution Mapper** (`951` links across `282` clusters, `86.57%` F1), an **8-Signal Explainable Unresolved-Issue Engine** (`0.00%` false resolution claims, `26` contradictory threads), and a **dual-theme Dusk Dark / Daylight Bone SaaS Studio** with GZip + CDN caching (`11.8×` payload cut), client-side CSV/Markdown export, and zero-ML serving on both **Vercel** and **Docker Compose**. Alongside the pinned Studio release, the **V6.3–V6.7 Research Track** expands authentic zero-leakage coverage to **`1,824` real threads / `25,160` comments (`6:1` thread-grouped split)**, pretrains **4-epoch LLRD `10×` WWM DAPT** backbones (`67.31%` 7-fold OOF), and benchmarks **TF-IDF vs. Dense Multilingual Embeddings vs. Feature-Gated Hybrid Fusion** (`+11.01` to `+15.18 pp` over TF-IDF).
 
-[Live Studio (Vercel)](https://rci-ten.vercel.app/app/) · [Academic Deliverables Package](docs/academic_submission/README.md) · [System Architecture](#system-architecture) · [4-Architecture Benchmarks](#4-architecture-benchmarks-on-real-held-out-reddit-comments) · [Deployment & Security](#deployment--security) · [Quickstart](#quickstart)
+[Live Studio (Vercel)](https://rci-ten.vercel.app/app/) · [Academic Deliverables Package](docs/academic_submission/README.md) · [System Architecture](#system-architecture) · [4-Architecture Benchmarks](#4-architecture-benchmarks-on-real-held-out-reddit-comments) · [V6.3–V6.7 Research Cycle](#v63v67-corpus-expansion--experimental-model-research) · [Deployment & Security](#deployment--security) · [Quickstart](#quickstart)
 
 ![Reddit Community Intelligence Studio Overview](docs/demo_screenshots/overview-v3-desktop.png)
 
@@ -24,7 +25,7 @@
 | **100% Real Labeled Training & Test Set** | Tracked [data/annotations/real_reddit_labeled_v1/](data/annotations/real_reddit_labeled_v1/master_labeled_v1.csv) — **459 single-curator rubric-reviewed real Reddit comments across 200 threads** (`367` 5-fold group-aware CV trainval / `92` untouched frozen real held-out test across `37` unseen threads, `0` synthetic rows; contains `0` paired second-human judgments). A 50-item blind review on Track B V2 (1 human reviewer vs. Pass-1 rubric) failed `0/5` threshold gates ([V5_HUMAN_IAA_REPORT.md](docs/V5_HUMAN_IAA_REPORT.md)), so Track B V2 stays blocked; V6.3 ships an 80-item blind Round-2 two-annotator package ([README_ANNOTATION_PACKAGE.md](data/annotations/v6_3_package/README_ANNOTATION_PACKAGE.md)) to compute true multi-human IAA. |
 | **Strictly Inductive WWM DAPT & NMF** | **MuRIL-DAPT-WWM-8ep** (`##`-aligned Whole-Word Masking, **44 frozen-test & same-title threads / 749 comments strictly excluded, `0` overlap**) trained on `2,135` unlabeled texts reduced **unseen thread-grouped WWM validation perplexity `88.32 → 25.23`** on `347` unseen texts; **10-cluster NMF** (`8,000`-term vocab) fit directly on real comments |
 | **V6.1 Production Models & Calibration** | **5-fold pure neural ensembles (`64.62%` strictly unbiased 3-seed mean / `65.01%` V6.0 pure neural / `64.38%` Stage 3 OOF-selected; `65.59%` post-hoc diagnostic check on V6.1; `+5.14` to `+6.11 pp` vs. transductive V5 `59.48%`)**: `MuRIL-DAPT-WWM` (`parent_pair + ASL + OOF Platt` on Issue, `ASL + OOF Platt` on Emotion, `CE-weighted` on Sentiment) + **`XLM-RoBERTa-base`** (zero DAPT, OOF winner on **Solution `84.57%`** & **Response `56.42%`**!). Achieves **`0.059` mean 5-bin ECE**, `72.2%` live mean confidence (`915` high / `2,459` medium / `183` low), and `859` cosine-linked issue–solution edges (`951` V6 E5 links) |
-| **Automated Verification** | **2,204 offline tests** (`973` subtests) + **`16/16` Vercel zero-ML checks** + **7/7 automated Pipeline Integrity Checks** + dual-theme browser QA + HTTP security headers + zero-PII/URL/secret CI gates |
+| **Automated Verification** | **2,238 offline tests** (`973` subtests) + **`42/42` optional-ML suite checks (`0` skipped)** + **`16/16` Vercel zero-ML checks** + **7/7 automated Pipeline Integrity Checks** + HTTP security headers + zero-PII/URL/secret CI gates |
 
 ---
 
@@ -96,16 +97,40 @@ Primary evaluation is strictly **inductive (`0/44` test-thread DAPT overlap)** o
 
 ---
 
-## V6.3 Reliability, Dataset Expansion & Experimental Research Cycle
+## V6.3–V6.7 Corpus Expansion & Experimental Model Research
 
-While production Studio APIs and the frozen `n = 92` benchmark remain pinned to `v6.1.0` (`365` threads) until multi-human Round-2 annotations complete, **RCI V6.3** hardens core reliability, expands authentic corpus coverage, and prepares blind `v2` annotation batches:
+While production Studio APIs and the frozen `n = 92` (`37`-thread) benchmark remain pinned to `v6.1.0` (`365` threads) until blind multi-human Round-2 annotations complete, **RCI V6.3–V6.7** scales authentic zero-leakage Reddit coverage to **`1,824` threads / `25,160` comments** and systematically benchmarks feature representations (`TF-IDF`, `Dense Embeddings`, `Feature-Gated Hybrids`) and `10×` domain-adapted Transformers under a unified **`6:1` (`7-fold` `post_id`-grouped)** protocol:
 
-- **Master V6.3 Report (Sections A–J):** [V6.3 Implementation Report](docs/V6_3_IMPLEMENTATION_REPORT.md)
-- **Dataset Expansion (`365 → 816` Real Threads, `3,557 → 7,570` Comments):** [V6.3 Dataset Expansion Report](docs/V6_3_DATASET_EXPANSION_REPORT.md) · [Corpus Data Dictionary](docs/V6_3_CORPUS_DATA_DICTIONARY.md) (`r/IIMSambalpurUG` share rebalanced `57.81% → 25.86%`; `0` frozen-test overlap; adds `13` native Bengali-script, `95` `bn-en`, and `14` `or-en` comments)
-- **Reliability & Stability Fixes:** Streaming v2.0 full-corpus SHA-256 embedding cache (`ml/topics/bertopic/embeddings.py`), dynamic `resolve_reference_time` + chronological conflict precedence + `agreement ≠ confirmation` (`ml/linking/resolution_engine.py`), and multi-seed BERTopic stability ([V6.3 BERTopic Stability Report](docs/V6_3_BERTOPIC_STABILITY_REPORT.md))
-- **Experimental XGBoost & Independent Eval Packages:** [V6.3 XGBoost CV Benchmark](docs/V6_3_XGBOOST_BENCHMARK_REPORT.md) · [V6.3 Linking & Resolution Report](docs/V6_3_LINKING_AND_RESOLUTION_EVAL_REPORT.md) · [Round-2 Manual Annotation Package Guide](data/annotations/v6_3_package/README_ANNOTATION_PACKAGE.md)
-- **V6.4 IIM Expansion & PyTorch/Keras Benchmarks:** [`1,342` combined real threads / `16,678` comments (`0` frozen-test leakage)](docs/V6_4_IIM_CORPUS_EXPANSION_REPORT.md) across `15` communities (`r/IPMATtards`, `r/IIMCalcutta`, `r/IIMLucknow`, `r/IIMMumbai`, `r/CATpreparation`, `r/MBAIndia`, etc.), plus 5-fold CV benchmarks for **PyTorch BiGRU + Additive Attention (`49.85%` mean F1)** and **Keras 3 Multi-Task (`KERAS_BACKEND=torch`, `71.31%` Solution F1, `ECE = 0.0493`)** ([V6.4 PyTorch & Keras Report](docs/V6_4_PYTORCH_KERAS_BENCHMARK_REPORT.md)).
-- **V6.5 Corpus Expansion & `6:1` Train/Test Protocol:** [`1,824` combined real threads / `25,160` comments (`+482` threads / `+8,482` comments, `0` frozen-test leakage)](docs/V6_5_6_1_CORPUS_AND_BENCHMARK_REPORT.md) partitioned via a `6:1` thread-grouped split (`1,563 : 261 = 5.9885 : 1`), paired with a [`+185` blind human-annotation package](data/annotations/v6_5_package/blind_185_to_6_1/blind_185_manifest.json) targeting `552 : 92 = 6.00 : 1` and a 7-fold (`6:1` per-fold) OOF benchmark where all 7 non-Transformer families improved (`ANN 52.01%`, `PyTorch BiGRU-Attn 50.61%`, `LogReg 50.46%`, `Keras 3 MT Solution 72.06%`).
+### 1. Real Corpus Growth & `6:1` Leak-Free Split Governance
+
+| Release | Real Threads | Human Comments | Key Scope & Integrity Controls | Report |
+|---|---:|---:|---|---|
+| **V6.1 Baseline** | `365` | `3,557` | Production Studio corpus + `459` V1 labeled comments (`367` trainval / `92` frozen test) | [V5_MODEL_IMPROVEMENT_REPORT.md](docs/V5_MODEL_IMPROVEMENT_REPORT.md) |
+| **V6.3 Expansion** | `816` (`+451`) | `7,570` (`+4,013`) | Rebalanced `r/IIMSambalpurUG` (`57.8% → 25.9%`); Bengali/Odia/Hinglish coverage; v2 SHA-256 embedding cache | [V6_3_DATASET_EXPANSION_REPORT.md](docs/V6_3_DATASET_EXPANSION_REPORT.md) |
+| **V6.4 IIM Expansion** | `1,342` (`+526`) | `16,678` (`+9,108`) | `15` dedicated IIM/CAT/IPMAT communities (`r/IIMCalcutta`, `r/IIMLucknow`, `r/IIMMumbai`, `r/IPMATtards`) | [V6_4_IIM_CORPUS_EXPANSION_REPORT.md](docs/V6_4_IIM_CORPUS_EXPANSION_REPORT.md) |
+| **V6.5 `6:1` Corpus** | **`1,824` (`+482`)** | **`25,160` (`+8,482`)** | Thread-grouped **`6:1` split (`1,563` `train_pool` : `261` `test_pool` = `5.99 : 1`)** + [`+185` blind human package](data/annotations/v6_5_package/blind_185_to_6_1/blind_185_manifest.json) (`552 : 92 = 6.00 : 1`) | [V6_5_6_1_CORPUS_AND_BENCHMARK_REPORT.md](docs/V6_5_6_1_CORPUS_AND_BENCHMARK_REPORT.md) |
+
+### 2. Controlled `6:1` (`7-Fold` Group CV) Representation & Architecture Progression
+
+All experimental models below are trained strictly on `trainval (n = 367, 163 threads)` under **7-fold (`6:1` per-fold) `post_id`-grouped OOF CV** with zero test-thread leakage (`0` overlap across all `261` `test_pool` and `37` frozen V1 test threads):
+
+| Release | Model / Arm | Feature / Backbone Representation | 7-Fold (`6:1`) OOF Mean | Locked Frozen Test (`n = 92`) | Mean Test ECE |
+|---|---|---|---:|---:|---:|
+| **V6.5 / V6.7** | `xgb_tfidf_sparse` | Word+Char TF-IDF CSR (`XGBoost hist`) | `48.48%` | `49.24%` | `0.0485` |
+| **V6.5** | `pytorch_bigru_attention` | Learned Token Emb + Masked Additive Attention | `50.61%` | — *(OOF-only)* | — |
+| **V6.7** | `logreg_tfidf_word_char` | Word `(1,2)` + Char `char_wb (3,5)` TF-IDF (`LogReg`) | `50.86%` | `50.50%` | `0.0812` |
+| **V6.7** | `xgb_hybrid_svd_emb` | `SVD-64` TF-IDF + `Multilingual-E5-Small` + 14 Cues | `51.34%` | `45.85%` | `0.0529` |
+| **V6.7** | `mlp_tfidf` | Word+Char TF-IDF (`PyTorch 2-Layer MLP`) | `52.07%` | `44.18%` | `0.0947` |
+| **V6.7** | `logreg_emb_muril_dapt10x` | Frozen `muril_dapt_v66_wwm` (`768d` centered unit-L2) | `58.31%` | `57.61%` | `0.0681` |
+| **V6.7** | `logreg_emb_xlmr_dapt10x` | Frozen `xlmr_dapt_v66_wwm` (`768d` centered unit-L2) | `59.46%` | `57.60%` | `0.0823` |
+| **V6.7** | `logreg_hybrid_tfidf_emb` | **Hybrid (`Word+Char TF-IDF ⊕ Tri-Emb 1,920d ⊕ Cues`)** | `61.45%` | **`59.56%`** *(`80.83%` Solution)* | **`0.0486`** |
+| **V6.7** | `logreg_emb_tri_1920` | **Frozen Tri-Encoder (`E5 + MuRIL-DAPT10x + XLM-R-DAPT10x`)** | `61.87%` | `59.49%` *(`62.41%` Emotion)* | `0.0760` |
+| **V6.7** | `mlp_hybrid_gated` | **Feature-Gated Hybrid MLP (`SVD-128 TF-IDF ⊕ Tri-Emb`)** | `63.79%` | `58.45%` *(`57.15%` Code-Mix OOF)* | **`0.0360`** |
+| **V6.7** | `mlp_emb_tri_1920` | **PyTorch Residual MLP on Frozen Tri-Encoder (`1,920d`)** | **`64.49%`** | `59.36%` *(`+15.18 pp` vs TF-IDF)* | `0.0529` |
+| **V6.6** | `v61_ref_7fold` *(1-seed ref)* | Unfrozen V6.1 Backbones (1-seed × 7-fold baseline) | `62.60%` | `63.06%` | `0.0662` |
+| **V6.6** | **`v6.6_max_oof` (4-Ep LLRD DAPT)** | **4-Ep LLRD `10×` WWM DAPT (`ppl 23.89 / 23.12`) + Nested Stacking** | **`67.31%`** | **`64.44%`** *(`+1.38 pp` vs 7F ref)* | `0.0653` |
+
+- **Detailed Research Reports:** [V6.3 Master Implementation](docs/V6_3_IMPLEMENTATION_REPORT.md) · [V6.3 BERTopic Stability](docs/V6_3_BERTOPIC_STABILITY_REPORT.md) · [V6.3 XGBoost CV](docs/V6_3_XGBOOST_BENCHMARK_REPORT.md) · [V6.3 Linking & Resolution](docs/V6_3_LINKING_AND_RESOLUTION_EVAL_REPORT.md) · [V6.4 PyTorch BiGRU & Keras 3 Multi-Task](docs/V6_4_PYTORCH_KERAS_BENCHMARK_REPORT.md) · [V6.5 `6:1` Split & 7-Fold CV](docs/V6_5_6_1_CORPUS_AND_BENCHMARK_REPORT.md) · [V6.6 `10×` LLRD WWM DAPT & Stacking](docs/V6_6_DAPT10X_GATED_CONTEXT_STACKING_REPORT.md) · [V6.7 TF-IDF vs. Embeddings vs. Hybrid Fusion](docs/V6_7_TFIDF_VS_EMBEDDING_BENCHMARK_REPORT.md)
 
 ---
 
@@ -157,7 +182,16 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 python backend/build_live_corpus_artifacts.py --dataset-version 6.0.0 --dapt-epochs 8 --muril-epochs 6
 ```
 
-### 4. Local Human Annotation Studio (`/annotate`) & Offline Tests
+### 4. Reproducing V6.6 `10×` WWM DAPT & V6.7 TF-IDF vs. Embedding Benchmarks
+
+```bash
+# Requires optional ML extras (backend/requirements-ml.txt); stores weights/caches outside Git
+python ml/experiments/v6_programme/run_v66_dapt_10x.py --epochs 4
+python ml/experiments/v6_programme/run_v66_stacking_benchmark.py
+python ml/experiments/v6_programme/run_tfidf_vs_embedding_benchmark.py
+```
+
+### 5. Local Human Annotation Studio (`/annotate`) & Offline Tests
 
 ```bash
 python backend/run_annotation_studio.py --host 127.0.0.1 --port 8765
@@ -199,19 +233,25 @@ backend/
     static/                            # Dusk / Daylight interactive studio & SVG visualizations (zero JS build step)
   alembic/                             # Linear PostgreSQL migration history
   annotation_studio_ui/                # Local loopback human annotation workbench UI
-  tests/                               # 2,193 unit, contract, benchmark, integrity, security, and PII tests
+  tests/                               # 2,238 offline + 42 optional-ML unit, contract, benchmark, security & PII tests
   build_live_corpus_artifacts.py       # Reproducible 100%-real DAPT MLM + 4-arch benchmark + calibration + error analysis builder
 data/
   annotations/real_reddit_labeled_v1/  # Tracked 459 curated real anonymized Reddit comments across 200 threads (0 synthetic rows)
-  live_corpus/                         # Pseudonymized public Reddit corpus (corpus.json, v6.0.0)
+  annotations/v6_3_package..v6_5_package/ # Blind two-annotator Round-2 & +185 (6:1) human annotation packages
+  live_corpus/                         # Production Studio pseudonymized Reddit corpus (corpus.json, v6.1.0, 365 threads)
+  corpus_v6_3..corpus_v6_5/            # Expanded leak-free real research corpus (1,824 combined threads / 25,160 comments, 6:1 split)
 ml/
-  artifacts/live_corpus/               # Precomputed v6 predictions, NMF topics, real 4-arch benchmarks & data-driven error analysis
+  artifacts/live_corpus/               # Precomputed v6.1 Studio predictions, NMF/BERTopic topics, 4-arch benchmarks & error analysis
+  artifacts/v6_3..v6_7_*/              # Tracked JSON summaries for V6.3–V6.7 CV, DAPT-10x, stacking & TF-IDF vs. Embedding benchmarks
   evaluation/                          # Data-driven Error Analysis module & 7-check Pipeline Integrity Verifier
-  models/                              # LogReg / ANN (MLP) / 1D TextCNN baselines + MuRIL-DAPT-WWM / XLM-R classifiers
+  experiments/v6_programme/            # Reproducible V6.3–V6.7 experiment & ablation runners (zero binary weight commits)
+  linking/ & topics/bertopic/          # Multilingual-E5 Issue–Solution Mapper, 8-Signal Resolution Engine & v2 SHA-256 Embedding Cache
+  models/                              # LogReg / ANN / TextCNN / XGBoost / BiGRU / Keras-MT / Embedding & Hybrid Gated MLP / MuRIL & XLM-R
 docs/
+  academic_submission/                 # Complete D1–D6 academic deliverables package & architecture/math specifications
   diagrams/                            # Editorial Light/Dark SVGs + self-contained HTML sources
   demo_screenshots/                    # Studio UI preview captures
-  *.md                                 # Pilot guide, annotation guidelines, V5/V6 optimization, Human IAA & gap analysis reports
+  *.md                                 # Annotation guidelines, V5–V6.7 ablation reports, Human IAA & methodology audits
 ```
 
 ---

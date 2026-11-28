@@ -38,7 +38,7 @@ about pairs and would stay perfect while the conversation went nowhere.
 - **Should the issue be closed?** No workflow or state transition. This stage
   reports an assessment; a downstream system may or may not act on it.
 - **Is the author positive?** Sentiment and emotion are reported elsewhere and are
-  **not inputs here** — see [Sentiment](#sentiment-is-not-an-input).
+  **not inputs here** — see [Sentiment](#8-sentiment-is-not-an-input).
 
 ---
 
@@ -159,7 +159,7 @@ carries no reference to any other stage's types, so whoever assembles the eviden
 | `solution_probability_mean` | ✅ | Or derived from `solution_probabilities` |
 | `solution_candidate_count` | ❌ | **Reporting only** — see below |
 | `response_counts`, `agreement_count`, … | ❌ | Recorded for V2; no measurement justifies a weight |
-| `temporal` | ❌ | Recorded for V2; see [Temporal evidence](#temporal-evidence-recorded-not-scored) |
+| `temporal` | ❌ | Recorded for V2; see [Temporal evidence](#7-temporal-evidence--recorded-not-scored) |
 
 ### Candidates are not evidence
 

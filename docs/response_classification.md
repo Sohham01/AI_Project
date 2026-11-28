@@ -5,7 +5,7 @@
 
 This stage answers a structural question about a thread. It is deliberately
 *not* a sentiment stage and *not* an issue-detection stage; see
-[What this is not](#what-this-is-not).
+[What this is not](#2-what-this-is-not).
 
 - **Code:** `backend/app/services/nlp/response_classification/`
 - **Demo:** `backend/demo_response_classification.py`

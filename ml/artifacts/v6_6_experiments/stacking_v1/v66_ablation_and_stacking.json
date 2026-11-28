@@ -1,0 +1,872 @@
+{
+  "experiment": "v6_6_dapt10x_gated_context_nested_stacking",
+  "protocol": "7-fold (6:1) post_id-grouped OOF CV on trainval (n=367, 163 threads); OOF-selected champion locked before single evaluation on frozen n=92 test (37 threads)",
+  "aggregate_oof_mean_5task_f1": 0.6731,
+  "aggregate_frozen_test_mean_5task_f1": 0.6444,
+  "aggregate_frozen_test_mean_ece": 0.0653,
+  "v61_deployed_test_mean_5task_f1": 0.656,
+  "v5_historical_test_mean_5task_f1": 0.5948,
+  "delta_vs_v61_pp": -1.16,
+  "delta_vs_v5_pp": 4.96,
+  "dapt_10x_summary": {
+    "muril_dapt_v66_wwm": {
+      "variant_name": "muril_dapt_v66_wwm",
+      "base_model_id": "google/muril-base-cased",
+      "checkpoint_dir": "D:\\AI_Project_Transformer_Temp\\v6_6_experiments\\muril_dapt_v66_wwm",
+      "masking_mode": "wwm_universal",
+      "epochs_requested": 4,
+      "best_epoch": 4,
+      "max_length": 160,
+      "effective_batch_size": 40,
+      "learning_rate": 4.5e-05,
+      "elapsed_seconds": 759.19,
+      "peak_vram_mb": 5345.0,
+      "initial_val_std_ppl": 95.833,
+      "initial_val_wwm_ppl": 69.395,
+      "best_val_wwm_ppl": 23.888,
+      "final_val_std_ppl": 25.951,
+      "final_val_wwm_ppl": 23.888,
+      "subword_audit": {
+        "tokenizer_class": "BertTokenizer",
+        "is_fast": true,
+        "vocab_size": 197258,
+        "continuation_prefix": "##",
+        "total_word_units_sampled": 54,
+        "multi_subword_units": 18,
+        "multi_subword_fraction": 0.3333,
+        "samples": [
+          {
+            "text": "bhaiya percentile waitlist IIMSambalpur placement hostel acads prof convert",
+            "n_tokens": 16,
+            "n_word_units": 9,
+            "split_examples": [
+              [
+                "percent",
+                "##ile"
+              ],
+              [
+                "wait",
+                "##list"
+              ],
+              [
+                "IIM",
+                "##S",
+                "##am",
+                "##balpur"
+              ],
+              [
+                "ac",
+                "##ads"
+              ],
+              [
+                "pro",
+                "##f"
+              ]
+            ]
+          },
+          {
+            "text": "yaar mocktest cutoff LPA GEM GNEM CAP SAP SIP PPO mess food attendance",
+            "n_tokens": 21,
+            "n_word_units": 13,
+            "split_examples": [
+              [
+                "mock",
+                "##test"
+              ],
+              [
+                "cut",
+                "##off"
+              ],
+              [
+                "LP",
+                "##A"
+              ],
+              [
+                "GE",
+                "##M"
+              ],
+              [
+                "GN",
+                "##EM"
+              ],
+              [
+                "CA",
+                "##P"
+              ],
+              [
+                "SI",
+                "##P"
+              ],
+              [
+                "PP",
+                "##O"
+              ]
+            ]
+          },
+          {
+            "text": "bhot stress ho raha hai bhai exams aur assignments dono saath mein hain",
+            "n_tokens": 13,
+            "n_word_units": 13,
+            "split_examples": []
+          },
+          {
+            "text": "kuch nahi hota bro waitlist move hogi chill karo campus life sahi hai",
+            "n_tokens": 16,
+            "n_word_units": 13,
+            "split_examples": [
+              [
+                "br",
+                "##o"
+              ],
+              [
+                "wait",
+                "##list"
+              ],
+              [
+                "chil",
+                "##l"
+              ]
+            ]
+          },
+          {
+            "text": "academic workload curriculum teaching infrastructure extracurriculars",
+            "n_tokens": 11,
+            "n_word_units": 6,
+            "split_examples": [
+              [
+                "work",
+                "##load"
+              ],
+              [
+                "extra",
+                "##cu",
+                "##rri",
+                "##cular",
+                "##s"
+              ]
+            ]
+          }
+        ]
+      },
+      "history": [
+        {
+          "epoch": 0,
+          "train_loss": null,
+          "val_std_loss": 4.56261,
+          "val_std_ppl": 95.833,
+          "val_wwm_loss": 4.23982,
+          "val_wwm_ppl": 69.395
+        },
+        {
+          "epoch": 1,
+          "epoch_seconds": 190.1,
+          "train_loss": 3.85114,
+          "val_std_loss": 3.55142,
+          "val_std_ppl": 34.863,
+          "val_wwm_loss": 3.47486,
+          "val_wwm_ppl": 32.293
+        },
+        {
+          "epoch": 2,
+          "epoch_seconds": 189.2,
+          "train_loss": 3.44633,
+          "val_std_loss": 3.40535,
+          "val_std_ppl": 30.125,
+          "val_wwm_loss": 3.32383,
+          "val_wwm_ppl": 27.766
+        },
+        {
+          "epoch": 3,
+          "epoch_seconds": 185.1,
+          "train_loss": 3.23066,
+          "val_std_loss": 3.26804,
+          "val_std_ppl": 26.26,
+          "val_wwm_loss": 3.21069,
+          "val_wwm_ppl": 24.796
+        },
+        {
+          "epoch": 4,
+          "epoch_seconds": 183.3,
+          "train_loss": 3.11426,
+          "val_std_loss": 3.25621,
+          "val_std_ppl": 25.951,
+          "val_wwm_loss": 3.17338,
+          "val_wwm_ppl": 23.888
+        }
+      ]
+    },
+    "xlmr_dapt_v66_wwm": {
+      "variant_name": "xlmr_dapt_v66_wwm",
+      "base_model_id": "xlm-roberta-base",
+      "checkpoint_dir": "D:\\AI_Project_Transformer_Temp\\v6_6_experiments\\xlmr_dapt_v66_wwm",
+      "masking_mode": "wwm_universal",
+      "epochs_requested": 4,
+      "best_epoch": 4,
+      "max_length": 160,
+      "effective_batch_size": 40,
+      "learning_rate": 2e-05,
+      "elapsed_seconds": 1225.56,
+      "peak_vram_mb": 5731.3,
+      "initial_val_std_ppl": 38.214,
+      "initial_val_wwm_ppl": 74.139,
+      "best_val_wwm_ppl": 23.122,
+      "final_val_std_ppl": 17.681,
+      "final_val_wwm_ppl": 23.122,
+      "subword_audit": {
+        "tokenizer_class": "XLMRobertaTokenizer",
+        "vocab_size": 250002,
+        "continuation_mode": "sentencepiece_\\u2581",
+        "multi_subword_fraction": 0.5278,
+        "samples": [
+          {
+            "text": "bhaiya percentile waitlist IIMSambalpur placement hostel acads prof convert",
+            "n_tokens": 19,
+            "n_word_units": 9,
+            "split_examples": [
+              [
+                "▁bha",
+                "iya"
+              ],
+              [
+                "▁percent",
+                "ile"
+              ],
+              [
+                "▁wait",
+                "list"
+              ],
+              [
+                "▁II",
+                "MS",
+                "a",
+                "mbal",
+                "pur"
+              ],
+              [
+                "▁place",
+                "ment"
+              ],
+              [
+                "▁a",
+                "cad",
+                "s"
+              ]
+            ]
+          },
+          {
+            "text": "yaar mocktest cutoff LPA GEM GNEM CAP SAP SIP PPO mess food attendance",
+            "n_tokens": 24,
+            "n_word_units": 14,
+            "split_examples": [
+              [
+                "▁ya",
+                "ar"
+              ],
+              [
+                "▁moc",
+                "k",
+                "test"
+              ],
+              [
+                "▁cut",
+                "off"
+              ],
+              [
+                "▁L",
+                "PA"
+              ],
+              [
+                "▁G",
+                "NEM"
+              ],
+              [
+                "▁S",
+                "IP"
+              ],
+              [
+                "▁P",
+                "PO"
+              ],
+              [
+                "▁mes",
+                "s"
+              ],
+              [
+                "▁attend",
+                "ance"
+              ]
+            ]
+          },
+          {
+            "text": "bhot stress ho raha hai bhai exams aur assignments dono saath mein hain",
+            "n_tokens": 17,
+            "n_word_units": 13,
+            "split_examples": [
+              [
+                "▁bho",
+                "t"
+              ],
+              [
+                "▁exam",
+                "s"
+              ],
+              [
+                "▁assign",
+                "ments"
+              ],
+              [
+                "▁saat",
+                "h"
+              ]
+            ]
+          }
+        ]
+      },
+      "history": [
+        {
+          "epoch": 0,
+          "train_loss": null,
+          "val_std_loss": 3.64319,
+          "val_std_ppl": 38.214,
+          "val_wwm_loss": 4.30594,
+          "val_wwm_ppl": 74.139
+        },
+        {
+          "epoch": 1,
+          "epoch_seconds": 292.6,
+          "train_loss": 3.80336,
+          "val_std_loss": 3.0757,
+          "val_std_ppl": 21.665,
+          "val_wwm_loss": 3.38258,
+          "val_wwm_ppl": 29.447
+        },
+        {
+          "epoch": 2,
+          "epoch_seconds": 295.5,
+          "train_loss": 3.42888,
+          "val_std_loss": 2.92062,
+          "val_std_ppl": 18.553,
+          "val_wwm_loss": 3.22422,
+          "val_wwm_ppl": 25.134
+        },
+        {
+          "epoch": 3,
+          "epoch_seconds": 308.9,
+          "train_loss": 3.31022,
+          "val_std_loss": 2.8778,
+          "val_std_ppl": 17.775,
+          "val_wwm_loss": 3.15605,
+          "val_wwm_ppl": 23.478
+        },
+        {
+          "epoch": 4,
+          "epoch_seconds": 316.0,
+          "train_loss": 3.1966,
+          "val_std_loss": 2.87248,
+          "val_std_ppl": 17.681,
+          "val_wwm_loss": 3.14081,
+          "val_wwm_ppl": 23.122
+        }
+      ]
+    }
+  },
+  "locked_oof_champions": {
+    "issue": {
+      "selected_arm": "oof_stacked_v66",
+      "selection_rule": "max_7fold_oof_macro_f1_with_ece_le_0.12",
+      "oof_macro_f1": 0.5891,
+      "oof_ece": 0.0265,
+      "frozen_test_macro_f1": 0.5975,
+      "frozen_test_ece": 0.0373,
+      "v61_deployed_test_macro_f1": 0.608274,
+      "delta_vs_v61_pp": -1.08,
+      "paired_bootstrap_vs_v61": {
+        "n_clusters": 37,
+        "n_boot": 2000,
+        "macro_f1_mean": 0.5863,
+        "ci95_low": 0.4917,
+        "ci95_high": 0.676,
+        "paired_delta_mean": -0.0079,
+        "paired_delta_ci95": [
+          -0.0754,
+          0.0591
+        ],
+        "p_a_beats_b": 0.4045
+      },
+      "thresholds": {
+        "academic_workload": 0.127,
+        "administrative_communication": 0.499,
+        "campus_infrastructure": 0.47,
+        "curriculum_teaching": 0.174,
+        "extracurriculars": 0.145,
+        "financial_concerns": 0.309,
+        "hostel_facilities": 0.402,
+        "placements": 0.352
+      },
+      "stack_weights": {
+        "v61_ref_7fold": 0.0571,
+        "muril_v66_dapt10x": 0.0143,
+        "xlmr_v66_dapt10x": 0.6857,
+        "gated_reply_ctx_v66": 0.0286,
+        "lex_discourse_7fold": 0.2143
+      }
+    },
+    "sentiment": {
+      "selected_arm": "v61_ref_7fold",
+      "selection_rule": "max_7fold_oof_macro_f1_with_ece_le_0.12",
+      "oof_macro_f1": 0.7192,
+      "oof_ece": 0.0587,
+      "frozen_test_macro_f1": 0.6487,
+      "frozen_test_ece": 0.1288,
+      "v61_deployed_test_macro_f1": 0.651094,
+      "delta_vs_v61_pp": -0.24,
+      "paired_bootstrap_vs_v61": {
+        "n_clusters": 37,
+        "n_boot": 2000,
+        "macro_f1_mean": 0.6374,
+        "ci95_low": 0.5278,
+        "ci95_high": 0.7322,
+        "paired_delta_mean": 0.0047,
+        "paired_delta_ci95": [
+          -0.0603,
+          0.0546
+        ],
+        "p_a_beats_b": 0.5995
+      },
+      "thresholds": null,
+      "stack_weights": null
+    },
+    "emotion": {
+      "selected_arm": "oof_stacked_v66",
+      "selection_rule": "max_7fold_oof_macro_f1_with_ece_le_0.12",
+      "oof_macro_f1": 0.6696,
+      "oof_ece": 0.0171,
+      "frozen_test_macro_f1": 0.5837,
+      "frozen_test_ece": 0.0193,
+      "v61_deployed_test_macro_f1": 0.610444,
+      "delta_vs_v61_pp": -2.67,
+      "paired_bootstrap_vs_v61": {
+        "n_clusters": 37,
+        "n_boot": 2000,
+        "macro_f1_mean": 0.5709,
+        "ci95_low": 0.4528,
+        "ci95_high": 0.6424,
+        "paired_delta_mean": -0.0287,
+        "paired_delta_ci95": [
+          -0.1141,
+          0.0271
+        ],
+        "p_a_beats_b": 0.2005
+      },
+      "thresholds": {
+        "confidence": 0.249,
+        "curiosity": 0.434,
+        "frustration": 0.299,
+        "gratitude": 0.234,
+        "hope": 0.252,
+        "stress": 0.224
+      },
+      "stack_weights": {
+        "v61_ref_7fold": 0.0286,
+        "muril_v66_dapt10x": 0.4714,
+        "xlmr_v66_dapt10x": 0.4857,
+        "gated_reply_ctx_v66": 0.0,
+        "lex_discourse_7fold": 0.0143
+      }
+    },
+    "response": {
+      "selected_arm": "xlmr_v66_dapt10x",
+      "selection_rule": "max_7fold_oof_macro_f1_with_ece_le_0.12",
+      "oof_macro_f1": 0.5683,
+      "oof_ece": 0.0522,
+      "frozen_test_macro_f1": 0.591,
+      "frozen_test_ece": 0.075,
+      "v61_deployed_test_macro_f1": 0.564204,
+      "delta_vs_v61_pp": 2.68,
+      "paired_bootstrap_vs_v61": {
+        "n_clusters": 37,
+        "n_boot": 2000,
+        "macro_f1_mean": 0.5802,
+        "ci95_low": 0.4726,
+        "ci95_high": 0.7019,
+        "paired_delta_mean": 0.0187,
+        "paired_delta_ci95": [
+          -0.0424,
+          0.0897
+        ],
+        "p_a_beats_b": 0.715
+      },
+      "thresholds": null,
+      "stack_weights": null
+    },
+    "solution": {
+      "selected_arm": "xlmr_v66_dapt10x",
+      "selection_rule": "max_7fold_oof_macro_f1_with_ece_le_0.12",
+      "oof_macro_f1": 0.8195,
+      "oof_ece": 0.0791,
+      "frozen_test_macro_f1": 0.801,
+      "frozen_test_ece": 0.0659,
+      "v61_deployed_test_macro_f1": 0.845741,
+      "delta_vs_v61_pp": -4.47,
+      "paired_bootstrap_vs_v61": {
+        "n_clusters": 37,
+        "n_boot": 2000,
+        "macro_f1_mean": 0.797,
+        "ci95_low": 0.6986,
+        "ci95_high": 0.8857,
+        "paired_delta_mean": -0.0456,
+        "paired_delta_ci95": [
+          -0.1089,
+          0.0135
+        ],
+        "p_a_beats_b": 0.0575
+      },
+      "thresholds": null,
+      "stack_weights": null
+    }
+  },
+  "oof_ablation_matrix": {
+    "issue": {
+      "v61_ref_7fold": {
+        "oof_macro_f1": 0.5238,
+        "oof_ece": 0.0151,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 289.22
+      },
+      "muril_v66_dapt10x": {
+        "oof_macro_f1": 0.5416,
+        "oof_ece": 0.0126,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 167.35
+      },
+      "xlmr_v66_dapt10x": {
+        "oof_macro_f1": 0.5856,
+        "oof_ece": 0.0097,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 184.77
+      },
+      "gated_reply_ctx_v66": {
+        "oof_macro_f1": 0.5439,
+        "oof_ece": 0.0102,
+        "mean_gate_norm": 0.0068,
+        "total_train_seconds": 174.12
+      },
+      "lex_discourse_7fold": {
+        "oof_macro_f1": 0.4561,
+        "oof_ece": 0.0672,
+        "total_train_seconds": 2.6
+      },
+      "oof_stacked_v66": {
+        "oof_macro_f1": 0.5891,
+        "oof_ece": 0.0265,
+        "mean_weights": {
+          "v61_ref_7fold": 0.0571,
+          "muril_v66_dapt10x": 0.0143,
+          "xlmr_v66_dapt10x": 0.6857,
+          "gated_reply_ctx_v66": 0.0286,
+          "lex_discourse_7fold": 0.2143
+        }
+      }
+    },
+    "sentiment": {
+      "v61_ref_7fold": {
+        "oof_macro_f1": 0.7192,
+        "oof_ece": 0.0587,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 187.01
+      },
+      "muril_v66_dapt10x": {
+        "oof_macro_f1": 0.7021,
+        "oof_ece": 0.0597,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 152.2
+      },
+      "xlmr_v66_dapt10x": {
+        "oof_macro_f1": 0.7157,
+        "oof_ece": 0.0268,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 167.39
+      },
+      "gated_reply_ctx_v66": {
+        "oof_macro_f1": 0.6551,
+        "oof_ece": 0.0549,
+        "mean_gate_norm": 0.0057,
+        "total_train_seconds": 165.83
+      },
+      "lex_discourse_7fold": {
+        "oof_macro_f1": 0.5104,
+        "oof_ece": 0.0388,
+        "total_train_seconds": 1.27
+      },
+      "oof_stacked_v66": {
+        "oof_macro_f1": 0.7067,
+        "oof_ece": 0.0472,
+        "mean_weights": {
+          "v61_ref_7fold": 0.0714,
+          "muril_v66_dapt10x": 0.3714,
+          "xlmr_v66_dapt10x": 0.5429,
+          "gated_reply_ctx_v66": 0.0143,
+          "lex_discourse_7fold": 0.0
+        }
+      }
+    },
+    "emotion": {
+      "v61_ref_7fold": {
+        "oof_macro_f1": 0.576,
+        "oof_ece": 0.0049,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 145.68
+      },
+      "muril_v66_dapt10x": {
+        "oof_macro_f1": 0.6465,
+        "oof_ece": 0.0077,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 152.24
+      },
+      "xlmr_v66_dapt10x": {
+        "oof_macro_f1": 0.6271,
+        "oof_ece": 0.0066,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 172.75
+      },
+      "gated_reply_ctx_v66": {
+        "oof_macro_f1": 0.5467,
+        "oof_ece": 0.0055,
+        "mean_gate_norm": 0.0072,
+        "total_train_seconds": 173.52
+      },
+      "lex_discourse_7fold": {
+        "oof_macro_f1": 0.5364,
+        "oof_ece": 0.0881,
+        "total_train_seconds": 1.26
+      },
+      "oof_stacked_v66": {
+        "oof_macro_f1": 0.6696,
+        "oof_ece": 0.0171,
+        "mean_weights": {
+          "v61_ref_7fold": 0.0286,
+          "muril_v66_dapt10x": 0.4714,
+          "xlmr_v66_dapt10x": 0.4857,
+          "gated_reply_ctx_v66": 0.0,
+          "lex_discourse_7fold": 0.0143
+        }
+      }
+    },
+    "response": {
+      "v61_ref_7fold": {
+        "oof_macro_f1": 0.5348,
+        "oof_ece": 0.0465,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 162.5
+      },
+      "muril_v66_dapt10x": {
+        "oof_macro_f1": 0.5409,
+        "oof_ece": 0.0254,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 149.65
+      },
+      "xlmr_v66_dapt10x": {
+        "oof_macro_f1": 0.5683,
+        "oof_ece": 0.0522,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 161.53
+      },
+      "gated_reply_ctx_v66": {
+        "oof_macro_f1": 0.566,
+        "oof_ece": 0.0622,
+        "mean_gate_norm": 0.0073,
+        "total_train_seconds": 180.22
+      },
+      "lex_discourse_7fold": {
+        "oof_macro_f1": 0.5157,
+        "oof_ece": 0.1029,
+        "total_train_seconds": 1.55
+      },
+      "oof_stacked_v66": {
+        "oof_macro_f1": 0.548,
+        "oof_ece": 0.074,
+        "mean_weights": {
+          "v61_ref_7fold": 0.0857,
+          "muril_v66_dapt10x": 0.1,
+          "xlmr_v66_dapt10x": 0.3714,
+          "gated_reply_ctx_v66": 0.1143,
+          "lex_discourse_7fold": 0.3286
+        }
+      }
+    },
+    "solution": {
+      "v61_ref_7fold": {
+        "oof_macro_f1": 0.7761,
+        "oof_ece": 0.045,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 159.77
+      },
+      "muril_v66_dapt10x": {
+        "oof_macro_f1": 0.7563,
+        "oof_ece": 0.0505,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 141.28
+      },
+      "xlmr_v66_dapt10x": {
+        "oof_macro_f1": 0.8195,
+        "oof_ece": 0.0791,
+        "mean_gate_norm": 0.0,
+        "total_train_seconds": 160.07
+      },
+      "gated_reply_ctx_v66": {
+        "oof_macro_f1": 0.8186,
+        "oof_ece": 0.0675,
+        "mean_gate_norm": 0.0056,
+        "total_train_seconds": 178.38
+      },
+      "lex_discourse_7fold": {
+        "oof_macro_f1": 0.7348,
+        "oof_ece": 0.0682,
+        "total_train_seconds": 0.77
+      },
+      "oof_stacked_v66": {
+        "oof_macro_f1": 0.816,
+        "oof_ece": 0.0804,
+        "mean_weights": {
+          "v61_ref_7fold": 0.1714,
+          "muril_v66_dapt10x": 0.0,
+          "xlmr_v66_dapt10x": 0.7429,
+          "gated_reply_ctx_v66": 0.0714,
+          "lex_discourse_7fold": 0.0143
+        }
+      }
+    }
+  },
+  "post_lock_test_observations_all_arms": {
+    "issue": {
+      "v61_ref_7fold": {
+        "macro_f1": 0.5078,
+        "ece": 0.0122
+      },
+      "muril_v66_dapt10x": {
+        "macro_f1": 0.56,
+        "ece": 0.0139
+      },
+      "xlmr_v66_dapt10x": {
+        "macro_f1": 0.6011,
+        "ece": 0.0129
+      },
+      "gated_reply_ctx_v66": {
+        "macro_f1": 0.5533,
+        "ece": 0.0161
+      },
+      "lex_discourse_7fold": {
+        "macro_f1": 0.4098,
+        "ece": 0.0741
+      },
+      "oof_stacked_v66": {
+        "macro_f1": 0.5975,
+        "ece": 0.0373
+      }
+    },
+    "sentiment": {
+      "v61_ref_7fold": {
+        "macro_f1": 0.6487,
+        "ece": 0.1288
+      },
+      "muril_v66_dapt10x": {
+        "macro_f1": 0.6068,
+        "ece": 0.1522
+      },
+      "xlmr_v66_dapt10x": {
+        "macro_f1": 0.612,
+        "ece": 0.183
+      },
+      "gated_reply_ctx_v66": {
+        "macro_f1": 0.6517,
+        "ece": 0.114
+      },
+      "lex_discourse_7fold": {
+        "macro_f1": 0.5396,
+        "ece": 0.0325
+      },
+      "oof_stacked_v66": {
+        "macro_f1": 0.6324,
+        "ece": 0.1261
+      }
+    },
+    "emotion": {
+      "v61_ref_7fold": {
+        "macro_f1": 0.5625,
+        "ece": 0.0096
+      },
+      "muril_v66_dapt10x": {
+        "macro_f1": 0.6062,
+        "ece": 0.0172
+      },
+      "xlmr_v66_dapt10x": {
+        "macro_f1": 0.5896,
+        "ece": 0.0202
+      },
+      "gated_reply_ctx_v66": {
+        "macro_f1": 0.5793,
+        "ece": 0.0258
+      },
+      "lex_discourse_7fold": {
+        "macro_f1": 0.4257,
+        "ece": 0.0917
+      },
+      "oof_stacked_v66": {
+        "macro_f1": 0.5837,
+        "ece": 0.0193
+      }
+    },
+    "response": {
+      "v61_ref_7fold": {
+        "macro_f1": 0.5935,
+        "ece": 0.094
+      },
+      "muril_v66_dapt10x": {
+        "macro_f1": 0.5421,
+        "ece": 0.0947
+      },
+      "xlmr_v66_dapt10x": {
+        "macro_f1": 0.591,
+        "ece": 0.075
+      },
+      "gated_reply_ctx_v66": {
+        "macro_f1": 0.5737,
+        "ece": 0.0683
+      },
+      "lex_discourse_7fold": {
+        "macro_f1": 0.3613,
+        "ece": 0.0702
+      },
+      "oof_stacked_v66": {
+        "macro_f1": 0.5759,
+        "ece": 0.0575
+      }
+    },
+    "solution": {
+      "v61_ref_7fold": {
+        "macro_f1": 0.8403,
+        "ece": 0.0865
+      },
+      "muril_v66_dapt10x": {
+        "macro_f1": 0.7909,
+        "ece": 0.0294
+      },
+      "xlmr_v66_dapt10x": {
+        "macro_f1": 0.801,
+        "ece": 0.0659
+      },
+      "gated_reply_ctx_v66": {
+        "macro_f1": 0.8027,
+        "ece": 0.0372
+      },
+      "lex_discourse_7fold": {
+        "macro_f1": 0.6416,
+        "ece": 0.0326
+      },
+      "oof_stacked_v66": {
+        "macro_f1": 0.801,
+        "ece": 0.0628
+      }
+    }
+  }
+}
