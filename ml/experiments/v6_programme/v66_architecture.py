@@ -27,17 +27,103 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 HAS_TORCH = importlib.util.find_spec("torch") is not None
+HAS_TRANSFORMERS = importlib.util.find_spec("transformers") is not None
 
 if HAS_TORCH:
     import torch
     from torch import nn
 
-from ml.experiments.v5_optimization.common import (
-    CANONICAL_LABELS,
-    MULTILABEL_TASKS,
-    evaluate_predictions,
-    tune_multilabel_thresholds,
-)
+MULTILABEL_TASKS = {"issue", "emotion"}
+CANONICAL_LABELS: Dict[str, List[str]] = {
+    "issue": [
+        "academic_workload",
+        "administrative_communication",
+        "campus_infrastructure",
+        "curriculum_teaching",
+        "extracurriculars",
+        "financial_concerns",
+        "hostel_facilities",
+        "placements",
+    ],
+    "sentiment": ["negative", "neutral", "positive"],
+    "emotion": ["confidence", "curiosity", "frustration", "gratitude", "hope", "stress"],
+    "response": [
+        "agreement",
+        "personal_experience",
+        "opinion",
+        "advice",
+        "solution",
+        "counterargument",
+    ],
+    "solution": ["not_solution", "solution"],
+}
+
+if HAS_TORCH and HAS_TRANSFORMERS:
+    from ml.experiments.v5_optimization.common import (
+        evaluate_predictions,
+        tune_multilabel_thresholds,
+    )
+else:
+    from ml.evaluation.error_analysis import compute_calibration_metrics
+
+    def tune_multilabel_thresholds(
+        y_true: np.ndarray,
+        probs: np.ndarray,
+        labels: Sequence[str],
+        *,
+        mode: str = "bounded",
+        low: float = 0.30,
+        high: float = 0.70,
+        prior_strength: float = 12.0,
+    ) -> Dict[str, float]:
+        steps = max(int(round((high - low) / 0.025)), 1)
+        grid = [round(low + 0.025 * i, 3) for i in range(steps + 1)]
+        tuned: Dict[str, float] = {}
+        for col, lbl in enumerate(labels):
+            truth = y_true[:, col].astype(int)
+            n_pos = int(truth.sum())
+            if n_pos == 0:
+                tuned[lbl] = 0.5
+                continue
+            best_tau, best_f1 = 0.5, -1.0
+            col_p = probs[:, col]
+            for tau in grid:
+                pred = (col_p > tau).astype(int)
+                tp = int(((truth == 1) & (pred == 1)).sum())
+                fp = int(((truth == 0) & (pred == 1)).sum())
+                fn = int(((truth == 1) & (pred == 0)).sum())
+                denom = 2 * tp + fp + fn
+                f1 = (2.0 * tp / denom) if denom > 0 else 0.0
+                if (f1 > best_f1 + 1e-12) or (abs(f1 - best_f1) <= 1e-12 and abs(tau - 0.5) < abs(best_tau - 0.5)):
+                    best_f1, best_tau = f1, tau
+            if mode == "regularized":
+                w = n_pos / float(n_pos + prior_strength)
+                best_tau = round(float(np.clip(w * best_tau + (1.0 - w) * 0.5, low, high)), 3)
+            tuned[lbl] = float(best_tau)
+        return tuned
+
+    def evaluate_predictions(
+        task: str,
+        y_true: np.ndarray,
+        probs: np.ndarray,
+        *,
+        thresholds: Optional[Dict[str, float]] = None,
+        binary_threshold: float = 0.5,
+    ) -> Dict[str, Any]:
+        labels = CANONICAL_LABELS[task]
+        multilabel = task in MULTILABEL_TASKS
+        f1 = _macro_f1_quick(
+            y_true,
+            probs,
+            multilabel=multilabel,
+            thresh=(np.array([float((thresholds or {}).get(l, 0.5)) for l in labels]) if multilabel else None),
+        )
+        if multilabel:
+            true_h: Any = [[labels[j] for j in range(len(labels)) if y_true[i, j] > 0.5] for i in range(len(y_true))]
+        else:
+            true_h = [labels[int(y_true[i])] for i in range(len(y_true))]
+        cal = compute_calibration_metrics(true_h, probs, labels, multilabel=multilabel, n_bins=5)
+        return {"macro_f1": round(float(f1), 4), "ece": round(float(cal.get("ece", 0.0)), 4)}
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_LOCAL_HF_CACHE = (
